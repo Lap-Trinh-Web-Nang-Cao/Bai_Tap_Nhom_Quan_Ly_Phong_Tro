@@ -42,7 +42,6 @@ namespace RestAPI_QUANLYPHONGTRO.Models
         [Required]
         public int SoBaoCao { get; set; }
 
-        public int Test {  get; set; }
 
     }
 }
