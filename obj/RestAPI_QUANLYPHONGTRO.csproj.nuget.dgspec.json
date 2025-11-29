@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Hoc DH\\HK125\\LTWNC\\Bai_Tap_Nhom\\RestAPI_QUANLYPHONGTRO\\RestAPI_QUANLYPHONGTRO\\RestAPI_QUANLYPHONGTRO.csproj": {}
+    "D:\\Hoc DH\\HK125\\LTWNC\\Bai_Tap_Nhom\\RestAPI_QUANLYPHONGTRO\\RestAPI_QUANLYPHONGTRO.csproj": {}
   },
   "projects": {
-    "D:\\Hoc DH\\HK125\\LTWNC\\Bai_Tap_Nhom\\RestAPI_QUANLYPHONGTRO\\RestAPI_QUANLYPHONGTRO\\RestAPI_QUANLYPHONGTRO.csproj": {
+    "D:\\Hoc DH\\HK125\\LTWNC\\Bai_Tap_Nhom\\RestAPI_QUANLYPHONGTRO\\RestAPI_QUANLYPHONGTRO.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Hoc DH\\HK125\\LTWNC\\Bai_Tap_Nhom\\RestAPI_QUANLYPHONGTRO\\RestAPI_QUANLYPHONGTRO\\RestAPI_QUANLYPHONGTRO.csproj",
+        "projectUniqueName": "D:\\Hoc DH\\HK125\\LTWNC\\Bai_Tap_Nhom\\RestAPI_QUANLYPHONGTRO\\RestAPI_QUANLYPHONGTRO.csproj",
         "projectName": "RestAPI_QUANLYPHONGTRO",
-        "projectPath": "D:\\Hoc DH\\HK125\\LTWNC\\Bai_Tap_Nhom\\RestAPI_QUANLYPHONGTRO\\RestAPI_QUANLYPHONGTRO\\RestAPI_QUANLYPHONGTRO.csproj",
+        "projectPath": "D:\\Hoc DH\\HK125\\LTWNC\\Bai_Tap_Nhom\\RestAPI_QUANLYPHONGTRO\\RestAPI_QUANLYPHONGTRO.csproj",
         "packagesPath": "C:\\Users\\ADMIN\\.nuget\\packages\\",
-        "outputPath": "D:\\Hoc DH\\HK125\\LTWNC\\Bai_Tap_Nhom\\RestAPI_QUANLYPHONGTRO\\RestAPI_QUANLYPHONGTRO\\obj\\",
+        "outputPath": "D:\\Hoc DH\\HK125\\LTWNC\\Bai_Tap_Nhom\\RestAPI_QUANLYPHONGTRO\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
