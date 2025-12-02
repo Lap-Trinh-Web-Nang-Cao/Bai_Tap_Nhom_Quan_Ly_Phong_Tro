@@ -1,0 +1,148 @@
+﻿@{
+    string role = Session["UserRole"]?.ToString();
+    bool isLoggedIn = !string.IsNullOrEmpty(Session["UserName"]?.ToString());
+}
+
+<!-- ===== FOOTER ===== -->
+<footer class="app-footer">
+
+    <!-- TẦNG 1: Main Footer Content -->
+    <div class="footer-main">
+        <div class="footer-container">
+
+            <!-- Column 1: Logo & About -->
+            <div class="footer-col footer-about">
+                <div class="footer-logo">
+                    <img src="~/images/logo.png" alt="QuanLyPhongTro Logo" class="footer-logo-img" />
+            
+                </div>
+                <p class="footer-desc">
+                    Nền tảng tìm kiếm và quản lý phòng trọ thông minh -
+                    Kết nối nhanh chóng giữa người thuê và chủ trọ.
+                </p>
+                <div class="footer-social">
+                    <a href="#" class="social-link" title="Facebook">
+                        <i class="fa fa-facebook"></i>
+                    </a>
+                    <a href="#" class="social-link" title="YouTube">
+                        <i class="fa fa-youtube"></i>
+                    </a>
+                    <a href="#" class="social-link" title="TikTok">
+                        <i class="fab fa-tiktok"></i>
+                    </a>
+                    <a href="#" class="social-link" title="Zalo">
+                        <i class="fa fa-commenting"></i>
+                    </a>
+                    <a href="#" class="social-link" title="Instagram">
+                        <i class="fa fa-instagram"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Column 2: Contact Info -->
+            <div class="footer-col">
+                <h4 class="footer-title">Liên hệ</h4>
+                <ul class="footer-links">
+                    <li>
+                        <i class="fa fa-phone"></i>
+                        <span>Hotline: <strong>1900-xxxx</strong></span>
+                    </li>
+                    <li>
+                        <i class="fa fa-envelope"></i>
+                        <span>Email: <strong>support@quanlyphongtro.vn</strong></span>
+                    </li>
+                    <li>
+                        <i class="fa fa-map-marker"></i>
+                        <span>Địa chỉ: 123 Đường ABC, Quận XYZ, TP.HCM</span>
+                    </li>
+                    <li>
+                        <a href="@Url.Action("Create", "YeuCauHoTro")" class="footer-link">
+                            <i class="fa fa-paper-plane"></i> Gửi yêu cầu hỗ trợ
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Column 3: Quick Navigation (Role-based) -->
+            <div class="footer-col">
+                @if (role == "ChuTro")
+                {
+                    <h4 class="footer-title">Dành cho Chủ trọ</h4>
+                    <ul class="footer-links">
+                        <li><a href="@Url.Action("QuanLyPhong", "ChuTro")"><i class="fa fa-building"></i> Quản lý phòng</a></li>
+                        <li><a href="@Url.Action("QuanLyDatPhong", "ChuTro")"><i class="fa fa-calendar-check"></i> Quản lý lịch xem</a></li>
+                        <li><a href="@Url.Action("ThongKe", "ChuTro")"><i class="fa fa-bar-chart"></i> Doanh thu - Báo cáo</a></li>
+                        <li><a href="@Url.Action("HopDong", "ChuTro")"><i class="fa fa-file-text"></i> Quản lý hợp đồng</a></li>
+                        <li><a href="@Url.Action("HoaDon", "ChuTro")"><i class="fa fa-money"></i> Quản lý thanh toán</a></li>
+                    </ul>
+                }
+                else
+                {
+                    <h4 class="footer-title">Dịch vụ</h4>
+                    <ul class="footer-links">
+                        <li><a href="@Url.Action("DanhSachPhong", "KhachThue")"><i class="fa fa-search"></i> Tìm phòng</a></li>
+                        <li><a href="@Url.Action("LichDaDat", "KhachThue")"><i class="fa fa-calendar"></i> Lịch xem phòng</a></li>
+                        <li><a href="@Url.Action("PhongChat", "Chat")"><i class="fa fa-comments"></i> Tin nhắn</a></li>
+                        <li><a href="@Url.Action("Index", "HoTro")"><i class="fa fa-life-ring"></i> Trung tâm hỗ trợ</a></li>
+                        <li><a href="@Url.Action("Create", "BaoCaoViPham")"><i class="fa fa-flag"></i> Báo cáo vi phạm</a></li>
+                    </ul>
+                }
+            </div>
+
+            <!-- Column 4: Policies -->
+            <div class="footer-col">
+                <h4 class="footer-title">Chính sách & Điều khoản</h4>
+                <ul class="footer-links">
+                    <li><a href="@Url.Action("DieuKhoanSuDung", "Home")"><i class="fa fa-file-text-o"></i> Điều khoản sử dụng</a></li>
+                    <li><a href="@Url.Action("ChinhSachBaoMat", "Home")"><i class="fa fa-shield"></i> Chính sách bảo mật</a></li>
+                    <li><a href="@Url.Action("QuyDinhDangTin", "Home")"><i class="fa fa-gavel"></i> Quy định đăng tin</a></li>
+                    <li><a href="@Url.Action("ChinhSachHoanTien", "Home")"><i class="fa fa-refresh"></i> Chính sách hoàn tiền</a></li>
+                    <li><a href="@Url.Action("GiaiQuyetTranh", "Home")"><i class="fa fa-balance-scale"></i> Giải quyết tranh chấp</a></li>
+                </ul>
+            </div>
+
+            <!-- Column 5: Download App -->
+            <div class="footer-col">
+                <h4 class="footer-title">Tải ứng dụng</h4>
+                <div class="app-download">
+                    <a href="#" class="app-btn">
+                        <img src="~/images/google-play.png" alt="Google Play" />
+                    </a>
+                    <a href="#" class="app-btn">
+                        <img src="~/images/app-store.png" alt="App Store" />
+                    </a>
+                </div>
+                <div class="qr-codes">
+                    <div class="qr-item">
+                        <img src="~/images/qr-android.png" alt="QR Android" />
+                        <span>Android</span>
+                    </div>
+                    <div class="qr-item">
+                        <img src="~/images/qr-ios.png" alt="QR iOS" />
+                        <span>iOS</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- TẦNG 2: Bottom Bar (Legal Info) -->
+    <div class="footer-bottom">
+        <div class="footer-container">
+            <div class="footer-legal">
+                <p class="copyright">
+                    © 2025 <strong>QuanLyPhongTro</strong>. Bản quyền thuộc về Hệ thống Quản lý Phòng trọ.
+                </p>
+                <div class="legal-info">
+                    <span><i class="fa fa-building-o"></i> Đơn vị vận hành: <strong>Công ty TNHH ABC</strong></span>
+                    <span class="divider">|</span>
+                    <span><i class="fa fa-certificate"></i> Mã số thuế: <strong>0123456789</strong></span>
+                    <span class="divider">|</span>
+                    <span><i class="fa fa-check-circle"></i> Giấy phép ĐKKD số: <strong>0123456789</strong></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</footer>

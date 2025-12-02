@@ -1,0 +1,186 @@
+﻿@{
+    // Thông tin người dùng (CHỈ CHO NGƯỜI THUÊ VÀ KHÁCH)
+    string username = Session["UserName"]?.ToString();
+    string hoTen = Session["HoTen"]?.ToString() ?? username;
+    string avatarUrl = Session["AvatarUrl"]?.ToString() ?? "~/images/default-avatar.png";
+    bool isLoggedIn = !string.IsNullOrEmpty(username);
+
+    int notificationCount = Session["NotificationCount"] != null ? (int)Session["NotificationCount"] : 0;
+    int messageCount = Session["MessageCount"] != null ? (int)Session["MessageCount"] : 0;
+}
+
+<!-- ===== HEADER CHO KHÁCH VÃNG LAI & NGƯỜI THUÊ ===== -->
+<header class="app-header">
+
+    <!-- TẦNG 1: TOP BAR -->
+    <div class="header-topbar">
+        <div class="header-container">
+            <!-- Left side links -->
+            <div class="topbar-left">
+                <a href="@Url.Action("ChuTro_Register", "Auth")" class="topbar-link">
+                    Trở thành Chủ trọ
+                </a>
+                <span class="topbar-divider">|</span>
+                <a href="#" class="topbar-link">Tải ứng dụng</a>
+                <span class="topbar-divider">|</span>
+                <a href="#" class="topbar-link">
+                    <i class="fa fa-question-circle"></i> Hỗ trợ
+                </a>
+            </div>
+
+            <!-- Right side actions -->
+            <div class="topbar-right">
+                @if (!isLoggedIn)
+                {
+                    <a href="@Url.Action("Login", "Auth")" class="topbar-link">Đăng Nhập</a>
+                    <span class="topbar-divider">|</span>
+                    <a href="@Url.Action("NguoiThue_Register", "Auth")" class="topbar-link">Đăng Ký</a>
+                }
+                else
+                {
+                    <a href="@Url.Action("ThongBao", "KhachThue")" class="topbar-link">
+                        <i class="fa fa-bell"></i> Thông báo
+                        @if (notificationCount > 0)
+                        {
+                            <span class="topbar-badge">@notificationCount</span>
+                        }
+                    </a>
+                    <span class="topbar-divider">|</span>
+                    <a href="@Url.Action("TinNhan", "KhachThue")" class="topbar-link">
+                        <i class="fa fa-comments"></i> Tin nhắn
+                        @if (messageCount > 0)
+                        {
+                            <span class="topbar-badge">@messageCount</span>
+                        }
+                    </a>
+                    <span class="topbar-divider">|</span>
+
+                    <!-- Account dropdown -->
+                    <div class="topbar-account">
+                        <div class="account-trigger">
+                            <img src="@Url.Content(avatarUrl)" alt="Avatar" class="topbar-avatar" />
+                            <span>@hoTen</span>
+                            <i class="fa fa-chevron-down"></i>
+                        </div>
+
+                        <div class="account-dropdown">
+                            <a href="@Url.Action("ThongTinCaNhan", "KhachThue")" class="dropdown-item">
+                                <i class="fa fa-user"></i> Tài khoản của tôi
+                            </a>
+                            <a href="@Url.Action("LichDaDat", "KhachThue")" class="dropdown-item">
+                                <i class="fa fa-calendar"></i> Lịch đặt phòng
+                            </a>
+                            <a href="@Url.Action("YeuThich", "KhachThue")" class="dropdown-item">
+                                <i class="fa fa-heart"></i> Phòng yêu thích
+                            </a>
+                            <a href="@Url.Action("LichSuHoatDong", "KhachThue")" class="dropdown-item">
+                                <i class="fa fa-history"></i> Lịch sử hoạt động
+                            </a>
+
+                            <div class="dropdown-divider"></div>
+                            <a href="@Url.Action("Logout", "Auth")" class="dropdown-item logout">
+                                <i class="fa fa-sign-out"></i> Đăng xuất
+                            </a>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- TẦNG 2: MAIN BAR (Logo + Search + Quick Actions) -->
+    <div class="header-mainbar">
+        <div class="header-container">
+
+            <!-- Logo Section -->
+            <a href="@Url.Action("Index", "Home")" class="logo-section">
+                <img src="~/images/logo.png" alt="Logo" class="logo-image" />
+            </a>
+
+            <!-- Search Section -->
+            <div class="search-section">
+                <form action="@Url.Action("DanhSachPhong", "Home")" method="get" id="searchForm">
+                    <!-- Main Search Bar -->
+                    <div class="search-wrapper">
+                        <input type="text"
+                               name="keyword"
+                               class="search-input"
+                               placeholder="Tìm kiếm phòng trọ theo khu vực" />
+                        <button type="submit" class="search-button">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <!-- Advanced Filters (Dropdowns) -->
+                    <div class="search-filters">
+                        <select name="priceRange" class="filter-select">
+                            <option value="">Khoảng giá</option>
+                            <option value="0-2000000">Dưới 2 triệu</option>
+                            <option value="2000000-3000000">2 - 3 triệu</option>
+                            <option value="3000000-5000000">3 - 5 triệu</option>
+                            <option value="5000000-10000000">Trên 5 triệu</option>
+                        </select>
+
+                        <select name="areaRange" class="filter-select">
+                            <option value="">Diện tích</option>
+                            <option value="0-20">Dưới 20m²</option>
+                            <option value="20-30">20 - 30m²</option>
+                            <option value="30-50">30 - 50m²</option>
+                            <option value="50-100">Trên 50m²</option>
+                        </select>
+
+                        <select name="roomType" class="filter-select">
+                            <option value="">Loại phòng</option>
+                            <option value="phongtro">Phòng trọ</option>
+                            <option value="chungcumini">Chung cư mini</option>
+                            <option value="nhanguyen">Nhà nguyên căn</option>
+                        </select>
+                    </div>
+
+                    <!-- Quick Tags -->
+                    <div class="search-tags">
+                        <a href="@Url.Action("DanhSachPhong", "Home", new { featured = true })" class="search-tag">
+                            <i class="fa fa-star"></i> Phòng nổi bật
+                        </a>
+                        <a href="@Url.Action("DanhSachPhong", "Home", new { minArea = 20 })" class="search-tag">
+                            <i class="fa fa-expand"></i> Phòng rộng
+                        </a>
+                        <a href="@Url.Action("DanhSachPhong", "Home", new { sort = "new" })" class="search-tag">
+                            <i class="fa fa-clock-o"></i> Mới nhất
+                        </a>
+                        <a href="@Url.Action("DanhSachPhong", "Home", new { verified = true })" class="search-tag">
+                            <i class="fa fa-check-circle"></i> Đã xác minh
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- TẦNG 3: NAVIGATION MENU (CHỈ CHO NGƯỜI THUÊ) -->
+    <nav class="header-navbar">
+        <div class="header-container">
+            <div class="navbar-menu">
+                <a href="@Url.Action("Index", "Home")" class="navbar-item active">
+                    <i class="fa fa-home"></i> Trang chủ
+                </a>
+                <a href="@Url.Action("DanhSachPhong", "Home")" class="navbar-item">
+                    <i class="fa fa-building"></i> Tất cả phòng
+                </a>
+
+                @if (isLoggedIn)
+                {
+                    <a href="@Url.Action("LichDaDat", "KhachThue")" class="navbar-item">
+                        <i class="fa fa-calendar"></i> Lịch của tôi
+                    </a>
+                    <a href="@Url.Action("HopDong", "KhachThue")" class="navbar-item">
+                        <i class="fa fa-file-text"></i> Hợp đồng
+                    </a>
+                    <a href="@Url.Action("HoaDon", "KhachThue")" class="navbar-item">
+                        <i class="fa fa-credit-card"></i> Hóa đơn
+                    </a>
+                }
+            </div>
+        </div>
+    </nav>
+</header>

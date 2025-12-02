@@ -1,0 +1,176 @@
+﻿@model USER_QUANLYPHONGTRO.Models.ViewModels.Auth.LoginViewModel
+
+@{
+    ViewBag.Title = "Đăng Nhập";
+    Layout = "~/Views/Shared/_LayoutAuth.cshtml";
+
+    // Xác định user type từ URL hoặc default là người thuê
+    string userType = Request.QueryString["type"] ?? "nguoithue";
+    bool isChuTro = userType.ToLower() == "chutro";
+}
+
+<!-- ===== HEADER - SHOPEE STYLE ===== -->
+<header class="auth-header">
+    <div class="auth-header-container">
+        <div class="auth-header-left">
+            <a href="@Url.Action("Index", "Home")" class="auth-logo">
+                <img src="~/images/logo.png" alt="TroTot Logo" />
+            </a>
+            <span class="auth-title">Đăng nhập</span>
+        </div>
+        <div class="auth-header-right">
+            <a href="@Url.Action("Index", "HoTro")" class="auth-help-link">
+                <i class="fas fa-question-circle"></i>
+                Bạn cần giúp đỡ?
+            </a>
+        </div>
+    </div>
+</header>
+
+<!-- ===== MAIN CONTENT ===== -->
+<div class="auth-main-container">
+    <div class="auth-content-wrapper">
+
+        <!-- ===== CỘT TRÁI: BANNER ===== -->
+        <div class="auth-left-banner">
+            <div class="banner-illustration">
+                <img src="~/images/banner-login.png" alt="Đăng nhập" />
+            </div>
+            <h1 class="banner-title">Tìm Trọ Nhanh – Ở An Tâm</h1>
+            <p class="banner-subtitle">
+                Nền tảng tìm kiếm phòng trọ uy tín, minh bạch và an toàn nhất Việt Nam
+            </p>
+        </div>
+
+        <!-- ===== CỘT PHẢI: FORM ĐĂNG NHẬP ===== -->
+        <div class="auth-right-form">
+            <div class="auth-form-card">
+
+                <!-- Header -->
+                <div class="form-header">
+                    <h2>Đăng Nhập</h2>
+                    <p>Chào mừng bạn quay trở lại</p>
+                </div>
+
+                <!-- Form -->
+                @using (Html.BeginForm("Login", "Auth", FormMethod.Post, new { @class = "login-form" }))
+                {
+                    @Html.AntiForgeryToken()
+                    @Html.Hidden("userType", userType)
+
+                    <!-- Email hoặc SĐT -->
+                    <div class="form-group">
+                        <label for="Email" class="form-label">
+                            Email hoặc Số điện thoại
+                        </label>
+                        @Html.TextBoxFor(m => m.Email, new
+                        {
+                            @class = "form-input",
+                            @placeholder = "Nhập email hoặc số điện thoại",
+                            id = "Email",
+                            autocomplete = "username"
+                        })
+                        @Html.ValidationMessageFor(m => m.Email, "", new { @class = "field-error" })
+                    </div>
+
+                    <!-- Mật Khẩu -->
+                    <div class="form-group">
+                        <label for="Password" class="form-label">
+                            Mật khẩu
+                        </label>
+                        <div class="password-field">
+                            @Html.PasswordFor(m => m.Password, new
+                            {
+                                @class = "form-input",
+                                @placeholder = "Nhập mật khẩu",
+                                id = "Password",
+                                autocomplete = "current-password"
+                            })
+                            <button type="button" class="toggle-password" data-target="Password">
+                                <i class="fas fa-eye"></i>  <!-- Chỉ 1 icon, JS sẽ toggle class -->
+                            </button>
+                        </div>
+                        @Html.ValidationMessageFor(m => m.Password, "", new { @class = "field-error" })
+                    </div>
+
+                    <!-- Thông Báo Lỗi/Thành Công -->
+                    if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+                    {
+                        <div class="alert alert-error">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span>@ViewBag.ErrorMessage</span>
+                        </div>
+                    }
+
+                    if (!string.IsNullOrEmpty(ViewBag.SuccessMessage))
+                    {
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle"></i>
+                            <span>@ViewBag.SuccessMessage</span>
+                        </div>
+                    }
+
+                    <!-- Nút Đăng Nhập -->
+                    <button type="submit" class="btn-submit">ĐĂNG NHẬP</button>
+
+                    <!-- Forgot Password & Remember Me -->
+                    <div class="form-footer-links">
+                        <a href="@Url.Action("ForgotPassword", "Auth")" class="forgot-link">Quên mật khẩu</a>
+                        <a href="#" class="help-login-link">Đăng nhập với SMS</a>
+                    </div>
+
+                    <!-- Divider -->
+                    <div class="or-divider">
+                        <span>HOẶC</span>
+                    </div>
+
+                    <!-- Social Login -->
+                    <div class="social-login-btns">
+                        <button type="button" class="social-btn facebook-btn">
+                            <i class="fab fa-facebook-f"></i>
+                            Facebook
+                        </button>
+                        <button type="button" class="social-btn google-btn">
+                            <i class="fab fa-google"></i>
+                            Google
+                        </button>
+                    </div>
+                }
+
+                <!-- Register Link - Dynamic based on context -->
+                <div class="register-section">
+                    @if (isChuTro)
+                    {
+                        <p>
+                            Chưa có tài khoản chủ trọ?
+                            <a href="@Url.Action("ChuTro_Register", "Auth")" class="register-link">Đăng ký</a>
+                        </p>
+                        <p class="switch-type">
+                            Bạn là người thuê trọ?
+                            <a href="@Url.Action("Login", "Auth", new { type = "nguoithue" })" class="register-link">Đăng nhập tại đây</a>
+                        </p>
+                    }
+                    else
+                    {
+                        <p>
+                            Bạn mới biết đến TroTot?
+                            <a href="@Url.Action("NguoiThue_Register", "Auth")" class="register-link">Đăng ký</a>
+                        </p>
+                        <p class="landlord-promo">
+                            Bạn muốn cho thuê phòng trọ?
+                            <a href="@Url.Action("Login", "Auth", new { type = "chutro" })" class="landlord-link">
+                                <i class="fas fa-store"></i>
+                                Trở thành Chủ Trọ
+                            </a>
+                        </p>
+                    }
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- ===== FOOTER ===== -->
+@Html.Partial("_Footer")

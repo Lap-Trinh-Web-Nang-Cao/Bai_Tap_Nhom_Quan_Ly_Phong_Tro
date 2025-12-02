@@ -1,0 +1,203 @@
+﻿@model USER_QUANLYPHONGTRO.Models.ViewModels.Auth.RegisterViewModel
+
+@{
+    ViewBag.Title = "Đăng Ký Người Thuê";
+    Layout = "~/Views/Shared/_LayoutAuth.cshtml";
+}
+
+<!-- ===== HEADER - SHOPEE STYLE ===== -->
+<header class="auth-header">
+    <div class="auth-header-container">
+        <div class="auth-header-left">
+            <a href="@Url.Action("Index", "Home")" class="auth-logo">
+                <img src="~/images/logo.png" alt="TroTot Logo" />
+            </a>
+            <span class="auth-title">Đăng ký</span>
+        </div>
+        <div class="auth-header-right">
+            <a href="@Url.Action("Index", "HoTro")" class="auth-help-link">
+                <i class="fas fa-question-circle"></i>
+                Bạn cần giúp đỡ?
+            </a>
+        </div>
+    </div>
+</header>
+
+<!-- ===== MAIN CONTENT ===== -->
+<div class="auth-main-container">
+    <div class="auth-content-wrapper">
+
+        <!-- ===== CỘT TRÁI: BANNER ===== -->
+        <div class="auth-left-banner">
+            <div class="banner-illustration">
+                <img src="~/images/banner-register-tenant.png" alt="Đăng ký người thuê" />
+            </div>
+            <h1 class="banner-title">Tìm Phòng Trọ Mơ Ước</h1>
+            <p class="banner-subtitle">
+                Hàng nghìn phòng trọ chất lượng đang chờ bạn khám phá
+            </p>
+        </div>
+
+        <!-- ===== CỘT PHẢI: FORM ĐĂNG KÝ ===== -->
+        <div class="auth-right-form">
+            <div class="auth-form-card">
+
+                <!-- Header -->
+                <div class="form-header">
+                    <h2>Đăng Ký Tài Khoản</h2>
+                    <p>Tìm phòng trọ phù hợp với bạn</p>
+                </div>
+
+                <!-- Form -->
+                @using (Html.BeginForm("RegisterNguoiThue", "Auth", FormMethod.Post, new { @class = "login-form" }))
+                {
+                    @Html.AntiForgeryToken()
+                    @Html.Hidden("UserType", "KhachThue")
+
+                    <!-- Họ và Tên -->
+                    <div class="form-group">
+                        <label for="HoTen" class="form-label">
+                            Họ và Tên
+                        </label>
+                        @Html.TextBoxFor(m => m.HoTen, new
+                        {
+                            @class = "form-input",
+                            @placeholder = "Nguyễn Văn A",
+                            id = "HoTen"
+                        })
+                        @Html.ValidationMessageFor(m => m.HoTen, "", new { @class = "field-error" })
+                    </div>
+
+                    <!-- Email -->
+                    <div class="form-group">
+                        <label for="Email" class="form-label">
+                            Email
+                        </label>
+                        @Html.TextBoxFor(m => m.Email, new
+                        {
+                            @class = "form-input",
+                            @placeholder = "example@email.com",
+                            @type = "email",
+                            id = "Email"
+                        })
+                        @Html.ValidationMessageFor(m => m.Email, "", new { @class = "field-error" })
+                    </div>
+
+                    <!-- Số Điện Thoại -->
+                    <div class="form-group">
+                        <label for="SoDienThoai" class="form-label">
+                            Số Điện Thoại
+                        </label>
+                        @Html.TextBoxFor(m => m.SoDienThoai, new
+                        {
+                            @class = "form-input",
+                            @placeholder = "0912345678",
+                            id = "SoDienThoai"
+                        })
+                        @Html.ValidationMessageFor(m => m.SoDienThoai, "", new { @class = "field-error" })
+                    </div>
+
+                    <!-- Địa Chỉ -->
+                    <div class="form-group">
+                        <label for="DiaChi" class="form-label">
+                            Địa Chỉ Hiện Tại
+                        </label>
+                        @Html.TextBoxFor(m => m.DiaChi, new
+                        {
+                            @class = "form-input",
+                            @placeholder = "Quận, Thành phố",
+                            id = "DiaChi"
+                        })
+                        @Html.ValidationMessageFor(m => m.DiaChi, "", new { @class = "field-error" })
+                    </div>
+
+                    <!-- Mật Khẩu -->
+                    <div class="form-group">
+                        <label for="Password" class="form-label">
+                            Mật khẩu
+                        </label>
+                        <div class="password-field">
+                            @Html.PasswordFor(m => m.Password, new
+                            {
+                                @class = "form-input",
+                                @placeholder = "Tối thiểu 6 ký tự",
+                                id = "Password"
+                            })
+                            <button type="button" class="toggle-password" data-target="Password">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        @Html.ValidationMessageFor(m => m.Password, "", new { @class = "field-error" })
+                    </div>
+
+                    <!-- Xác Nhận Mật Khẩu -->
+                    <div class="form-group">
+                        <label for="ConfirmPassword" class="form-label">
+                            Xác Nhận Mật Khẩu
+                        </label>
+                        <div class="password-field">
+                            @Html.PasswordFor(m => m.ConfirmPassword, new
+                            {
+                                @class = "form-input",
+                                @placeholder = "Nhập lại mật khẩu",
+                                id = "ConfirmPassword"
+                            })
+                            <button type="button" class="toggle-password" data-target="ConfirmPassword">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        @Html.ValidationMessageFor(m => m.ConfirmPassword, "", new { @class = "field-error" })
+                    </div>
+
+                    <!-- Điều Khoản -->
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="AgreeTerms" required />
+                            <span>Tôi đồng ý với <a href="#" class="link-primary">Điều khoản dịch vụ</a> và <a href="#" class="link-primary">Chính sách bảo mật</a></span>
+                        </label>
+                    </div>
+
+                    <!-- Thông Báo -->
+                    if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+                    {
+                        <div class="alert alert-error">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span>@ViewBag.ErrorMessage</span>
+                        </div>
+                    }
+
+                    if (!string.IsNullOrEmpty(ViewBag.SuccessMessage))
+                    {
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle"></i>
+                            <span>@ViewBag.SuccessMessage</span>
+                        </div>
+                    }
+
+                    <!-- Nút Đăng Ký -->
+                    <button type="submit" class="btn-submit">ĐĂNG KÝ</button>
+
+                    <!-- Register Links -->
+                    <div class="register-section">
+                        <p>
+                            Đã có tài khoản?
+                            <a href="@Url.Action("Login", "Auth")" class="register-link">Đăng nhập</a>
+                        </p>
+                        <p class="landlord-promo">
+                            Bạn muốn cho thuê phòng trọ?
+                            <a href="@Url.Action("ChuTro_Register", "Auth")" class="landlord-link">
+                                <i class="fas fa-store"></i>
+                                Trở thành Chủ Trọ
+                            </a>
+                        </p>
+                    </div>
+                }
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- ===== FOOTER ===== -->
+@Html.Partial("_Footer")

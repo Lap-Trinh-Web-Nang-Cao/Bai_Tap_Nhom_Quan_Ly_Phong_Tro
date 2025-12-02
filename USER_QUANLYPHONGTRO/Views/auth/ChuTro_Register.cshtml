@@ -1,0 +1,325 @@
+﻿@model USER_QUANLYPHONGTRO.Models.ViewModels.Auth.RegisterViewModel
+
+@{
+    ViewBag.Title = "Đăng ký trở thành Chủ trọ";
+    Layout = "~/Views/Shared/_LayoutAuth.cshtml";
+    int currentStep = ViewBag.CurrentStep ?? 1;
+}
+
+<!-- ===== HEADER ===== -->
+<header class="seller-header">
+    <div class="seller-header-container">
+        <div class="seller-header-left">
+            <a href="@Url.Action("Index", "Home")" class="seller-logo">
+                <img src="~/images/logo.png" alt="TroTot" />
+            </a>
+            <span class="seller-header-title">Đăng ký trở thành Chủ trọ</span>
+        </div>
+        <div class="seller-header-right">
+            <span class="seller-user-info">
+                <i class="fas fa-user-circle"></i>
+                <span id="userName">Chưa đăng nhập</span>
+            </span>
+        </div>
+    </div>
+</header>
+
+<!-- ===== PROGRESS STEPS ===== -->
+<div class="progress-container">
+    <div class="progress-wrapper">
+        <div class="progress-steps">
+            <div class="progress-line" id="progressLine" style="width: 0%"></div>
+
+            <div class="progress-step @(currentStep >= 1 ? "active" : "") @(currentStep > 1 ? "completed" : "")" data-step="1">
+                <div class="step-circle">
+                    @if (currentStep > 1)
+                    {<i class="fas fa-check"></i> }
+                    else
+                    { <span>1</span>}
+                </div>
+                <span class="step-label">Thông tin cơ bản</span>
+            </div>
+
+            <div class="progress-step @(currentStep >= 2 ? "active" : "") @(currentStep > 2 ? "completed" : "")" data-step="2">
+                <div class="step-circle">
+                    @if (currentStep > 2)
+                    {<i class="fas fa-check"></i> }
+                    else
+                    { <span>2</span>}
+                </div>
+                <span class="step-label">Xác minh danh tính</span>
+            </div>
+
+            <div class="progress-step @(currentStep >= 3 ? "active" : "") @(currentStep > 3 ? "completed" : "")" data-step="3">
+                <div class="step-circle">
+                    @if (currentStep > 3)
+                    {<i class="fas fa-check"></i> }
+                    else
+                    { <span>3</span>}
+                </div>
+                <span class="step-label">Thông tin ngân hàng</span>
+            </div>
+
+            <div class="progress-step @(currentStep >= 4 ? "active" : "") @(currentStep > 4 ? "completed" : "")" data-step="4">
+                <div class="step-circle">
+                    @if (currentStep > 4)
+                    {<i class="fas fa-check"></i> }
+                    else
+                    { <span>4</span>}
+                </div>
+                <span class="step-label">Hoàn tất</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== MAIN CONTENT ===== -->
+<div class="seller-main">
+    <div class="seller-card">
+
+        @using (Html.BeginForm("RegisterChuTro", "Auth", FormMethod.Post, new { @class = "seller-form", enctype = "multipart/form-data", id = "sellerRegisterForm" }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.Hidden("UserType", "ChuTro")
+            @Html.Hidden("CurrentStep", currentStep)
+
+            <!-- ===== STEP 1: THÔNG TIN CƠ BẢN ===== -->
+            <div class="step-content @(currentStep == 1 ? "active" : "")" data-step="1">
+                <h3 class="section-title">
+                    <i class="fas fa-user-circle"></i>
+                    Thông tin cơ bản
+                </h3>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Họ và Tên <span class="required">*</span>
+                    </label>
+                    @Html.TextBoxFor(m => m.HoTen, new { @class = "form-input", @placeholder = "Nguyễn Văn A", required = "required" })
+                    @Html.ValidationMessageFor(m => m.HoTen, "", new { @class = "field-error" })
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">
+                            Email <span class="required">*</span>
+                        </label>
+                        @Html.TextBoxFor(m => m.Email, new { @class = "form-input", @type = "email", @placeholder = "example@email.com", required = "required" })
+                        @Html.ValidationMessageFor(m => m.Email, "", new { @class = "field-error" })
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            Số điện thoại <span class="required">*</span>
+                        </label>
+                        @Html.TextBoxFor(m => m.SoDienThoai, new { @class = "form-input", @placeholder = "0912345678", required = "required" })
+                        @Html.ValidationMessageFor(m => m.SoDienThoai, "", new { @class = "field-error" })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Địa chỉ liên hệ <span class="required">*</span>
+                    </label>
+                    @Html.TextBoxFor(m => m.DiaChi, new { @class = "form-input", @placeholder = "Số nhà, đường, quận, thành phố", required = "required" })
+                    @Html.ValidationMessageFor(m => m.DiaChi, "", new { @class = "field-error" })
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">
+                            Mật khẩu <span class="required">*</span>
+                        </label>
+                        <div class="password-field">
+                            @Html.PasswordFor(m => m.Password, new { @class = "form-input", @placeholder = "Tối thiểu 6 ký tự", required = "required", id = "Password" })
+                            <button type="button" class="toggle-password" data-target="Password">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        @Html.ValidationMessageFor(m => m.Password, "", new { @class = "field-error" })
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            Xác nhận mật khẩu <span class="required">*</span>
+                        </label>
+                        <div class="password-field">
+                            @Html.PasswordFor(m => m.ConfirmPassword, new { @class = "form-input", @placeholder = "Nhập lại mật khẩu", required = "required", id = "ConfirmPassword" })
+                            <button type="button" class="toggle-password" data-target="ConfirmPassword">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        @Html.ValidationMessageFor(m => m.ConfirmPassword, "", new { @class = "field-error" })
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== STEP 2: XÁC MINH DANH TÍNH ===== -->
+            <div class="step-content @(currentStep == 2 ? "active" : "")" data-step="2">
+                <h3 class="section-title">
+                    <i class="fas fa-id-card"></i>
+                    Xác minh danh tính
+                </h3>
+
+                <div class="info-box info-box-info">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Thông tin này giúp xác minh danh tính của bạn và tăng độ tin cậy với người thuê</span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Loại giấy tờ <span class="required">*</span></label>
+                    <div class="identity-options">
+                        <label class="identity-option">
+                            <input type="radio" name="LoaiGiayTo" value="CCCD" checked />
+                            <span>Căn cước công dân</span>
+                        </label>
+                        <label class="identity-option">
+                            <input type="radio" name="LoaiGiayTo" value="CMND" />
+                            <span>Chứng minh nhân dân</span>
+                        </label>
+                        <label class="identity-option">
+                            <input type="radio" name="LoaiGiayTo" value="HoChieu" />
+                            <span>Hộ chiếu</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">
+                            Số giấy tờ <span class="required">*</span>
+                        </label>
+                        @Html.TextBoxFor(m => m.SoChungMinh, new { @class = "form-input", @placeholder = "Nhập số CCCD/CMND/Hộ chiếu" })
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Ngày cấp</label>
+                        @Html.TextBoxFor(m => m.NgayCapCCCD, "{0:yyyy-MM-dd}", new { @class = "form-input", @type = "date" })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Nơi cấp</label>
+                    @Html.TextBoxFor(m => m.NoiCapCCCD, new { @class = "form-input", @placeholder = "Cục Cảnh sát..." })
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Địa chỉ thường trú <span class="required">*</span>
+                    </label>
+                    @Html.TextAreaFor(m => m.DiaChiThuongTru, new { @class = "form-textarea", @placeholder = "Theo giấy tờ tùy thân", rows = 2 })
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Mã số thuế cá nhân
+                        <small style="color: #999">(Không bắt buộc)</small>
+                    </label>
+                    @Html.TextBoxFor(m => m.MaSoThue, new { @class = "form-input", @placeholder = "Nhập nếu có" })
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Tải lên giấy tờ <span class="required">*</span></label>
+                    <div class="upload-area" onclick="document.getElementById('giayToFiles').click()">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <div class="upload-text">Chọn ảnh mặt trước & mặt sau</div>
+                        <div class="upload-hint">PNG, JPG tối đa 5MB mỗi file</div>
+                    </div>
+                    <input type="file" name="GiayToFiles" id="giayToFiles" accept="image/*" multiple style="display: none" />
+                    <div id="filePreview" class="file-preview"></div>
+                </div>
+            </div>
+
+            <!-- ===== STEP 3: THÔNG TIN NGÂN HÀNG ===== -->
+            <div class="step-content @(currentStep == 3 ? "active" : "")" data-step="3">
+                <h3 class="section-title">
+                    <i class="fas fa-university"></i>
+                    Thông tin ngân hàng
+                </h3>
+
+                <div class="info-box info-box-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>Thông tin này sẽ được sử dụng để thanh toán tiền thuê phòng</span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Số tài khoản</label>
+                    @Html.TextBoxFor(m => m.SoTaiKhoan, new { @class = "form-input", @placeholder = "Nhập số tài khoản ngân hàng" })
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Tên ngân hàng</label>
+                        @Html.TextBoxFor(m => m.TenNganHang, new { @class = "form-input", @placeholder = "VD: Vietcombank" })
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Chi nhánh</label>
+                        @Html.TextBoxFor(m => m.ChiNhanh, new { @class = "form-input", @placeholder = "VD: TP.HCM" })
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== STEP 4: HOÀN TẤT ===== -->
+            <div class="step-content @(currentStep == 4 ? "active" : "")" data-step="4">
+                <div class="success-screen">
+                    <div class="success-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h2 class="success-title">Chào mừng đến với TroTot!</h2>
+                    <p class="success-message">
+                        Vui lòng cung cấp thông tin để hoàn tất việc đăng ký tài khoản chủ trọ trên TroTot
+                    </p>
+
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="AgreeVerification" required />
+                            <span>Tôi cam kết các thông tin cung cấp là <strong>đúng sự thật</strong></span>
+                        </label>
+                    </div>
+
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="AgreeTerms" required />
+                            <span>Tôi đồng ý với <a href="#">Điều khoản dịch vụ</a> và <a href="#">Chính sách bảo mật</a></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thông báo lỗi/thành công -->
+            if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+            {
+                <div class="alert alert-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>@ViewBag.ErrorMessage</span>
+                </div>
+            }
+
+            if (!string.IsNullOrEmpty(ViewBag.SuccessMessage))
+            {
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i>
+                    <span>@ViewBag.SuccessMessage</span>
+                </div>
+            }
+
+            <!-- Navigation Buttons -->
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" id="btnPrev" style="display: none;">
+                    <i class="fas fa-arrow-left"></i>
+                    Quay lại
+                </button>
+                <div></div>
+                <button type="button" class="btn btn-primary" id="btnNext">
+                    Tiếp theo
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+                <button type="submit" class="btn btn-success" id="btnSubmit" style="display: none;">
+                    <i class="fas fa-check"></i>
+                    Hoàn tất đăng ký
+                </button>
+            </div>
+        }
+
+    </div>
+</div>

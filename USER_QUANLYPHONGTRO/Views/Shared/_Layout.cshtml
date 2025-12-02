@@ -1,0 +1,32 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - QuanLyPhongTro</title>
+
+    @* CSS Files *@
+    <link href="~/Content/Site.css" rel="stylesheet" />
+    <link href="~/Content/header.css" rel="stylesheet" />
+    <link href="~/Content/footer.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    @RenderSection("styles", required: false)
+</head>
+<body>
+    @Html.Partial("_Header")
+
+    <div class="container body-content">
+        @RenderBody()
+    </div>
+
+    @Html.Partial("_Footer")
+
+    @* Scripts *@
+    <script src="~/Scripts/jquery-3.4.1.min.js"></script>
+    <script src="~/Scripts/bootstrap.min.js"></script>
+    <script src="~/Scripts/header.js"></script>
+
+    @RenderSection("scripts", required: false)
+</body>
+</html>

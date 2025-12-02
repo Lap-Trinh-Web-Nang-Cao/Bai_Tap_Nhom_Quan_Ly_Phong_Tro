@@ -1,0 +1,287 @@
+﻿@{
+    ViewBag.Title = "Trang Chủ - TroTot";
+    string username = Session["UserName"]?.ToString();
+    string role = Session["UserRole"]?.ToString();
+    bool isLoggedIn = !string.IsNullOrEmpty(username);
+}
+
+<style>
+    .test-panel {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        z-index: 9999;
+        max-width: 300px;
+    }
+    .test-panel h4 {
+        margin: 0 0 15px;
+        color: #6C63FF;
+        font-size: 16px;
+        font-weight: 700;
+        border-bottom: 2px solid #6C63FF;
+        padding-bottom: 8px;
+    }
+    .test-panel .info {
+        margin-bottom: 15px;
+        padding: 10px;
+        background: #F7FAFC;
+        border-radius: 6px;
+        font-size: 13px;
+    }
+    .test-panel .info strong {
+        color: #2D3748;
+    }
+    .test-panel .btn-test {
+        display: block;
+        width: 100%;
+        padding: 10px;
+        margin: 8px 0;
+        border: none;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+        text-align: center;
+    }
+    .btn-logout {
+        background: #E53E3E;
+        color: white;
+    }
+    .btn-logout:hover {
+        background: #C53030;
+        transform: translateY(-2px);
+    }
+    .btn-login {
+        background: #6C63FF;
+        color: white;
+    }
+    .btn-login:hover {
+        background: #5A52D5;
+        transform: translateY(-2px);
+    }
+    .btn-register {
+        background: #48BB78;
+        color: white;
+    }
+    .btn-register:hover {
+        background: #38A169;
+        transform: translateY(-2px);
+    }
+    .btn-test-login {
+        background: #4299E1;
+        color: white;
+        font-size: 12px;
+        padding: 8px;
+    }
+    .btn-test-login:hover {
+        background: #3182CE;
+    }
+    .btn-seller {
+        background: #EE4D2D;
+        color: white;
+    }
+    .btn-seller:hover {
+        background: #D83825;
+        transform: translateY(-2px);
+    }
+    .hero-section {
+        padding: 80px 20px;
+        text-align: center;
+        background: linear-gradient(135deg, #6C63FF 0%, #5A52D5 100%);
+        color: white;
+        margin: 0 -15px 40px;
+    }
+    .hero-section h1 {
+        font-size: 48px;
+        font-weight: 700;
+        margin-bottom: 20px;
+    }
+    .hero-section p {
+        font-size: 20px;
+        opacity: 0.9;
+    }
+    .features {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 30px;
+        margin: 40px 0;
+    }
+    .feature-card {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+        text-align: center;
+        transition: all 0.3s;
+    }
+    .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    }
+    .feature-card i {
+        font-size: 48px;
+        color: #6C63FF;
+        margin-bottom: 20px;
+    }
+    .feature-card h3 {
+        color: #2D3748;
+        margin-bottom: 15px;
+    }
+    .feature-card p {
+        color: #718096;
+        font-size: 14px;
+    }
+    .cta-section {
+        text-align: center;
+        margin: 60px 0;
+        padding: 40px 20px;
+        background: #F7FAFC;
+        border-radius: 12px;
+    }
+    .cta-section h3 {
+        color: #2D3748;
+        margin-bottom: 20px;
+        font-size: 28px;
+    }
+    .cta-buttons {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    .cta-buttons .btn-test {
+        padding: 15px 30px;
+        font-size: 16px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+</style>
+
+<!-- Panel Test (Fixed Position) -->
+<div class="test-panel">
+    <h4><i class="fa fa-vial"></i> Panel Test</h4>
+    
+    @if (isLoggedIn)
+    {
+        <div class="info">
+            <strong>Đã đăng nhập:</strong><br/>
+            Vai trò: <span style="color: #6C63FF;">@(role == "ChuTro" ? "Chủ Trọ" : "Người Thuê")</span><br/>
+            Email: @username
+        </div>
+        
+        <a href="@Url.Action("Logout", "Auth")" class="btn-test btn-logout">
+            <i class="fa fa-sign-out-alt"></i> Đăng Xuất
+        </a>
+    }
+    else
+    {
+        <div class="info">
+            <strong>Khách vãng lai</strong><br/>
+            Chưa đăng nhập
+        </div>
+        
+        <a href="@Url.Action("Login", "Auth")" class="btn-test btn-login">
+            <i class="fa fa-sign-in-alt"></i> Đăng Nhập
+        </a>
+        
+        <a href="@Url.Action("NguoiThue_Register", "Auth")" class="btn-test btn-register">
+            <i class="fa fa-user-plus"></i> Đăng Ký Người Thuê
+        </a>
+
+        <a href="@Url.Action("ChuTro_Register", "Auth")" class="btn-test btn-seller">
+            <i class="fa fa-store"></i> Đăng Ký Chủ Trọ
+        </a>
+    }
+    
+    <hr style="margin: 20px 0; border-color: #E2E8F0;" />
+    
+    <h5 style="font-size: 13px; color: #4A5568; margin-bottom: 10px;">Test Nhanh:</h5>
+    
+    <a href="@Url.Action("TestLoginNguoiThue", "Auth")" class="btn-test btn-test-login">
+        <i class="fa fa-user"></i> Login Người Thuê
+    </a>
+    
+    <a href="@Url.Action("TestLoginChuTro", "Auth")" class="btn-test btn-seller">
+        <i class="fa fa-store"></i> Login Chủ Trọ
+    </a>
+</div>
+
+<!-- Hero Section -->
+<div class="hero-section">
+    <h1>Chào Mừng Đến Với TroTot</h1>
+    <p>Tìm trọ nhanh - Ở an tâm</p>
+</div>
+
+<!-- Main Content -->
+<div class="container">
+    <h2 style="text-align: center; margin-bottom: 40px; color: #2D3748;">
+        Tính Năng Nổi Bật
+    </h2>
+    
+    <div class="features">
+        <div class="feature-card">
+            <i class="fa fa-shield-check"></i>
+            <h3>Xác Minh Rõ Ràng</h3>
+            <p>Tất cả phòng trọ đều được xác minh danh tính chủ nhà và thông tin pháp lý đầy đủ</p>
+        </div>
+        
+        <div class="feature-card">
+            <i class="fa fa-calendar-check"></i>
+            <h3>Đặt Lịch Online</h3>
+            <p>Đặt lịch xem phòng trực tuyến, tiện lợi và nhanh chóng</p>
+        </div>
+        
+        <div class="feature-card">
+            <i class="fa fa-user-check"></i>
+            <h3>Chủ Trọ Uy Tín</h3>
+            <p>Hệ thống đánh giá minh bạch, giúp bạn chọn được chủ trọ tốt nhất</p>
+        </div>
+        
+        <div class="feature-card">
+            <i class="fa fa-comments"></i>
+            <h3>Nhắn Tin Trực Tiếp</h3>
+            <p>Liên hệ trực tiếp với chủ trọ qua hệ thống chat tích hợp</p>
+        </div>
+        
+        <div class="feature-card">
+            <i class="fa fa-file-contract"></i>
+            <h3>Hợp Đồng Điện Tử</h3>
+            <p>Quản lý hợp đồng và hóa đơn dễ dàng trên ứng dụng</p>
+        </div>
+        
+        <div class="feature-card">
+            <i class="fa fa-map-marked-alt"></i>
+            <h3>Tìm Kiếm Thông Minh</h3>
+            <p>Tìm phòng theo khu vực, giá cả và tiện ích mong muốn</p>
+        </div>
+    </div>
+    
+    @if (!isLoggedIn)
+    {
+        <div class="cta-section">
+            <h3>Bắt Đầu Ngay Hôm Nay!</h3>
+            <div class="cta-buttons">
+                <a href="@Url.Action("NguoiThue_Register", "Auth")" class="btn-test btn-login">
+                    <i class="fa fa-user-plus"></i> Đăng Ký Người Thuê
+                </a>
+                <a href="@Url.Action("ChuTro_Register", "Auth")" class="btn-test btn-seller">
+                    <i class="fa fa-building"></i> Đăng Ký Chủ Trọ
+                </a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="cta-section">
+            <h3>Chào mừng trở lại, @(Session["HoTen"]?.ToString() ?? username)!</h3>
+            <p style="color: #718096; font-size: 16px;">Bạn đang sử dụng với vai trò: <strong>@(role == "ChuTro" ? "Chủ Trọ" : "Người Thuê")</strong></p>
+        </div>
+    }
+</div>
