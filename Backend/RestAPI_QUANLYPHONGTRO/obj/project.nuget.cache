@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "iV/F7LtNQ0M=",
+  "dgSpecHash": "fZALZITHDqY=",
   "success": true,
-  "projectFilePath": "E:\\LapTrinhWebNangCao\\QuanLyPhongTro\\Bai_Tap_Nhom_Quan_Ly_Phong_Tro\\RestAPI_QUANLYPHONGTRO.csproj",
+  "projectFilePath": "E:\\LapTrinhWebNangCao\\QuanLyPhongTro\\Bai_Tap_Nhom_Quan_Ly_Phong_Tro\\Backend\\RestAPI_QUANLYPHONGTRO\\RestAPI_QUANLYPHONGTRO.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\LENOVO\\.nuget\\packages\\azure.core\\1.38.0\\azure.core.1.38.0.nupkg.sha512",
     "C:\\Users\\LENOVO\\.nuget\\packages\\azure.identity\\1.11.4\\azure.identity.1.11.4.nupkg.sha512",

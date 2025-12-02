@@ -77,3 +77,5 @@ E:\LapTrinhWebNangCao\QuanLyPhongTro\USER_QUANLYPHONGTRO\obj\Debug\USER_QUANLYPH
 E:\LapTrinhWebNangCao\QuanLyPhongTro\USER_QUANLYPHONGTRO\obj\Debug\USER_QUA.E929CF7E.Up2Date
 E:\LapTrinhWebNangCao\QuanLyPhongTro\USER_QUANLYPHONGTRO\obj\Debug\USER_QUANLYPHONGTRO.dll
 E:\LapTrinhWebNangCao\QuanLyPhongTro\USER_QUANLYPHONGTRO\obj\Debug\USER_QUANLYPHONGTRO.pdb
+E:\LapTrinhWebNangCao\QuanLyPhongTro\Bai_Tap_Nhom_Quan_Ly_Phong_Tro\USER_QUANLYPHONGTRO\obj\Debug\USER_QUANLYPHONGTRO.dll
+E:\LapTrinhWebNangCao\QuanLyPhongTro\Bai_Tap_Nhom_Quan_Ly_Phong_Tro\USER_QUANLYPHONGTRO\obj\Debug\USER_QUANLYPHONGTRO.pdb
