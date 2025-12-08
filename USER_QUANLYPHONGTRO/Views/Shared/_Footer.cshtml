@@ -1,6 +1,6 @@
 ﻿@{
-    string role = Session["UserRole"]?.ToString();
-    bool isLoggedIn = !string.IsNullOrEmpty(Session["UserName"]?.ToString());
+    string role = Session["UserRole"] as string;
+    bool isLoggedIn = !string.IsNullOrEmpty(Session["UserName"] as string);
 }
 
 <!-- ===== FOOTER ===== -->

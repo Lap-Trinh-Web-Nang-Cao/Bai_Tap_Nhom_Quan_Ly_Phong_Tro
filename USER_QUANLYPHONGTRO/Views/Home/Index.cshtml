@@ -1,7 +1,7 @@
 ﻿@{
     ViewBag.Title = "Trang Chủ - TroTot";
-    string username = Session["UserName"]?.ToString();
-    string role = Session["UserRole"]?.ToString();
+    string username = Session["UserName"] as string;
+    string role = Session["UserRole"] as string;
     bool isLoggedIn = !string.IsNullOrEmpty(username);
 }
 
@@ -280,7 +280,7 @@
     else
     {
         <div class="cta-section">
-            <h3>Chào mừng trở lại, @(Session["HoTen"]?.ToString() ?? username)!</h3>
+            <h3>Chào mừng trở lại, @(Session["HoTen"] as string ?? username)!</h3>
             <p style="color: #718096; font-size: 16px;">Bạn đang sử dụng với vai trò: <strong>@(role == "ChuTro" ? "Chủ Trọ" : "Người Thuê")</strong></p>
         </div>
     }
