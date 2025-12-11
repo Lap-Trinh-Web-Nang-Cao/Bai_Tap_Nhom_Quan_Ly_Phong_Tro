@@ -37,8 +37,7 @@ namespace USER_QUANLYPHONGTRO.Models.ViewModels.Auth
         // ===== THÔNG TIN CHỦ TRỌ =====
         public string UserType { get; set; } // "KhachThue" hoặc "ChuTro"
 
-        // Xác minh danh tính
-        public string LoaiGiayTo { get; set; } // CCCD, CMND, HoChieu
+        public string LoaiGiayTo { get; set; }
         public string SoChungMinh { get; set; }
         public DateTime? NgayCapCCCD { get; set; }
         public string NoiCapCCCD { get; set; }
