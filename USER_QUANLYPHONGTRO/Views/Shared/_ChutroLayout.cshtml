@@ -1,0 +1,200 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - TroTot Chủ Trọ</title>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+
+    <!-- CSS Files -->
+    <link href="~/Content/chutro.css?v=2.0" rel="stylesheet" />
+
+    <!-- jQuery -->
+    <script src="~/Scripts/jquery-3.7.0.min.js"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+
+    @RenderSection("styles", required: false)
+</head>
+<body>
+    @{
+        string userName = Session["HoTen"] as string ?? Session["UserName"] as string ?? "Chủ Trọ";
+        string avatarUrl = Session["AvatarUrl"] as string ?? "/images/default-avatar.png";
+        int notificationCount = Session["NotificationCount"] as int? ?? 0;
+        int messageCount = Session["MessageCount"] as int? ?? 0;
+    }
+
+    <!-- Top Navigation Bar -->
+    <header class="top-navbar">
+        <div class="navbar-left">
+            <button class="sidebar-toggle" id="sidebarToggle">
+                <span class="material-icons-round">menu</span>
+            </button>
+            <a href="@Url.Action("Dashboard", "ChuTro")" class="logo-link">
+                <img src="~/images/logo.png" alt="TroTot" class="logo-img" />
+            </a>
+        </div>
+
+        <div class="navbar-right">
+            <!-- Search -->
+            <div class="navbar-search">
+                <span class="material-icons-round">search</span>
+                <input type="text" placeholder="Tìm kiếm..." />
+            </div>
+
+            <!-- Notifications -->
+            <div class="navbar-icon">
+                <span class="material-icons-round">notifications</span>
+                @if (notificationCount > 0)
+                {
+                    <span class="icon-badge">@notificationCount</span>
+                }
+            </div>
+
+            <!-- Messages -->
+            <div class="navbar-icon">
+                <span class="material-icons-round">chat_bubble</span>
+                @if (messageCount > 0)
+                {
+                    <span class="icon-badge">@messageCount</span>
+                }
+            </div>
+
+            <!-- User Profile -->
+            <div class="user-profile">
+                <img src="@Url.Content(!string.IsNullOrEmpty(avatarUrl) && !avatarUrl.Contains("default-avatar") ? avatarUrl : "/images/logo.png")" alt="Avatar" class="user-avatar" />
+                <div class="user-info">
+                    <span class="user-name">@userName</span>
+                    <span class="user-role">Chủ trọ</span>
+                </div>
+                <span class="material-icons-round arrow">expand_more</span>
+
+                <!-- Dropdown Menu -->
+                <div class="user-dropdown">
+                    <a href="#" class="dropdown-item">
+                        <span class="material-icons-round">person</span>
+                        Hồ sơ cá nhân
+                    </a>
+                    <a href="#" class="dropdown-item">
+                        <span class="material-icons-round">settings</span>
+                        Cài đặt
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a href="@Url.Action("Index", "Home")" class="dropdown-item">
+                        <span class="material-icons-round">home</span>
+                        Về trang chủ
+                    </a>
+                    <a href="@Url.Action("Logout", "Auth")" class="dropdown-item text-danger">
+                        <span class="material-icons-round">logout</span>
+                        Đăng xuất
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <span class="nav-section-title">TỔNG QUAN</span>
+
+                    <a href="@Url.Action("Dashboard", "ChuTro")" class="nav-item active">
+                        <span class="nav-icon"><span class="material-icons-round">dashboard</span></span>
+                        <span class="nav-text">Dashboard</span>
+                    </a>
+
+                    <a href="#" class="nav-item">
+                        <span class="nav-icon"><span class="material-icons-round">analytics</span></span>
+                        <span class="nav-text">Thống kê</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">QUẢN LÝ</span>
+
+                    <div class="nav-item has-submenu">
+                        <span class="nav-icon"><span class="material-icons-round">apartment</span></span>
+                        <span class="nav-text">Quản lý phòng</span>
+                        <span class="nav-arrow material-icons-round">chevron_right</span>
+                    </div>
+                    <div class="nav-submenu">
+                        <a href="#" class="nav-submenu-item">Danh sách phòng</a>
+                        <a href="#" class="nav-submenu-item">Thêm phòng mới</a>
+                        <a href="#" class="nav-submenu-item">Chờ duyệt <span class="submenu-badge">3</span></a>
+                    </div>
+
+                    <div class="nav-item has-submenu">
+                        <span class="nav-icon"><span class="material-icons-round">calendar_month</span></span>
+                        <span class="nav-text">Lịch xem phòng</span>
+                        <span class="nav-arrow material-icons-round">chevron_right</span>
+                    </div>
+                    <div class="nav-submenu">
+                        <a href="#" class="nav-submenu-item">Chờ xác nhận <span class="submenu-badge warning">5</span></a>
+                        <a href="#" class="nav-submenu-item">Hôm nay</a>
+                        <a href="#" class="nav-submenu-item">Tất cả lịch hẹn</a>
+                    </div>
+
+                    <a href="#" class="nav-item">
+                        <span class="nav-icon"><span class="material-icons-round">description</span></span>
+                        <span class="nav-text">Hợp đồng</span>
+                    </a>
+
+                    <a href="#" class="nav-item">
+                        <span class="nav-icon"><span class="material-icons-round">receipt_long</span></span>
+                        <span class="nav-text">Hóa đơn</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">TƯƠNG TÁC</span>
+
+                    <a href="#" class="nav-item">
+                        <span class="nav-icon"><span class="material-icons-round">chat</span></span>
+                        <span class="nav-text">Tin nhắn</span>
+                        @if (messageCount > 0)
+                        {
+                            <span class="nav-badge">@messageCount</span>
+                        }
+                    </a>
+
+                    <a href="#" class="nav-item">
+                        <span class="nav-icon"><span class="material-icons-round">build</span></span>
+                        <span class="nav-text">Yêu cầu sửa chữa</span>
+                        <span class="nav-badge warning">2</span>
+                    </a>
+
+                    <a href="#" class="nav-item">
+                        <span class="nav-icon"><span class="material-icons-round">star</span></span>
+                        <span class="nav-text">Đánh giá</span>
+                    </a>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="#" class="sidebar-footer-btn">
+                    <span class="material-icons-round">help_outline</span>
+                    <span>Trung tâm hỗ trợ</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="content-wrapper">
+                @RenderBody()
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="~/Scripts/chutro.js?v=2.0"></script>
+    <script src="~/Scripts/dashboard-charts.js?v=2.0"></script>
+    @RenderSection("scripts", required: false)
+</body>
+</html>
