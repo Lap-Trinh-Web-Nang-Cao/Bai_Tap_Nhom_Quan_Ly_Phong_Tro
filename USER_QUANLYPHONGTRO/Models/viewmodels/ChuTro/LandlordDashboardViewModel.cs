@@ -12,16 +12,16 @@ namespace USER_QUANLYPHONGTRO.Models.ViewModels.ChuTro
         public decimal RevenueThisMonth { get; set; }
 
         // Danh sách phòng chờ duyệt
-        public List<PendingRoomItem> PendingRooms { get; set; }
+        public List<PendingRoomItem> PendingRooms { get; set; } = new List<PendingRoomItem>();
 
         // Lịch xem hôm nay
-        public List<TodayScheduleItem> TodaySchedules { get; set; }
+        public List<TodayScheduleItem> TodaySchedules { get; set; } = new List<TodayScheduleItem>();
 
         // Tin nhắn gần đây
-        public List<RecentMessageItem> RecentMessages { get; set; }
+        public List<RecentMessageItem> RecentMessages { get; set; } = new List<RecentMessageItem>();
 
         // Yêu cầu sửa chữa
-        public List<MaintenanceRequestItem> MaintenanceRequests { get; set; }
+        public List<MaintenanceRequestItem> MaintenanceRequests { get; set; } = new List<MaintenanceRequestItem>();
     }
 
     // ----------------- CHILD MODELS -----------------
@@ -37,6 +37,8 @@ namespace USER_QUANLYPHONGTRO.Models.ViewModels.ChuTro
     {
         public string TenantName { get; set; }
         public string RoomName { get; set; }
+
+        // Controller đang dùng string nên giữ string
         public string ViewTime { get; set; }
         public string Status { get; set; }
     }

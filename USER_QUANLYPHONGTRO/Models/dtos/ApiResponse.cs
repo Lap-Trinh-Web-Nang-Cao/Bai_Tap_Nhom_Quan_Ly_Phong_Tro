@@ -11,34 +11,12 @@ namespace USER_QUANLYPHONGTRO.Models.Dtos
     /// <typeparam name="T">Type of data being returned</typeparam>
     public class ApiResponse<T>
     {
-        /// <summary>
-        /// Indicates whether the request was successful
-        /// </summary>
         public bool Success { get; set; }
-
-        /// <summary>
-        /// Message describing the result
-        /// </summary>
         public string Message { get; set; }
-
-        /// <summary>
-        /// The actual data payload
-        /// </summary>
         public T Data { get; set; }
-
-        /// <summary>
-        /// Error details if any
-        /// </summary>
         public object Errors { get; set; }
-
-        /// <summary>
-        /// HTTP status code
-        /// </summary>
         public int StatusCode { get; set; }
 
-        /// <summary>
-        /// Success response
-        /// </summary>
         public static ApiResponse<T> SuccessResult(T data, string message = "Success", int statusCode = 200)
         {
             return new ApiResponse<T>
@@ -50,9 +28,6 @@ namespace USER_QUANLYPHONGTRO.Models.Dtos
             };
         }
 
-        /// <summary>
-        /// Error response
-        /// </summary>
         public static ApiResponse<T> ErrorResult(string message, object errors = null, int statusCode = 400)
         {
             return new ApiResponse<T>
