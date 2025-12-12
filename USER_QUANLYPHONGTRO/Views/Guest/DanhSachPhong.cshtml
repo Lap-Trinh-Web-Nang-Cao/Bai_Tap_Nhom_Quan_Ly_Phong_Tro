@@ -1,0 +1,613 @@
+@model IEnumerable<USER_QUANLYPHONGTRO.Models.Dtos.Rooms.PhongDto>
+
+@{
+    ViewBag.Title = "Danh Sách Phòng Trọ";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section styles {
+    <style>
+        .room-list-container {
+            padding: 40px 0;
+        }
+
+        .page-banner {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 60px 20px;
+            text-align: center;
+            color: white;
+            margin: 0 -15px 40px;
+            border-radius: 0 0 20px 20px;
+        }
+
+        .page-banner h1 {
+            font-size: 42px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .page-banner p {
+            font-size: 18px;
+            opacity: 0.9;
+        }
+
+        .filter-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            margin-bottom: 40px;
+        }
+
+        .filter-card h3 {
+            margin: 0 0 25px;
+            color: #333;
+            font-size: 20px;
+            font-weight: 600;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .filter-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .filter-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .filter-group input,
+        .filter-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .filter-group input:focus,
+        .filter-group select:focus {
+            border-color: #667eea;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #666;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .results-info {
+            margin-bottom: 30px;
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .results-count {
+            font-size: 16px;
+            color: #555;
+        }
+
+        .results-count strong {
+            color: #667eea;
+            font-size: 20px;
+        }
+
+        .room-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        .room-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+
+        .room-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+        }
+
+        .room-image {
+            width: 100%;
+            height: 220px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 4em;
+            position: relative;
+        }
+
+        .room-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255,255,255,0.95);
+            color: #667eea;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .room-content {
+            padding: 25px;
+        }
+
+        .room-title {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 12px;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .room-address {
+            color: #777;
+            font-size: 0.9em;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: start;
+            gap: 8px;
+        }
+
+        .room-address i {
+            color: #667eea;
+            margin-top: 3px;
+        }
+
+        .room-rating {
+            color: #ffa500;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .room-rating i {
+            margin-right: 2px;
+        }
+
+        .room-rating-text {
+            color: #999;
+            margin-left: 8px;
+        }
+
+        .room-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 15px 0;
+            padding: 15px 0;
+            border-top: 1px solid #f0f0f0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .stat-item i {
+            color: #667eea;
+            font-size: 16px;
+        }
+
+        .room-price-section {
+            margin: 18px 0;
+        }
+
+        .room-price {
+            font-size: 1.8em;
+            font-weight: 800;
+            color: #e74c3c;
+            display: flex;
+            align-items: baseline;
+            gap: 5px;
+        }
+
+        .room-price-period {
+            font-size: 0.4em;
+            color: #999;
+            font-weight: 500;
+        }
+
+        .room-amenities {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 15px 0;
+        }
+
+        .amenity-badge {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            color: #1976d2;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .amenity-badge i {
+            font-size: 11px;
+        }
+
+        .view-details-btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 15px;
+            transition: all 0.3s;
+            margin-top: 15px;
+        }
+
+        .view-details-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(72, 187, 120, 0.3);
+            text-decoration: none;
+            color: white;
+        }
+
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            margin: 50px 0 30px;
+        }
+
+        .pagination {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .pagination a,
+        .pagination span {
+            padding: 10px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #555;
+            font-weight: 600;
+            transition: all 0.3s;
+            min-width: 45px;
+            text-align: center;
+        }
+
+        .pagination a:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .pagination .active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+
+        .no-rooms {
+            text-align: center;
+            padding: 80px 20px;
+            color: #999;
+        }
+
+        .no-rooms i {
+            font-size: 6em;
+            color: #e0e0e0;
+            margin-bottom: 25px;
+        }
+
+        .no-rooms h2 {
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .no-rooms p {
+            font-size: 16px;
+        }
+
+        .no-rooms a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .no-rooms a:hover {
+            text-decoration: underline;
+        }
+    </style>
+}
+
+<div class="room-list-container">
+    <!-- Page Banner -->
+    <div class="page-banner">
+        <h1><i class="fa fa-home"></i> Tìm Phòng Trọ Phù Hợp</h1>
+        <p>Khám phá hàng ngàn phòng trọ chất lượng với giá tốt nhất</p>
+    </div>
+
+    <div class="container">
+        <!-- Filter Section -->
+        <div class="filter-card">
+            <h3><i class="fa fa-filter"></i> Bộ Lọc Tìm Kiếm</h3>
+            <form method="get" action="@Url.Action("DanhSachPhong", "Guest")">
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label><i class="fa fa-search"></i> Từ Khóa</label>
+                        <input type="text" name="keyword" value="@ViewBag.Keyword" placeholder="Tìm kiếm phòng..." />
+                    </div>
+                    <div class="filter-group">
+                        <label><i class="fa fa-map-marker"></i> Quận/Huyện</label>
+                        <input type="text" name="district" value="@ViewBag.District" placeholder="VD: Quận 9, Thủ Đức" />
+                    </div>
+                    <div class="filter-group">
+                        <label><i class="fa fa-money-bill-wave"></i> Giá Tối Thiểu</label>
+                        <input type="number" name="minPrice" value="@ViewBag.MinPrice" placeholder="VD: 1000000" />
+                    </div>
+                    <div class="filter-group">
+                        <label><i class="fa fa-money-bill-wave"></i> Giá Tối Đa</label>
+                        <input type="number" name="maxPrice" value="@ViewBag.MaxPrice" placeholder="VD: 5000000" />
+                    </div>
+                </div>
+                <div class="filter-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fa fa-search"></i> Tìm Kiếm
+                    </button>
+                    <a href="@Url.Action("DanhSachPhong", "Guest")" class="btn btn-secondary">
+                        <i class="fa fa-redo"></i> Đặt Lại
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Results Info -->
+        @if (Model != null && Model.Any())
+        {
+            <div class="results-info">
+                <div class="results-count">
+                    <i class="fa fa-check-circle" style="color: #48bb78;"></i>
+                    Tìm thấy <strong>@ViewBag.TotalItems</strong> phòng trọ
+                </div>
+                <div style="color: #999; font-size: 14px;">
+                    Trang @ViewBag.CurrentPage / @ViewBag.TotalPages
+                </div>
+            </div>
+        }
+
+        <!-- Room Grid -->
+        @if (Model != null && Model.Any())
+        {
+            <div class="room-grid">
+                @foreach (var room in Model)
+                {
+                    <div class="room-card">
+                        <!-- Room Image -->
+                        <div class="room-image">
+                            <i class="fa fa-building"></i>
+                            @if (room.IsDuyet && !room.IsBiKhoa)
+                            {
+                                <span class="room-badge">✓ Đã Duyệt</span>
+                            }
+                        </div>
+
+                        <!-- Room Content -->
+                        <div class="room-content">
+                            <!-- Title -->
+                            <h3 class="room-title">@room.TieuDe</h3>
+
+                            <!-- Address -->
+                            @if (room.NhaTro != null && !string.IsNullOrEmpty(room.NhaTro.DiaChi))
+                            {
+                                <div class="room-address">
+                                    <i class="fa fa-map-marker-alt"></i>
+                                    <span>@room.NhaTro.DiaChi</span>
+                                </div>
+                            }
+
+                            <!-- Rating -->
+                            @if (room.DiemTrungBinh.HasValue && room.DiemTrungBinh > 0)
+                            {
+                                <div class="room-rating">
+                                    @for (int i = 0; i < (int)Math.Floor(room.DiemTrungBinh.Value); i++)
+                                    {
+                                        <i class="fa fa-star"></i>
+                                    }
+                                    @if (room.DiemTrungBinh.Value % 1 >= 0.5)
+                                    {
+                                        <i class="fa fa-star-half-alt"></i>
+                                    }
+                                    <span style="color: #333; font-weight: 600; margin-left: 5px;">
+                                        @room.DiemTrungBinh.Value.ToString("0.0")
+                                    </span>
+                                    <span class="room-rating-text">
+                                        (@room.SoLuongDanhGia đánh giá)
+                                    </span>
+                                </div>
+                            }
+
+                            <!-- Stats -->
+                            <div class="room-stats">
+                                @if (room.DienTich.HasValue)
+                                {
+                                    <div class="stat-item">
+                                        <i class="fa fa-expand-arrows-alt"></i>
+                                        <span>@room.DienTich.Value m²</span>
+                                    </div>
+                                }
+                                <div class="stat-item">
+                                    <i class="fa fa-users"></i>
+                                    <span>@room.SoNguoiToiDa người</span>
+                                </div>
+                                @if (room.TienCoc.HasValue)
+                                {
+                                    <div class="stat-item">
+                                        <i class="fa fa-hand-holding-usd"></i>
+                                        <span>Cọc: @room.TienCoc.Value.ToString("N0")đ</span>
+                                    </div>
+                                }
+                                <div class="stat-item">
+                                    <i class="fa fa-info-circle"></i>
+                                    <span>@room.TrangThai</span>
+                                </div>
+                            </div>
+
+                            <!-- Price -->
+                            <div class="room-price-section">
+                                <div class="room-price">
+                                    @room.GiaTien.ToString("N0")đ
+                                    <span class="room-price-period">/tháng</span>
+                                </div>
+                            </div>
+
+                            <!-- Amenities -->
+                            @if (room.TienIchList != null && room.TienIchList.Any())
+                            {
+                                <div class="room-amenities">
+                                    @foreach (var amenity in room.TienIchList.Take(4))
+                                    {
+                                        <span class="amenity-badge">
+                                            <i class="fa fa-check"></i> @amenity.Ten
+                                        </span>
+                                    }
+                                    @if (room.TienIchList.Count() > 4)
+                                    {
+                                        <span class="amenity-badge" style="background: #f0f0f0; color: #666;">
+                                            +@(room.TienIchList.Count() - 4) khác
+                                        </span>
+                                    }
+                                </div>
+                            }
+
+                            <!-- View Details Button -->
+                            <a href="@Url.Action("ChiTietPhong", "Guest", new { id = room.PhongId })" class="view-details-btn">
+                                <i class="fa fa-eye"></i> Xem Chi Tiết
+                            </a>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Pagination -->
+            @if (ViewBag.TotalPages > 1)
+            {
+                <div class="pagination-container">
+                    <div class="pagination">
+                        @if (ViewBag.CurrentPage > 1)
+                        {
+                            <a href="@Url.Action("DanhSachPhong", new { page = ViewBag.CurrentPage - 1, minPrice = ViewBag.MinPrice, maxPrice = ViewBag.MaxPrice, district = ViewBag.District, keyword = ViewBag.Keyword })">
+                                <i class="fa fa-chevron-left"></i> Trước
+                            </a>
+                        }
+
+                        @for (int i = Math.Max(1, ViewBag.CurrentPage - 2); i <= Math.Min(ViewBag.TotalPages, ViewBag.CurrentPage + 2); i++)
+                        {
+                            if (i == ViewBag.CurrentPage)
+                            {
+                                <span class="active">@i</span>
+                            }
+                            else
+                            {
+                                <a href="@Url.Action("DanhSachPhong", new { page = i, minPrice = ViewBag.MinPrice, maxPrice = ViewBag.MaxPrice, district = ViewBag.District, keyword = ViewBag.Keyword })">@i</a>
+                            }
+                        }
+
+                        @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+                        {
+                            <a href="@Url.Action("DanhSachPhong", new { page = ViewBag.CurrentPage + 1, minPrice = ViewBag.MinPrice, maxPrice = ViewBag.MaxPrice, district = ViewBag.District, keyword = ViewBag.Keyword })">
+                                Sau <i class="fa fa-chevron-right"></i>
+                            </a>
+                        }
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <!-- No Results -->
+            <div class="no-rooms">
+                <i class="fa fa-search"></i>
+                <h2>Không Tìm Thấy Phòng Trọ Phù Hợp</h2>
+                <p>
+                    Vui lòng thử lại với bộ lọc khác hoặc
+                    <a href="@Url.Action("DanhSachPhong", "Guest")">xem tất cả phòng</a>
+                </p>
+            </div>
+        }
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        // Auto-hide success messages
+        setTimeout(function () {
+            $('.alert').fadeOut('slow');
+        }, 3000);
+    </script>
+}

@@ -21,6 +21,12 @@ namespace USER_QUANLYPHONGTRO.Services
         {
             // Lấy base url API từ Web.config: <appSettings><add key="ApiBaseUrl" value="https://localhost:5001" /></appSettings>
             _baseUrl = ConfigurationManager.AppSettings["ApiBaseUrl"]?.TrimEnd('/');
+            
+            // Fallback to default if not configured
+            if (string.IsNullOrWhiteSpace(_baseUrl))
+            {
+                _baseUrl = "http://localhost:5101"; // Default backend API URL
+            }
         }
 
         private HttpClient CreateClient(string bearerToken = null)

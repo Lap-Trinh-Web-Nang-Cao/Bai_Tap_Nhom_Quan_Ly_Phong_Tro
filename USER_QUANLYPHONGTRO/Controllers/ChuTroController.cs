@@ -1,239 +1,244 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Web.Mvc;
+using USER_QUANLYPHONGTRO.Models.Dtos;
+using USER_QUANLYPHONGTRO.Models.Dtos.Rooms;
 using USER_QUANLYPHONGTRO.Models.ViewModels.ChuTro;
+using USER_QUANLYPHONGTRO.Services;
 
 namespace USER_QUANLYPHONGTRO.Controllers
 {
+    /// <summary>
+    /// Controller cho CHỦ TRỌ ĐÃ ĐĂNG NHẬP  
+    /// Yêu cầu: UserRole = "ChuTro"
+    /// Sử dụng API thật từ backend
+    /// </summary>
+    [Authorize]
     public class ChuTroController : Controller
     {
-        /// <summary>
-        /// Kiểm tra xem user có phải Chủ Trọ không
-        /// </summary>
+        private readonly ApiClient _apiClient;
+
+        public ChuTroController()
+        {
+            _apiClient = new ApiClient();
+        }
+
+        #region Helper Methods
+
         private bool CheckChuTroRole()
         {
             var role = Session["UserRole"]?.ToString();
             return role == "ChuTro";
         }
 
-        /// <summary>
-        /// GET: ChuTro - Chuyển hướng tới Dashboard
-        /// </summary>
-        public ActionResult Index()
+        private Guid? GetCurrentUserId()
         {
-            return RedirectToAction("Dashboard");
+            var userIdStr = Session["UserId"]?.ToString();
+            if (Guid.TryParse(userIdStr, out Guid userId))
+            {
+                return userId;
+            }
+            return null;
         }
 
-        /// <summary>
-        /// GET: ChuTro/Dashboard - Trang tổng quan chủ trọ
-        /// </summary>
-        public ActionResult Dashboard()
+        #endregion
+
+        #region Main Actions
+
+        public ActionResult Index()
         {
             if (!CheckChuTroRole())
             {
                 return RedirectToAction("Login", "Auth", new { type = "chutro" });
             }
 
-            var model = new LandlordDashboardViewModel
-            {
-                TotalRooms = 24,
-                ViewsToday = 156,
-                UpcomingSchedules = 8,
-                RevenueThisMonth = 45200000,
-                PendingRooms = GetPendingRooms(),
-                TodaySchedules = GetTodaySchedules(),
-                RecentMessages = GetRecentMessages(),
-                MaintenanceRequests = GetMaintenanceRequests()
-            };
-
-            ViewBag.Title = "Tổng quan";
-            return View(model);
+            return RedirectToAction("Dashboard");
         }
 
-        /// <summary>
-        /// GET: ChuTro/QuanLyPhong - Trang quản lý phòng
-        /// </summary>
-        public ActionResult QuanLyPhong()
+        public async Task<ActionResult> Dashboard()
         {
             if (!CheckChuTroRole())
             {
-                return RedirectToAction("Login", "Auth");
+                return RedirectToAction("Login", "Auth", new { type = "chutro" });
             }
 
-            ViewBag.Title = "Quản lý phòng";
-            ViewBag.Message = "Tính năng đang phát triển";
-            return View();
-        }
-
-        /// <summary>
-        /// Lấy danh sách phòng chờ duyệt (Mock Data)
-        /// </summary>
-        private List<PendingRoomItem> GetPendingRooms()
-        {
-            return new List<PendingRoomItem>
+            try
             {
-                new PendingRoomItem
-                {
-                    Name = "Phòng trọ ABC - Quận 1",
-                    ImageUrl = "/images/logo.png",
-                    SubmitDate = DateTime.Now.AddHours(-2)
-                },
-                new PendingRoomItem
-                {
-                    Name = "Phòng VIP Quận 3",
-                    ImageUrl = "/images/logo.png",
-                    SubmitDate = DateTime.Now.AddHours(-5)
-                },
-                new PendingRoomItem
-                {
-                    Name = "Căn hộ mini Quận 7",
-                    ImageUrl = "/images/logo.png",
-                    SubmitDate = DateTime.Now.AddDays(-1)
-                }
-            };
-        }
+                var roomsResponse = await _apiClient.GetAsync<dynamic>("/api/phong?pageSize=100");
+                var totalRooms = 0;
 
-        /// <summary>
-        /// Lấy danh sách lịch xem phòng hôm nay (Mock Data)
-        /// </summary>
-        private List<TodayScheduleItem> GetTodaySchedules()
-        {
-            return new List<TodayScheduleItem>
+                if (roomsResponse.Success && roomsResponse.Data != null)
+                {
+                    totalRooms = roomsResponse.Data.TotalCount ?? 0;
+                }
+
+                var model = new LandlordDashboardViewModel
+                {
+                    TotalRooms = totalRooms,
+                    ViewsToday = 156,
+                    UpcomingSchedules = 8,
+                    RevenueThisMonth = 45200000,
+                    PendingRooms = new List<PendingRoomItem>(),
+                    TodaySchedules = new List<TodayScheduleItem>(),
+                    RecentMessages = new List<RecentMessageItem>(),
+                    MaintenanceRequests = new List<MaintenanceRequestItem>()
+                };
+
+                ViewBag.Title = "Tổng quan";
+                ViewBag.ChuTroName = Session["HoTen"] ?? "Chủ trọ";
+                return View(model);
+            }
+            catch (Exception ex)
             {
-                new TodayScheduleItem
-                {
-                    TenantName = "Nguyễn Văn A",
-                    RoomName = "Phòng 101",
-                    ViewTime = "09:00",
-                    Status = "Chờ xác nhận"
-                },
-                new TodayScheduleItem
-                {
-                    TenantName = "Trần Thị B",
-                    RoomName = "Phòng 205",
-                    ViewTime = "14:00",
-                    Status = "Đã xác nhận"
-                },
-                new TodayScheduleItem
-                {
-                    TenantName = "Lê Văn C",
-                    RoomName = "Phòng 303",
-                    ViewTime = "16:30",
-                    Status = "Chờ xác nhận"
-                }
-            };
+                ViewBag.ErrorMessage = $"Lỗi: {ex.Message}";
+                return View(new LandlordDashboardViewModel());
+            }
         }
 
-        /// <summary>
-        /// Lấy danh sách tin nhắn gần đây (Mock Data)
-        /// </summary>
-        private List<RecentMessageItem> GetRecentMessages()
+        #endregion
+
+        #region Quản Lý Phòng
+
+        public async Task<ActionResult> QuanLyPhong(int page = 1, int pageSize = 20)
         {
-            return new List<RecentMessageItem>
+            if (!CheckChuTroRole())
             {
-                new RecentMessageItem
+                return RedirectToAction("Login", "Auth", new { type = "chutro" });
+            }
+
+            try
+            {
+                var response = await _apiClient.GetAsync<dynamic>($"/api/phong?page={page}&pageSize={pageSize}");
+
+                if (response.Success && response.Data != null)
                 {
-                    SenderName = "Nguyễn Văn A",
-                    Avatar = "/images/logo.png",
-                    Content = "Cho mình hỏi phòng còn trống không ạ?",
-                    Time = "5 phút trước"
-                },
-                new RecentMessageItem
-                {
-                    SenderName = "Trần Thị B",
-                    Avatar = "/images/logo.png",
-                    Content = "Khi nào có thể xem phòng được ạ?",
-                    Time = "15 phút trước"
-                },
-                new RecentMessageItem
-                {
-                    SenderName = "Lê Văn C",
-                    Avatar = "/images/logo.png",
-                    Content = "Phòng có gửi xe không anh?",
-                    Time = "1 giờ trước"
+                    var rooms = response.Data.Data ?? new List<PhongDto>();
+                    ViewBag.CurrentPage = page;
+                    ViewBag.TotalPages = response.Data.TotalPages ?? 1;
+                    ViewBag.TotalItems = response.Data.TotalCount ?? 0;
+                    ViewBag.Title = "Quản lý phòng";
+
+                    return View(rooms);
                 }
-            };
+                else
+                {
+                    ViewBag.ErrorMessage = response.Message ?? "Không thể tải danh sách phòng";
+                    return View(new List<PhongDto>());
+                }
+            }
+            catch (Exception ex)
+            {
+                ViewBag.ErrorMessage = $"Lỗi: {ex.Message}";
+                return View(new List<PhongDto>());
+            }
         }
 
-        /// <summary>
-        /// Lấy danh sách yêu cầu sửa chữa (Mock Data)
-        /// </summary>
-        private List<MaintenanceRequestItem> GetMaintenanceRequests()
+        public async Task<ActionResult> ChiTietPhong(Guid? id)
         {
-            return new List<MaintenanceRequestItem>
+            if (!CheckChuTroRole())
             {
-                new MaintenanceRequestItem
+                return RedirectToAction("Login", "Auth", new { type = "chutro" });
+            }
+
+            if (!id.HasValue)
+            {
+                return RedirectToAction("QuanLyPhong");
+            }
+
+            try
+            {
+                var response = await _apiClient.GetAsync<PhongDto>($"/api/phong/{id.Value}");
+
+                if (response.Success && response.Data != null)
                 {
-                    RoomName = "Phòng 101",
-                    ReporterName = "Nguyễn Văn A",
-                    Title = "Điều hòa hỏng",
-                    Priority = "Cao"
-                },
-                new MaintenanceRequestItem
-                {
-                    RoomName = "Phòng 205",
-                    ReporterName = "Trần Thị B",
-                    Title = "Bồn cầu bị tắc",
-                    Priority = "Trung bình"
-                },
-                new MaintenanceRequestItem
-                {
-                    RoomName = "Phòng 303",
-                    ReporterName = "Lê Văn C",
-                    Title = "Thay bóng đèn",
-                    Priority = "Thấp"
+                    ViewBag.Title = "Chi tiết phòng";
+                    return View(response.Data);
                 }
-            };
+                else
+                {
+                    return RedirectToAction("QuanLyPhong");
+                }
+            }
+            catch
+            {
+                return RedirectToAction("QuanLyPhong");
+            }
         }
 
-        /// <summary>
-        /// AJAX: Lấy dữ liệu biểu đồ doanh thu
-        /// </summary>
+        #endregion
+
+        #region AJAX
+
         [HttpGet]
         public JsonResult GetRevenueChart(string filter = "30days")
         {
+            if (!CheckChuTroRole())
+            {
+                return Json(new { success = false }, JsonRequestBehavior.AllowGet);
+            }
+
             var data = new
             {
+                success = true,
                 labels = new[] { "01/12", "05/12", "10/12", "15/12", "20/12", "25/12", "30/12" },
                 values = new[] { 5200000, 6800000, 5500000, 7200000, 6100000, 8300000, 7500000 }
             };
             return Json(data, JsonRequestBehavior.AllowGet);
         }
 
-        /// <summary>
-        /// AJAX: Lấy dữ liệu biểu đồ lượt xem
-        /// </summary>
         [HttpGet]
         public JsonResult GetViewsChart()
         {
+            if (!CheckChuTroRole())
+            {
+                return Json(new { success = false }, JsonRequestBehavior.AllowGet);
+            }
+
             var data = new
             {
+                success = true,
                 labels = new[] { "Phòng 101", "Phòng 205", "Phòng 303", "Phòng 402", "Phòng 501" },
                 values = new[] { 45, 38, 32, 28, 25 }
             };
             return Json(data, JsonRequestBehavior.AllowGet);
         }
 
-        /// <summary>
-        /// AJAX: Làm mới dữ liệu dashboard
-        /// </summary>
         [HttpGet]
-        public JsonResult RefreshData(string filter = "30days")
+        public async Task<JsonResult> RefreshData(string filter = "30days")
         {
             if (!CheckChuTroRole())
             {
-                return Json(new { success = false, message = "Unauthorized" }, JsonRequestBehavior.AllowGet);
+                return Json(new { success = false }, JsonRequestBehavior.AllowGet);
             }
 
-            var data = new
+            try
             {
-                success = true,
-                totalRooms = 24,
-                viewsToday = 156,
-                upcomingSchedules = 8,
-                revenueThisMonth = 45200000
-            };
-            return Json(data, JsonRequestBehavior.AllowGet);
+                var roomsResponse = await _apiClient.GetAsync<dynamic>("/api/phong?pageSize=1");
+                var totalRooms = 0;
+
+                if (roomsResponse.Success && roomsResponse.Data != null)
+                {
+                    totalRooms = roomsResponse.Data.TotalCount ?? 0;
+                }
+
+                var data = new
+                {
+                    success = true,
+                    totalRooms = totalRooms,
+                    viewsToday = 156,
+                    upcomingSchedules = 8,
+                    revenueThisMonth = 45200000
+                };
+                return Json(data, JsonRequestBehavior.AllowGet);
+            }
+            catch
+            {
+                return Json(new { success = false }, JsonRequestBehavior.AllowGet);
+            }
         }
+
+        #endregion
     }
 }

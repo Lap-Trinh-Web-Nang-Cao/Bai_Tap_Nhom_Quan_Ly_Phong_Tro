@@ -1,0 +1,720 @@
+﻿@model IEnumerable<USER_QUANLYPHONGTRO.Models.Dtos.Rooms.PhongDto>
+
+@{
+    ViewBag.Title = "Trang Chủ - TìmTrọ.vn - Tìm Phòng Trọ Nhanh Chóng";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    bool isLoggedIn = Session["UserName"] != null;
+    string userName = Session["HoTen"] as string ?? "";
+}
+
+@section styles {
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Hero Section */
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 120px 20px 100px;
+            text-align: center;
+            color: white;
+            margin: 0 -15px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="rgba(255,255,255,0.1)" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,122.7C672,117,768,139,864,138.7C960,139,1056,117,1152,106.7C1248,96,1344,96,1392,96L1440,96L144  0,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>') no-repeat bottom;
+            background-size: cover;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .hero-section h1 {
+            font-size: 56px;
+            font-weight: 900;
+            margin-bottom: 25px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            line-height: 1.2;
+        }
+
+        .hero-section .subtitle {
+            font-size: 24px;
+            opacity: 0.95;
+            margin-bottom: 50px;
+            line-height: 1.6;
+        }
+
+        .search-box {
+            background: white;
+            padding: 18px;
+            border-radius: 60px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.25);
+            display: flex;
+            gap: 15px;
+            max-width: 750px;
+            margin: 0 auto 30px;
+        }
+
+        .search-box input {
+            flex: 1;
+            border: none;
+            padding: 18px 30px;
+            font-size: 17px;
+            border-radius: 40px;
+            outline: none;
+        }
+
+        .search-box button {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+            border: none;
+            padding: 18px 45px;
+            border-radius: 40px;
+            font-weight: 700;
+            font-size: 17px;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .search-box button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(72,187,120,0.4);
+        }
+
+        .hero-badges {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 40px;
+        }
+
+        .hero-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 12px 25px;
+            border-radius: 30px;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Features Section */
+        .features-section {
+            padding: 80px 20px;
+            background: #f8f9fa;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .section-header h2 {
+            font-size: 42px;
+            font-weight: 800;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .section-header p {
+            font-size: 18px;
+            color: #666;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 40px 30px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            transition: all 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.12);
+        }
+
+        .feature-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 25px;
+            font-size: 36px;
+            color: white;
+        }
+
+        .feature-card h3 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .feature-card p {
+            color: #666;
+            line-height: 1.7;
+            font-size: 15px;
+        }
+
+        /* Demo Rooms Section */
+        .demo-rooms-section {
+            padding: 80px 20px;
+            background: white;
+        }
+
+        .rooms-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 35px;
+            max-width: 1200px;
+            margin: 0 auto 50px;
+        }
+
+        .room-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.08);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .room-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+        }
+
+        .room-image {
+            width: 100%;
+            height: 240px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 5em;
+            position: relative;
+        }
+
+        .room-badge {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: rgba(255,255,255,0.95);
+            padding: 8px 16px;
+            border-radius: 25px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #667eea;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .room-content {
+            padding: 25px;
+        }
+
+        .room-title {
+            font-size: 1.4em;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 12px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .room-location {
+            color: #888;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .room-price {
+            font-size: 2em;
+            font-weight: 800;
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 15px 0;
+        }
+
+        .room-features {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+            padding: 15px 0;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .view-btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 700;
+            margin-top: 15px;
+            transition: all 0.3s;
+        }
+
+        .view-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            text-decoration: none;
+            color: white;
+        }
+
+        .view-all-container {
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        .view-all-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 20px 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 18px;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+            transition: all 0.3s;
+        }
+
+        .view-all-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+            text-decoration: none;
+            color: white;
+        }
+
+        /* How It Works */
+        .how-it-works-section {
+            padding: 80px 20px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .steps-container {
+            max-width: 1200px;
+            margin: 50px auto 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+        }
+
+        .step-card {
+            text-align: center;
+            padding: 30px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+
+        .step-number {
+            width: 80px;
+            height: 80px;
+            background: white;
+            color: #f5576c;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            font-weight: 900;
+            margin: 0 auto 20px;
+        }
+
+        .step-card h3 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .step-card p {
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            padding: 100px 20px;
+            background: white;
+            text-align: center;
+        }
+
+        .cta-section h2 {
+            font-size: 48px;
+            font-weight: 800;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .cta-section p {
+            font-size: 20px;
+            color: #666;
+            margin-bottom: 50px;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 25px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .cta-btn {
+            padding: 20px 45px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 18px;
+            text-decoration: none;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .cta-btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .cta-btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+            text-decoration: none;
+            color: white;
+        }
+
+        .cta-btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 3px solid #667eea;
+        }
+
+        .cta-btn-secondary:hover {
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+        }
+
+        .no-rooms {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+    </style>
+}
+
+<!-- Hero Section -->
+<div class="hero-section">
+    <div class="hero-content">
+        <h1>🏠 Tìm Phòng Trọ Mơ Ước Của Bạn</h1>
+        <p class="subtitle">
+            Nền tảng tìm kiếm phòng trọ #1 Việt Nam<br />
+            Hàng ngàn phòng trọ chất lượng, giá tốt, thủ tục đơn giản
+        </p>
+
+        <form action="@Url.Action("DanhSachPhong", "Guest")" method="get" class="search-box">
+            <input type="text" name="keyword" placeholder="Nhập địa điểm, khu vực bạn muốn tìm..." />
+            <button type="submit">
+                <i class="fa fa-search"></i> Tìm Ngay
+            </button>
+        </form>
+
+        <div class="hero-badges">
+            <div class="hero-badge">
+                <i class="fa fa-check-circle"></i> 1000+ Phòng Trọ
+            </div>
+            <div class="hero-badge">
+                <i class="fa fa-shield-alt"></i> Đã Kiểm Duyệt
+            </div>
+            <div class="hero-badge">
+                <i class="fa fa-star"></i> Đánh Giá 5/5
+</div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Features Section -->
+    <div class="features-section">
+        <div class="section-header">
+            <h2>✨ Vì Sao Chọn Chúng Tôi?</h2>
+            <p>Những lý do khiến hàng ngàn người dùng tin tưởng</p>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fa fa-shield-check"></i>
+                </div>
+                <h3>Xác Minh Rõ Ràng</h3>
+                <p>100% phòng trọ được kiểm duyệt kỹ lưỡng. Thông tin chủ nhà đã xác thực. Đảm bảo an toàn cho người thuê</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fa fa-search-dollar"></i>
+                </div>
+                <h3>Giá Cả Minh Bạch</h3>
+                <p>Không phí ẩn. Giá niêm yết chính xác. So sánh dễ dàng. Tìm phòng phù hợp túi tiền</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fa fa-calendar-check"></i>
+                </div>
+                <h3>Đặt Lịch Online</h3>
+                <p>Đặt lịch xem phòng trực tuyến 24/7. Không cần gọi điện. Xác nhận tức thì</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fa fa-comments"></i>
+                </div>
+                <h3>Chat Trực Tiếp</h3>
+                <p>Nhắn tin với chủ trọ ngay lập tức. Tư vấn nhiệt tình. Phản hồi nhanh chóng</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fa fa-file-contract"></i>
+                </div>
+                <h3>Hợp Đồng Điện Tử</h3>
+                <p>Ký hợp đồng online an toàn. Quản lý hóa đơn tiện lợi. Lưu trữ vĩnh viễn</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fa fa-headset"></i>
+                </div>
+                <h3>Hỗ Trợ 24/7</h3>
+                <p>Đội ngũ CSKH chuyên nghiệp. Giải đáp mọi thắc mắc. Hỗ trợ tận tình</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Demo Rooms Section -->
+    <div class="demo-rooms-section">
+        <div class="section-header">
+            <h2>🏘️ Phòng Trọ Nổi Bật</h2>
+            <p>Những phòng trọ được yêu thích nhất tháng này</p>
+        </div>
+
+        @if (Model != null && Model.Any())
+        {
+            <div class="rooms-grid">
+                @foreach (var room in Model)
+                {
+                    <div class="room-card">
+                        <div class="room-image">
+                            <i class="fa fa-home"></i>
+                            @if (room.IsDuyet)
+                            {
+                                <span class="room-badge">✓ Đã Duyệt</span>
+                            }
+                        </div>
+                        <div class="room-content">
+                            <h3 class="room-title">@room.TieuDe</h3>
+
+                            @if (room.NhaTro != null)
+                            {
+                                <div class="room-location">
+                                    <i class="fa fa-map-marker-alt"></i>
+                                    <span>@room.NhaTro.DiaChi</span>
+                                </div>
+                            }
+
+                            @if (room.DiemTrungBinh.HasValue && room.DiemTrungBinh > 0)
+                            {
+                                <div style="color: #ffa500; font-size: 14px; margin-bottom: 10px;">
+                                    @for (int i = 0; i < (int)Math.Floor(room.DiemTrungBinh.Value); i++)
+                                    {
+                                        <i class="fa fa-star"></i>
+                                    }
+                                    <span style="color: #333; font-weight: 600; margin-left: 5px;">
+                                        @room.DiemTrungBinh.Value.ToString("0.0")
+                                    </span>
+                                </div>
+                            }
+
+                            <div class="room-price">
+                                @room.GiaTien.ToString("N0")đ
+                                <span style="font-size: 0.4em; color: #999;">/tháng</span>
+                            </div>
+
+                            <div class="room-features">
+                                @if (room.DienTich.HasValue)
+                                {
+                                    <div class="feature-item">
+                                        <i class="fa fa-expand-arrows-alt"></i>
+                                        <span>@room.DienTich m²</span>
+                                    </div>
+                                }
+                                <div class="feature-item">
+                                    <i class="fa fa-users"></i>
+                                    <span>@room.SoNguoiToiDa người</span>
+                                </div>
+                            </div>
+
+                            <a href="@Url.Action("ChiTietPhong", "Guest", new { id = room.PhongId })" class="view-btn">
+                                <i class="fa fa-eye"></i> Xem Chi Tiết
+                            </a>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="view-all-container">
+                <a href="@Url.Action("DanhSachPhong", "Guest")" class="view-all-btn">
+                    Xem Tất Cả @ViewBag.TotalRooms Phòng <i class="fa fa-arrow-right"></i>
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="no-rooms">
+                <p>Đang cập nhật thêm phòng trọ...</p>
+            </div>
+        }
+    </div>
+
+    <!-- How It Works -->
+    <div class="how-it-works-section">
+        <div class="section-header" style="color: white;">
+            <h2>📋 Cách Thức Hoạt Động</h2>
+            <p style="color: rgba(255,255,255,0.9);">Chỉ 4 bước đơn giản để tìm được phòng trọ ưng ý</p>
+        </div>
+
+        <div class="steps-container">
+            <div class="step-card">
+                <div class="step-number">1</div>
+                <h3>Đăng Ký Tài Khoản</h3>
+                <p>Tạo tài khoản miễn phí chỉ trong 2 phút. Xác thực email để bắt đầu</p>
+            </div>
+
+            <div class="step-card">
+                <div class="step-number">2</div>
+                <h3>Tìm Kiếm Phòng</h3>
+                <p>Sử dụng bộ lọc thông minh để tìm phòng theo khu vực, giá cả, tiện ích</p>
+            </div>
+
+            <div class="step-card">
+                <div class="step-number">3</div>
+                <h3>Đặt Lịch Xem Phòng</h3>
+                <p>Chọn thời gian phù hợp, đặt lịch online, nhận xác nhận ngay lập tức</p>
+            </div>
+
+            <div class="step-card">
+                <div class="step-number">4</div>
+                <h3>Ký Hợp Đồng</h3>
+                <p>Hoàn tất thủ tục online, ký hợp đồng điện tử, nhận phòng ngay</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- CTA Section -->
+    <div class="cta-section">
+        @if (!isLoggedIn)
+        {
+            <h2>🎉 Sẵn Sàng Tìm Phòng Trọ?</h2>
+            <p>Đăng ký ngay hôm nay để trải nghiệm đầy đủ tính năng</p>
+            <div class="cta-buttons">
+                <a href="@Url.Action("NguoiThue_Register", "Auth")" class="cta-btn cta-btn-primary">
+                    <i class="fa fa-user-plus"></i> Đăng Ký Người Thuê
+                </a>
+                <a href="@Url.Action("ChuTro_Register", "Auth")" class="cta-btn cta-btn-secondary">
+                    <i class="fa fa-building"></i> Đăng Ký Chủ Trọ
+                </a>
+            </div>
+        }
+        else
+        {
+            <h2>👋 Chào mừng trở lại, @userName!</h2>
+            <p>Khám phá thêm nhiều phòng trọ tuyệt vời ngay bây giờ</p>
+            <div class="cta-buttons">
+                <a href="@Url.Action("DanhSachPhong", "Guest")" class="cta-btn cta-btn-primary">
+                    <i class="fa fa-search"></i> Khám Phá Ngay
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        // Scroll Animation
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver(function (entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // Animate cards
+        document.querySelectorAll('.room-card, .feature-card, .step-card').forEach(card => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(30px)';
+            card.style.transition = 'all 0.6s ease-out';
+            observer.observe(card);
+        });
+    </script>
+}

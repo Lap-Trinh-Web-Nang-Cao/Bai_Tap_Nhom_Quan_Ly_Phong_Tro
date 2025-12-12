@@ -1,164 +1,249 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Web.Mvc;
-using USER_QUANLYPHONGTRO.Models.ViewModels.KhachThue; // NEW
+using USER_QUANLYPHONGTRO.Models.Dtos.Rooms;
+using USER_QUANLYPHONGTRO.Models.ViewModels.KhachThue;
+using USER_QUANLYPHONGTRO.Services;
 
 namespace USER_QUANLYPHONGTRO.Controllers
 {
+    /// <summary>
+    /// Controller cho NGƯỜI THUÊ ĐÃ ĐĂNG NHẬP
+    /// Yêu cầu: UserRole = "KhachThue"
+    /// Khách vãng lai xem phòng → dùng GuestController
+    /// </summary>
+    //[Authorize] // Tất cả actions đều yêu cầu login
     public class KhachThueController : Controller
     {
-        // NEW: kiểm tra có đúng role Người thuê không
+        private readonly ApiClient _apiClient;
+
+        public KhachThueController()
+        {
+            _apiClient = new ApiClient();
+        }
+
+        // Kiểm tra có đúng role Người thuê không
         private bool CheckKhachThueRole()
         {
             var role = Session["UserRole"]?.ToString();
             return role == "KhachThue";
         }
 
-        // NEW: GET: /KhachThue → chuyển thẳng về Dashboard
-        public ActionResult Index()
+        // GET: /KhachThue → Welcome page
+        public async Task<ActionResult> Index()
         {
-            return RedirectToAction("Dashboard");
-        }
+            //if (!CheckKhachThueRole())
+            //{
+            //    return RedirectToAction("Login", "Auth", new { type = "nguoithue" });
+            //}
 
-        // NEW: Dashboard người thuê
-        public ActionResult Dashboard()
-        {
-            if (!CheckKhachThueRole())
+            try
             {
-                // Nếu chưa login hoặc không phải Khách thuê → về trang Login cho người thuê
-                return RedirectToAction("Login", "Auth", new { type = "nguoithue" });
+                // Get featured rooms (top rated, limit 6)
+                var response = await _apiClient.GetAsync<dynamic>("/api/phong?pageSize=6&sortBy=rating");
+
+                if (response.Success && response.Data != null)
+                {
+                    ViewBag.FeaturedRooms = response.Data.Data ?? new List<PhongDto>();
+                }
+                else
+                {
+                    ViewBag.FeaturedRooms = new List<PhongDto>();
+                }
+            }
+            catch
+            {
+                ViewBag.FeaturedRooms = new List<PhongDto>();
             }
 
+            // Show welcome page
+            ViewBag.Title = "Chào mừng";
+            return View();
+        }
+
+        // Dashboard người thuê
+        public ActionResult Dashboard()
+        {
+            //if (!CheckKhachThueRole())
+            //{
+            //    return RedirectToAction("Login", "Auth", new { type = "nguoithue" });
+            //}
+
+            // TODO: Lấy dữ liệu thực từ API khi có endpoints
             var model = new TenantDashboardViewModel
             {
                 TenNguoiThue = Session["HoTen"] as string ?? "Người thuê",
                 Email = Session["UserName"] as string ?? "unknown@example.com",
 
-                SoPhongDaXem = 12,
-                SoLichHenSapToi = 2,
-                SoHopDongDangHieuLuc = 1,
-                SoHoaDonChuaThanhToan = 1,
+                // Tạm thời để 0, chờ API
+                SoPhongDaXem = 0,
+                SoLichHenSapToi = 0,
+                SoHopDongDangHieuLuc = 0,
+                SoHoaDonChuaThanhToan = 0,
 
-                LichHenSapToi = GetMockLichHenSapToi(),
-                HopDongHieuLuc = GetMockHopDong(),
-                HoaDonGanDay = GetMockHoaDonGanDay()
+                // Empty lists - chờ API endpoints
+                LichHenSapToi = new List<TenantScheduleItem>(),
+                HopDongHieuLuc = null,
+                HoaDonGanDay = new List<TenantInvoiceItem>()
             };
 
             ViewBag.Title = "Trang chủ người thuê";
             return View(model);
         }
 
-        // NEW: Lịch đã đặt
+        // Danh sách phòng (lấy từ API - số ít)
+        public async Task<ActionResult> DanhSachPhong()
+        {
+            //if (!CheckKhachThueRole())
+            //{
+            //    return RedirectToAction("Login", "Auth", new { type = "nguoithue" });
+            //}
+
+            try
+            {
+                // Lấy 4 phòng demo
+                var response = await _apiClient.GetAsync<dynamic>("/api/phong?pageSize=4");
+
+                if (response.Success && response.Data != null)
+                {
+                    var rooms = response.Data.Data ?? new List<PhongDto>();
+                    ViewBag.Title = "Danh sách phòng";
+                    return View(rooms);
+                }
+
+                return View(new List<PhongDto>());
+            }
+            catch
+            {
+                return View(new List<PhongDto>());
+            }
+        }
+
+        // Chi tiết phòng
+        public async Task<ActionResult> ChiTietPhong(Guid? id)
+        {
+            //if (!CheckKhachThueRole())
+            //{
+            //    return RedirectToAction("Login", "Auth", new { type = "nguoithue" });
+            //}
+
+            if (!id.HasValue)
+            {
+                return RedirectToAction("DanhSachPhong");
+            }
+
+            try
+            {
+                var response = await _apiClient.GetAsync<PhongDto>($"/api/phong/{id.Value}");
+
+                if (response.Success && response.Data != null)
+                {
+                    ViewBag.Title = "Chi tiết phòng";
+                    return View(response.Data);
+                }
+
+                return RedirectToAction("DanhSachPhong");
+            }
+            catch
+            {
+                return RedirectToAction("DanhSachPhong");
+            }
+        }
+
+        // Đặt phòng (Form)
+        public ActionResult DatPhong(Guid? roomId)
+        {
+            //if (!CheckKhachThueRole())
+            //{
+            //    return RedirectToAction("Login", "Auth", new { type = "nguoithue" });
+            //}
+
+            if (!roomId.HasValue)
+            {
+                return RedirectToAction("DanhSachPhong");
+            }
+
+            ViewBag.RoomId = roomId;
+            ViewBag.Title = "Đặt lịch xem phòng";
+            return View();
+        }
+
+        // Xử lý đặt phòng
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult DatPhong(FormCollection form)
+        {
+            //if (!CheckKhachThueRole())
+            //{
+            //    return RedirectToAction("Login", "Auth", new { type = "nguoithue" });
+            //}
+
+            try
+            {
+                // TODO: Gọi API POST /api/datphong
+                TempData["SuccessMessage"] = "Đặt lịch xem phòng thành công! Chủ trọ sẽ liên hệ với bạn sớm.";
+                return RedirectToAction("LichDaDat");
+            }
+            catch
+            {
+                TempData["ErrorMessage"] = "Có lỗi xảy ra. Vui lòng thử lại.";
+                return RedirectToAction("DanhSachPhong");
+            }
+        }
+
+        // Lịch đã đặt
         public ActionResult LichDaDat()
         {
-            if (!CheckKhachThueRole())
-            {
-                return RedirectToAction("Login", "Auth", new { type = "nguoithue" });
-            }
+            //if (!CheckKhachThueRole())
+            //{
+            //    return RedirectToAction("Login", "Auth", new { type = "nguoithue" });
+            //}
 
-            var list = GetMockLichHenSapToi(); // tạm dùng lại mock
+            // TODO: Lấy từ API /api/datphong khi có
+            var list = new List<TenantScheduleItem>();
             return View(list);
         }
 
-        // NEW: Hợp đồng
+        // Hợp đồng
         public ActionResult HopDong()
         {
-            if (!CheckKhachThueRole())
-            {
-                return RedirectToAction("Login", "Auth", new { type = "nguoithue" });
-            }
+            //if (!CheckKhachThueRole())
+            //{
+            //    return RedirectToAction("Login", "Auth", new { type = "nguoithue" });
+            //}
 
-            var list = GetMockHopDong();
+            // TODO: Lấy từ API /api/hopdong khi có
+            var list = new List<TenantContractItem>();
             return View(list);
         }
 
-        // NEW: Hóa đơn
+        // Hóa đơn
         public ActionResult HoaDon()
         {
-            if (!CheckKhachThueRole())
-            {
-                return RedirectToAction("Login", "Auth", new { type = "nguoithue" });
-            }
+            //if (!CheckKhachThueRole())
+            //{
+            //    return RedirectToAction("Login", "Auth", new { type = "nguoithue" });
+            //}
 
-            var list = GetMockHoaDonGanDay();
+            // TODO: Lấy từ API /api/hoadon khi có
+            var list = new List<TenantInvoiceItem>();
             return View(list);
         }
 
-        // NEW: Thông tin cá nhân (placeholder)
+        // Thông tin cá nhân
         public ActionResult ThongTinCaNhan()
         {
-            if (!CheckKhachThueRole())
-            {
-                return RedirectToAction("Login", "Auth", new { type = "nguoithue" });
-            }
+            //if (!CheckKhachThueRole())
+            //{
+            //    return RedirectToAction("Login", "Auth", new { type = "nguoithue" });
+            //}
 
             ViewBag.Message = "Trang thông tin cá nhân đang được phát triển.";
             return View();
         }
 
-        // ================== MOCK DATA ==================
-
-        private List<TenantScheduleItem> GetMockLichHenSapToi()
-        {
-            return new List<TenantScheduleItem>
-            {
-                new TenantScheduleItem
-                {
-                    DatPhongId = Guid.NewGuid(),
-                    TenPhong = "Phòng trọ sinh viên gần UTE",
-                    TenChuTro = "Nguyễn Văn A",
-                    ThoiGianXem = DateTime.Now.AddHours(3),
-                    TrangThai = "Đã xác nhận"
-                },
-                new TenantScheduleItem
-                {
-                    DatPhongId = Guid.NewGuid(),
-                    TenPhong = "Căn hộ mini 1PN",
-                    TenChuTro = "Trần Thị B",
-                    ThoiGianXem = DateTime.Now.AddDays(1).AddHours(2),
-                    TrangThai = "Chờ xác nhận"
-                }
-            };
-        }
-
-        private List<TenantContractItem> GetMockHopDong()
-        {
-            return new List<TenantContractItem>
-            {
-                new TenantContractItem
-                {
-                    HopDongId = Guid.NewGuid(),
-                    TenPhong = "Phòng trọ sinh viên gần UTE",
-                    DiaChi = "123 Lê Văn Việt, Q.9",
-                    NgayBatDau = DateTime.Now.AddMonths(-2),
-                    NgayKetThuc = DateTime.Now.AddMonths(10),
-                    GiaThue = 1800000,
-                    TrangThai = "Đang hiệu lực"
-                }
-            };
-        }
-
-        private List<TenantInvoiceItem> GetMockHoaDonGanDay()
-        {
-            return new List<TenantInvoiceItem>
-            {
-                new TenantInvoiceItem
-                {
-                    HoaDonId = Guid.NewGuid(),
-                    ThangNam = "11/2025",
-                    TongTien = 2100000,
-                    TrangThaiThanhToan = "Đã thanh toán",
-                    NgayThanhToan = DateTime.Now.AddDays(-5)
-                },
-                new TenantInvoiceItem
-                {
-                    HoaDonId = Guid.NewGuid(),
-                    ThangNam = "12/2025",
-                    TongTien = 2200000,
-                    TrangThaiThanhToan = "Chưa thanh toán",
-                    NgayThanhToan = null
-                }
-            };
-        }
+        // ================== HELPER METHODS (if needed) ==================
+        // Mock data removed - Use real API calls instead
     }
 }

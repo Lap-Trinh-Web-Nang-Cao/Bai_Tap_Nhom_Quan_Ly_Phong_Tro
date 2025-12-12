@@ -1,0 +1,274 @@
+@{
+    ViewBag.Title = "Đặt Lịch Xem Phòng";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var roomId = ViewBag.RoomId;
+}
+
+@section styles {
+    <style>
+        .booking-page {
+            padding: 30px 0;
+            background: #f5f7fa;
+            min-height: 100vh;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+            padding: 50px 30px;
+            border-radius: 15px;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .page-header h1 {
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 15px;
+        }
+
+        .booking-form-container {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 15px;
+        }
+
+        .form-group label i {
+            color: #48bb78;
+            margin-right: 8px;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            border-color: #48bb78;
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(72, 187, 120, 0.1);
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .info-box {
+            background: #e6fffa;
+            border-left: 5px solid #48bb78;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .info-box h4 {
+            color: #2d3748;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .info-box ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .info-box li {
+            padding: 8px 0;
+            color: #2d3748;
+        }
+
+        .info-box li i {
+            color: #48bb78;
+            margin-right: 10px;
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+            padding: 16px 40px;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(72, 187, 120, 0.3);
+        }
+
+        .btn-cancel {
+            background: white;
+            color: #718096;
+            padding: 16px 40px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 15px;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+        }
+
+        .btn-cancel:hover {
+            border-color: #cbd5e0;
+            background: #f7fafc;
+            text-decoration: none;
+        }
+
+        .required {
+            color: #e74c3c;
+            margin-left: 3px;
+        }
+    </style>
+}
+
+<div class="booking-page">
+    <div class="container">
+        <div class="page-header">
+            <h1><i class="fa fa-calendar-check"></i> Đặt Lịch Xem Phòng</h1>
+            <p>Điền thông tin để đặt lịch xem phòng trực tiếp</p>
+        </div>
+
+        <div class="booking-form-container">
+            <!-- Info Box -->
+            <div class="info-box">
+                <h4><i class="fa fa-info-circle"></i> Lưu ý khi đặt lịch</h4>
+                <ul>
+                    <li><i class="fa fa-check"></i> Chọn thời gian phù hợp với lịch trình của bạn</li>
+                    <li><i class="fa fa-check"></i> Chủ trọ sẽ xác nhận lịch trong vòng 24h</li>
+                    <li><i class="fa fa-check"></i> Bạn sẽ nhận được thông báo qua email và SMS</li>
+                    <li><i class="fa fa-check"></i> Có thể hủy lịch trước 2h nếu có việc đột xuất</li>
+                </ul>
+            </div>
+
+            <form method="post" action="@Url.Action("DatPhong", "KhachThue")">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="roomId" value="@roomId" />
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>
+                            <i class="fa fa-user"></i>
+                            Họ và tên <span class="required">*</span>
+                        </label>
+                        <input type="text" name="hoTen" required placeholder="Nhập họ tên của bạn" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <i class="fa fa-phone"></i>
+                            Số điện thoại <span class="required">*</span>
+                        </label>
+                        <input type="tel" name="sdt" required placeholder="Nhập số điện thoại" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <i class="fa fa-envelope"></i>
+                        Email <span class="required">*</span>
+                    </label>
+                    <input type="email" name="email" required placeholder="Nhập email của bạn" />
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>
+                            <i class="fa fa-calendar-alt"></i>
+                            Ngày xem phòng <span class="required">*</span>
+                        </label>
+                        <input type="date" name="ngayXem" required min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <i class="fa fa-clock"></i>
+                            Giờ xem phòng <span class="required">*</span>
+                        </label>
+                        <select name="gioXem" required>
+                            <option value="">-- Chọn giờ --</option>
+                            <option value="08:00">08:00 - 09:00</option>
+                            <option value="09:00">09:00 - 10:00</option>
+                            <option value="10:00">10:00 - 11:00</option>
+                            <option value="11:00">11:00 - 12:00</option>
+                            <option value="14:00">14:00 - 15:00</option>
+                            <option value="15:00">15:00 - 16:00</option>
+                            <option value="16:00">16:00 - 17:00</option>
+                            <option value="17:00">17:00 - 18:00</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <i class="fa fa-comment"></i>
+                        Ghi chú (tùy chọn)
+                    </label>
+                    <textarea name="ghiChu" placeholder="Nhập ghi chú nếu có (yêu cầu đặc biệt, câu hỏi...)"></textarea>
+                </div>
+
+                <button type="submit" class="btn-submit">
+                    <i class="fa fa-paper-plane"></i>
+                    Xác Nhận Đặt Lịch
+                </button>
+
+                <a href="@Url.Action("DanhSachPhong", "KhachThue")" class="btn-cancel">
+                    <i class="fa fa-times"></i> Hủy
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        // Auto fill user info if available
+        document.addEventListener('DOMContentLoaded', function() {
+            // You can pre-fill form with user data from session here
+            console.log('Booking form ready');
+        });
+    </script>
+}

@@ -1,7 +1,222 @@
-﻿
+﻿@model List<USER_QUANLYPHONGTRO.Models.ViewModels.KhachThue.TenantScheduleViewModel>
+
 @{
-    ViewBag.Title = "LichDaDat";
+    ViewBag.Title = "Lịch Hẹn Của Tôi";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>LichDaDat</h2>
+@section styles {
+    <style>
+        .schedule-page {
+            padding: 30px 0;
+            background: #f5f7fa;
+            min-height: 100vh;
+        }
 
+        .page-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+        .page-header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .schedule-list {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .schedule-item {
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+
+        .schedule-item:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.15);
+        }
+
+        .schedule-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 20px;
+        }
+
+        .schedule-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+
+        .schedule-address {
+            color: #718096;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .schedule-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            background: #f7fafc;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .detail-item i {
+            color: #667eea;
+            font-size: 18px;
+        }
+
+        .detail-item strong {
+            color: #4a5568;
+            font-size: 14px;
+        }
+
+        .badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .badge-success {
+            background: rgba(72, 187, 120, 0.15);
+            color: #48bb78;
+        }
+
+        .badge-warning {
+            background: rgba(246, 173, 85, 0.15);
+            color: #f6ad55;
+        }
+
+        .badge-danger {
+            background: rgba(252, 129, 129, 0.15);
+            color: #fc8181;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        .empty-state i {
+            font-size: 80px;
+            color: #e2e8f0;
+            margin-bottom: 20px;
+        }
+
+        .empty-state h3 {
+            color: #718096;
+            margin-bottom: 15px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 14px 30px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+            text-decoration: none;
+            color: white;
+        }
+    </style>
+}
+
+<div class="schedule-page">
+    <div class="container">
+        <div class="page-header">
+            <h1><i class="fa fa-calendar-alt"></i> Lịch Hẹn Của Tôi</h1>
+            <p>Quản lý các lịch hẹn xem phòng của bạn</p>
+        </div>
+
+        <div class="schedule-list">
+            @if (Model != null && Model.Any())
+            {
+                foreach (var item in Model)
+                {
+                    <div class="schedule-item">
+                        <div class="schedule-header">
+                            <div>
+                                <div class="schedule-title">@item.TieuDePhong</div>
+                                <div class="schedule-address">
+                                    <i class="fa fa-map-marker-alt"></i>
+                                    <span>@item.DiaChi</span>
+                                </div>
+                            </div>
+                            <span class="badge badge-@(item.TrangThai == "Đã xác nhận" ? "success" : item.TrangThai == "Chờ xác nhận" ? "warning" : "danger")">
+                                @item.TrangThai
+                            </span>
+                        </div>
+
+                        <div class="schedule-details">
+                            <div class="detail-item">
+                                <i class="fa fa-clock"></i>
+                                <div>
+                                    <strong>Thời gian:</strong><br />
+                                    @item.ThoiGianHen.ToString("dd/MM/yyyy HH:mm")
+                                </div>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fa fa-phone"></i>
+                                <div>
+                                    <strong>Liên hệ:</strong><br />
+                                    @item.SdtChuTro
+                                </div>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fa fa-sticky-note"></i>
+                                <div>
+                                    <strong>Ghi chú:</strong><br />
+                                    @(string.IsNullOrEmpty(item.GhiChu) ? "Không có" : item.GhiChu)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="empty-state">
+                    <i class="fa fa-calendar-times"></i>
+                    <h3>Chưa có lịch hẹn nào</h3>
+                    <p>Hãy tìm phòng trọ và đặt lịch xem phòng ngay!</p>
+                    <a href="@Url.Action("DanhSachPhong", "Guest")" class="btn-primary">
+                        <i class="fa fa-search"></i> Tìm Phòng Ngay
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>

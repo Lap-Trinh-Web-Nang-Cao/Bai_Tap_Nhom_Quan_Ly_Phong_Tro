@@ -1,0 +1,63 @@
+Database QuanLyPhongTro already exists.
+Changed database context to 'QuanLyPhongTro'.
+VaiTroId    TenVaiTro                                                                                           
+----------- ----------------------------------------------------------------------------------------------------
+          1 Admin                                                                                               
+          2 ChuTro                                                                                              
+          3 NguoiThue                                                                                           
+
+(3 rows affected)
+NguoiDungId                          Email                                                                                                                                                                                                                                                           DienThoai                                          VaiTroId    CreatedAt                                    
+------------------------------------ --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- -------------------------------------------------- ----------- ---------------------------------------------
+79B244AF-6DFB-4927-8871-1303F4295B5E chutro7@example.com                                                                                                                                                                                                                                             0910000007                                                   2            2025-12-12 00:42:07.2818727 +07:00
+7860AFE0-97B7-464C-891B-2DC8DDE5DF66 chutro8@example.com                                                                                                                                                                                                                                             0910000008                                                   2            2025-12-12 00:42:07.2823954 +07:00
+51E56F47-EFF9-44D5-BABD-3A12ED11C457 chutro2@example.com                                                                                                                                                                                                                                             0910000002                                                   2            2025-12-12 00:42:07.2699001 +07:00
+EDE5BB9A-769B-4373-B227-62F51A6542CE nguoithue4@example.com                                                                                                                                                                                                                                          0940000004                                                   3            2025-12-12 00:42:07.3223852 +07:00
+DB0C16C8-F1D4-4A52-8C27-66498B4FFFDD chutro3@example.com                                                                                                                                                                                                                                             0910000003                                                   2            2025-12-12 00:42:07.2736853 +07:00
+
+(5 rows affected)
+PhongId                              TieuDe                                                                                                                                                                                                                                                     GiaTien              TrangThai                                          IsDuyet IsBiKhoa NguoiDuyet                           ThoiGianDuyet                                
+------------------------------------ ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- -------------------- -------------------------------------------------- ------- -------- ------------------------------------ ---------------------------------------------
+2B36DEB0-33AE-4E65-9D9C-10D993DCAE11 Ph√≤ng studio cao c·∫•p                                                                                                                                                                                                                                                 4500000 con_trong                                                1        0 2B536DC2-92DB-4642-BD79-B0D94B0FDC94            2025-12-12 19:09:50.4650672 +07:00
+7AA2E501-AB7F-4078-9759-1A73DDB10F98 PhÚng tr? cÛ g·c l?ng, r?ng r„i                                                                                                                                                                                                                                         2200000 con_trong                                                1        0 2B536DC2-92DB-4642-BD79-B0D94B0FDC94            2025-12-12 00:42:07.8771363 +07:00
+A7BD4D44-7383-4A33-AFEC-233E3A8F3A38 PhÚng tr? m?i x‚y, full n?i th?t                                                                                                                                                                                                                                        2500000 con_trong                                                1        0 2B536DC2-92DB-4642-BD79-B0D94B0FDC94            2025-12-12 00:42:07.8474183 +07:00
+40B530C0-AC54-4F1E-8567-2B60EE17A1C8 Ph√≤ng tr·ªç n·ªØ only, an ninh                                                                                                                                                                                                                                         1900000 con_trong                                                1        0 2B536DC2-92DB-4642-BD79-B0D94B0FDC94            2025-12-12 19:09:50.4660677 +07:00
+31159D0B-89BB-4785-A9CE-32ED56C5BCDB PhÚng gi· r? cho sinh viÍn                                                                                                                                                                                                                                              1300000 con_trong                                                1        0 2B536DC2-92DB-4642-BD79-B0D94B0FDC94            2025-12-12 00:42:07.8644166 +07:00
+
+(5 rows affected)
+BaoCaoId                             LoaiThucThe                                        TieuDe                                                                                                                                                                                                                                                                                                       TrangThai                                          ThoiGianBaoCao                               
+------------------------------------ -------------------------------------------------- ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -------------------------------------------------- ---------------------------------------------
+
+(0 rows affected)
+Complete: DB QuanLyPhongTro created/updated (admin columns ensured and SPs recreated).
+? Admin already exists
+
+(10 rows affected)
+
+(10 rows affected)
+? Created 10 Ch? Tr?
+? Created 5 Ngu?i ThuÍ
+========================================
+
+(5 rows affected)
+? Created 5 Nh‡ Tr? (auto-assigned to random Ch? Tr?)
+Created sample Phong successfully.
+Linked TienIch to Phong successfully.
+Created sample reviews successfully.
+========================================
+? INSERT SAMPLE DATA COMPLETED!
+========================================
+?? Summary:
+  - Admin: 1
+  - Ch? Tr?: 10 (auto-generated)
+  - Ngu?i ThuÍ: 5 (auto-generated)
+  - Nh‡ Tr?: 5 (randomly assigned)
+  - PhÚng: 8 (all approved)
+  - Ti?n Õch: 14+
+  - PhongTienIch: Linked
+  - Reviews: Sample data
+========================================
+?? TIP: Mu?n thay d?i s? lu?ng?
+    TÏm dÚng: @TotalChuTro = 10
+    TÏm dÚng: @TotalNguoiThue = 5
+========================================

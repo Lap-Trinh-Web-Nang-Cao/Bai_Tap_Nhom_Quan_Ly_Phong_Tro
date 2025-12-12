@@ -1,7 +1,489 @@
-﻿
+﻿@model USER_QUANLYPHONGTRO.Models.ViewModels.KhachThue.TenantDashboardViewModel
+
 @{
-    ViewBag.Title = "Dashboard";
+    ViewBag.Title = "Dashboard - Người Thuê";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>Dashboard</h2>
+@section styles {
+    <style>
+        .tenant-dashboard {
+            padding: 30px 0;
+            background: #f5f7fa;
+            min-height: 100vh;
+        }
 
+        .dashboard-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .dashboard-header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .dashboard-header p {
+            opacity: 0.9;
+            font-size: 16px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: var(--accent-color);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        }
+
+        .stat-card.blue::before { background: #667eea; }
+        .stat-card.green::before { background: #48bb78; }
+        .stat-card.orange::before { background: #f6ad55; }
+        .stat-card.red::before { background: #fc8181; }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card.blue .stat-icon {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+        }
+
+        .stat-card.green .stat-icon {
+            background: rgba(72, 187, 120, 0.1);
+            color: #48bb78;
+        }
+
+        .stat-card.orange .stat-icon {
+            background: rgba(246, 173, 85, 0.1);
+            color: #f6ad55;
+        }
+
+        .stat-card.red .stat-icon {
+            background: rgba(252, 129, 129, 0.1);
+            color: #fc8181;
+        }
+
+        .stat-number {
+            font-size: 36px;
+            font-weight: 800;
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            color: #718096;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .content-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .section-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #2d3748;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title i {
+            color: #667eea;
+        }
+
+        .view-all-link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .view-all-link:hover {
+            color: #764ba2;
+            text-decoration: none;
+        }
+
+        .list-item {
+            padding: 20px;
+            border-bottom: 1px solid #e2e8f0;
+            transition: all 0.3s;
+        }
+
+        .list-item:last-child {
+            border-bottom: none;
+        }
+
+        .list-item:hover {
+            background: #f7fafc;
+            padding-left: 25px;
+        }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 10px;
+        }
+
+        .item-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 5px;
+        }
+
+        .item-meta {
+            color: #718096;
+            font-size: 14px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge-success {
+            background: rgba(72, 187, 120, 0.15);
+            color: #48bb78;
+        }
+
+        .badge-warning {
+            background: rgba(246, 173, 85, 0.15);
+            color: #f6ad55;
+        }
+
+        .badge-danger {
+            background: rgba(252, 129, 129, 0.15);
+            color: #fc8181;
+        }
+
+        .badge-info {
+            background: rgba(102, 126, 234, 0.15);
+            color: #667eea;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #a0aec0;
+        }
+
+        .empty-state i {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            color: #718096;
+            margin-bottom: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+            text-decoration: none;
+            color: white;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .quick-action-btn {
+            background: white;
+            border: 2px solid #e2e8f0;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            text-decoration: none;
+            color: #2d3748;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .quick-action-btn i {
+            font-size: 32px;
+            color: #667eea;
+        }
+
+        .quick-action-btn:hover {
+            border-color: #667eea;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            text-decoration: none;
+            color: #667eea;
+        }
+    </style>
+}
+
+<div class="tenant-dashboard">
+    <div class="container">
+        <!-- Dashboard Header -->
+        <div class="dashboard-header">
+            <h1>👋 Xin chào, @Model.TenNguoiThue!</h1>
+            <p>Chào mừng bạn quay trở lại. Đây là tổng quan hoạt động của bạn.</p>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <a href="@Url.Action("DanhSachPhong", "Guest")" class="quick-action-btn">
+                <i class="fa fa-search"></i>
+                <span>Tìm Phòng</span>
+            </a>
+            <a href="@Url.Action("LichDaDat", "KhachThue")" class="quick-action-btn">
+                <i class="fa fa-calendar-alt"></i>
+                <span>Lịch Hẹn</span>
+            </a>
+            <a href="@Url.Action("HopDong", "KhachThue")" class="quick-action-btn">
+                <i class="fa fa-file-contract"></i>
+                <span>Hợp Đồng</span>
+            </a>
+            <a href="@Url.Action("HoaDon", "KhachThue")" class="quick-action-btn">
+                <i class="fa fa-receipt"></i>
+                <span>Hóa Đơn</span>
+            </a>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card blue">
+                <div class="stat-icon">
+                    <i class="fa fa-eye"></i>
+                </div>
+                <div class="stat-number">@Model.SoPhongDaXem</div>
+                <div class="stat-label">Phòng Đã Xem</div>
+            </div>
+
+            <div class="stat-card green">
+                <div class="stat-icon">
+                    <i class="fa fa-calendar-check"></i>
+                </div>
+                <div class="stat-number">@Model.SoLichHenSapToi</div>
+                <div class="stat-label">Lịch Hẹn Sắp Tới</div>
+            </div>
+
+            <div class="stat-card orange">
+                <div class="stat-icon">
+                    <i class="fa fa-file-contract"></i>
+                </div>
+                <div class="stat-number">@Model.SoHopDongDangHieuLuc</div>
+                <div class="stat-label">Hợp Đồng Hiệu Lực</div>
+            </div>
+
+            <div class="stat-card red">
+                <div class="stat-icon">
+                    <i class="fa fa-exclamation-circle"></i>
+                </div>
+                <div class="stat-number">@Model.SoHoaDonChuaThanhToan</div>
+                <div class="stat-label">Hóa Đơn Chưa Thanh Toán</div>
+            </div>
+        </div>
+
+        <!-- Lịch Hẹn Sắp Tới -->
+        <div class="content-section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fa fa-calendar-alt"></i>
+                    Lịch Hẹn Sắp Tới
+                </h2>
+                <a href="@Url.Action("LichDaDat", "KhachThue")" class="view-all-link">
+                    Xem tất cả <i class="fa fa-arrow-right"></i>
+                </a>
+            </div>
+
+            @if (Model.LichHenSapToi != null && Model.LichHenSapToi.Any())
+            {
+                foreach (var lich in Model.LichHenSapToi)
+                {
+                    <div class="list-item">
+                        <div class="item-header">
+                            <div>
+                                <div class="item-title">@lich.TieuDePhong</div>
+                                <div class="item-meta">
+                                    <span><i class="fa fa-map-marker-alt"></i> @lich.DiaChi</span>
+                                    <span><i class="fa fa-clock"></i> @lich.ThoiGianHen.ToString("dd/MM/yyyy HH:mm")</span>
+                                </div>
+                            </div>
+                            <span class="badge badge-@(lich.TrangThai == "Đã xác nhận" ? "success" : "warning")">
+                                @lich.TrangThai
+                            </span>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="empty-state">
+                    <i class="fa fa-calendar-times"></i>
+                    <h3>Chưa có lịch hẹn nào</h3>
+                    <p>Đặt lịch xem phòng để bắt đầu</p>
+                    <a href="@Url.Action("DanhSachPhong", "Guest")" class="btn-primary">
+                        <i class="fa fa-search"></i> Tìm Phòng Ngay
+                    </a>
+                </div>
+            }
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <!-- Hợp Đồng -->
+                <div class="content-section">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <i class="fa fa-file-contract"></i>
+                            Hợp Đồng Hiệu Lực
+                        </h2>
+                        <a href="@Url.Action("HopDong", "KhachThue")" class="view-all-link">
+                            Chi tiết <i class="fa fa-arrow-right"></i>
+                        </a>
+                    </div>
+
+                    @if (Model.HopDongHieuLuc != null)
+                    {
+                        <div class="list-item">
+                            <div class="item-title">@Model.HopDongHieuLuc.TieuDePhong</div>
+                            <div class="item-meta">
+                                <span><i class="fa fa-calendar"></i> @Model.HopDongHieuLuc.NgayBatDau.ToString("dd/MM/yyyy") - @Model.HopDongHieuLuc.NgayKetThuc.ToString("dd/MM/yyyy")</span>
+                            </div>
+                            <div style="margin-top: 15px;">
+                                <strong style="font-size: 20px; color: #e74c3c;">@Model.HopDongHieuLuc.GiaThue.ToString("N0")đ</strong>
+                                <span style="color: #718096;">/tháng</span>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="empty-state">
+                            <i class="fa fa-file"></i>
+                            <p>Chưa có hợp đồng</p>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <!-- Hóa Đơn Gần Đây -->
+                <div class="content-section">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <i class="fa fa-receipt"></i>
+                            Hóa Đơn Gần Đây
+                        </h2>
+                        <a href="@Url.Action("HoaDon", "KhachThue")" class="view-all-link">
+                            Xem tất cả <i class="fa fa-arrow-right"></i>
+                        </a>
+                    </div>
+
+                    @if (Model.HoaDonGanDay != null && Model.HoaDonGanDay.Any())
+                    {
+                        foreach (var hd in Model.HoaDonGanDay)
+                        {
+                            <div class="list-item">
+                                <div class="item-header">
+                                    <div>
+                                        <div class="item-title">Hóa đơn tháng @hd.ThangNam</div>
+                                        <div class="item-meta">
+                                            <span><i class="fa fa-money-bill-wave"></i> @hd.TongTien.ToString("N0")đ</span>
+                                        </div>
+                                    </div>
+                                    <span class="badge badge-@(hd.TrangThai == "Đã thanh toán" ? "success" : "danger")">
+                                        @hd.TrangThai
+                                    </span>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="empty-state">
+                            <i class="fa fa-receipt"></i>
+                            <p>Chưa có hóa đơn</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

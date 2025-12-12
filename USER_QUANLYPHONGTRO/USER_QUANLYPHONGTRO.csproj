@@ -123,6 +123,7 @@
     <Compile Include="Controllers\AuthController.cs" />
     <Compile Include="Controllers\ChatController.cs" />
     <Compile Include="Controllers\ChuTroController.cs" />
+    <Compile Include="Controllers\GuestController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\KhachThueController.cs" />
     <Compile Include="Global.asax.cs">
@@ -266,6 +267,8 @@
     <Content Include="Views\ChuTro\Dashboard.cshtml" />
     <Content Include="Views\Shared\_ChutroLayout.cshtml" />
     <Content Include="Views\KhachThue\Dashboard.cshtml" />
+    <Content Include="Views\Guest\ChiTietPhong.cshtml" />
+    <Content Include="Views\Guest\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -315,7 +318,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>61407</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>https://localhost:44320/</IISUrl>
+          <IISUrl>https://localhost:44320</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>

@@ -1,7 +1,261 @@
-﻿
+﻿@model USER_QUANLYPHONGTRO.Models.ViewModels.KhachThue.TenantContractViewModel
+
 @{
-    ViewBag.Title = "HopDong";
+    ViewBag.Title = "Hợp Đồng Của Tôi";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>HopDong</h2>
+@section styles {
+    <style>
+        .contract-page {
+            padding: 30px 0;
+            background: #f5f7fa;
+            min-height: 100vh;
+        }
 
+        .page-header {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+            padding: 40px 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+        .page-header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .contract-card {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+        }
+
+        .contract-header {
+            text-align: center;
+            padding-bottom: 30px;
+            border-bottom: 3px solid #e2e8f0;
+            margin-bottom: 30px;
+        }
+
+        .contract-title {
+            font-size: 28px;
+            font-weight: 800;
+            color: #2d3748;
+            margin-bottom: 15px;
+        }
+
+        .contract-id {
+            color: #718096;
+            font-size: 14px;
+        }
+
+        .contract-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .detail-group {
+            padding: 20px;
+            background: #f7fafc;
+            border-radius: 10px;
+            border-left: 4px solid #48bb78;
+        }
+
+        .detail-label {
+            font-size: 13px;
+            color: #718096;
+            font-weight: 600;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .detail-value {
+            font-size: 18px;
+            color: #2d3748;
+            font-weight: 700;
+        }
+
+        .detail-value.price {
+            font-size: 32px;
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .contract-terms {
+            background: #f7fafc;
+            padding: 25px;
+            border-radius: 10px;
+            margin-top: 30px;
+        }
+
+        .contract-terms h3 {
+            color: #2d3748;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        .contract-terms ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .contract-terms li {
+            padding: 12px 0;
+            border-bottom: 1px solid #e2e8f0;
+            color: #4a5568;
+        }
+
+        .contract-terms li:last-child {
+            border-bottom: none;
+        }
+
+        .contract-terms li i {
+            color: #48bb78;
+            margin-right: 10px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 100px 20px;
+        }
+
+        .empty-state i {
+            font-size: 100px;
+            color: #e2e8f0;
+            margin-bottom: 30px;
+        }
+
+        .empty-state h3 {
+            color: #718096;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 14px 30px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+            text-decoration: none;
+            color: white;
+        }
+
+        .badge {
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 700;
+            display: inline-block;
+        }
+
+        .badge-success {
+            background: rgba(72, 187, 120, 0.15);
+            color: #48bb78;
+        }
+    </style>
+}
+
+<div class="contract-page">
+    <div class="container">
+        <div class="page-header">
+            <h1><i class="fa fa-file-contract"></i> Hợp Đồng Của Tôi</h1>
+            <p>Quản lý hợp đồng thuê phòng trọ</p>
+        </div>
+
+        <div class="contract-card">
+            @if (Model != null)
+            {
+                <div class="contract-header">
+                    <div class="contract-title">@Model.TieuDePhong</div>
+                    <div class="contract-id">Mã HĐ: #HD@(Model.NgayBatDau.ToString("yyyyMMdd"))</div>
+                    <div style="margin-top: 15px;">
+                        <span class="badge badge-success">
+                            <i class="fa fa-check-circle"></i> Đang hiệu lực
+                        </span>
+                    </div>
+                </div>
+
+                <div class="contract-details">
+                    <div class="detail-group">
+                        <div class="detail-label">Giá thuê</div>
+                        <div class="detail-value price">@Model.GiaThue.ToString("N0")đ</div>
+                        <div style="color: #718096; font-size: 13px; margin-top: 5px;">/tháng</div>
+                    </div>
+
+                    <div class="detail-group">
+                        <div class="detail-label">Ngày bắt đầu</div>
+                        <div class="detail-value">@Model.NgayBatDau.ToString("dd/MM/yyyy")</div>
+                    </div>
+
+                    <div class="detail-group">
+                        <div class="detail-label">Ngày kết thúc</div>
+                        <div class="detail-value">@Model.NgayKetThuc.ToString("dd/MM/yyyy")</div>
+                    </div>
+
+                    <div class="detail-group">
+                        <div class="detail-label">Thời hạn</div>
+                        <div class="detail-value">
+                            @((Model.NgayKetThuc - Model.NgayBatDau).Days / 30) tháng
+                        </div>
+                    </div>
+                </div>
+
+                <div class="contract-terms">
+                    <h3>📜 Điều khoản hợp đồng</h3>
+                    <ul>
+                        <li><i class="fa fa-check"></i> Thanh toán tiền thuê vào ngày 05 hàng tháng</li>
+                        <li><i class="fa fa-check"></i> Tiền cọc: @(Model.GiaThue.ToString("N0"))đ (hoàn trả khi kết thúc hợp đồng)</li>
+                        <li><i class="fa fa-check"></i> Tiền điện: Theo đồng hồ (đơn giá 3,500đ/kWh)</li>
+                        <li><i class="fa fa-check"></i> Tiền nước: 100,000đ/người/tháng</li>
+                        <li><i class="fa fa-check"></i> Không được chuyển nhượng phòng khi chưa có sự đồng ý của chủ trọ</li>
+                        <li><i class="fa fa-check"></i> Giữ gìn vệ sinh, trật tự trong phòng và khu vực chung</li>
+                        <li><i class="fa fa-check"></i> Thanh toán đầy đủ các khoản phí phát sinh trong thời gian thuê</li>
+                        <li><i class="fa fa-check"></i> Báo trước ít nhất 1 tháng khi muốn chấm dứt hợp đồng</li>
+                    </ul>
+                </div>
+
+                <div style="margin-top: 30px; padding-top: 30px; border-top: 2px solid #e2e8f0; text-align: center;">
+                    <p style="color: #718096; margin-bottom: 20px;">
+                        <i class="fa fa-info-circle"></i> 
+                        Nếu có thắc mắc về hợp đồng, vui lòng liên hệ chủ trọ hoặc bộ phận hỗ trợ
+                    </p>
+                    <a href="@Url.Action("Dashboard", "KhachThue")" class="btn-primary">
+                        <i class="fa fa-arrow-left"></i> Quay lại Dashboard
+                    </a>
+                </div>
+            }
+            else
+            {
+                <div class="empty-state">
+                    <i class="fa fa-file-signature"></i>
+                    <h3>Chưa có hợp đồng nào</h3>
+                    <p style="color: #718096; margin-bottom: 30px;">
+                        Sau khi đặt phòng thành công, hợp đồng sẽ được hiển thị tại đây
+                    </p>
+                    <a href="@Url.Action("DanhSachPhong", "Guest")" class="btn-primary">
+                        <i class="fa fa-search"></i> Tìm Phòng Ngay
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>

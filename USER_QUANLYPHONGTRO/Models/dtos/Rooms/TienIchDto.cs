@@ -7,5 +7,7 @@ namespace USER_QUANLYPHONGTRO.Models.Dtos.Rooms
 {
     public class TienIchDto
     {
+        public int TienIchId { get; set; }
+        public string Ten { get; set; }
     }
 }

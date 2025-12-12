@@ -1,7 +1,322 @@
-﻿
+﻿@model IEnumerable<USER_QUANLYPHONGTRO.Models.Dtos.Rooms.PhongDto>
+
 @{
-    ViewBag.Title = "DanhSachPhong";
+    ViewBag.Title = "Phòng Trọ Đề Xuất";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>DanhSachPhong</h2>
+@section styles {
+    <style>
+        .rooms-page {
+            padding: 30px 0;
+            background: #f5f7fa;
+            min-height: 100vh;
+        }
 
+        .page-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 50px 30px;
+            border-radius: 15px;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .page-header h1 {
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 15px;
+        }
+
+        .page-header p {
+            font-size: 18px;
+            opacity: 0.95;
+        }
+
+        .rooms-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .room-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            transition: all 0.4s;
+        }
+
+        .room-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+
+        .room-image {
+            width: 100%;
+            height: 220px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 5em;
+            position: relative;
+        }
+
+        .room-badge {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: rgba(255,255,255,0.95);
+            padding: 8px 16px;
+            border-radius: 25px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .room-content {
+            padding: 25px;
+        }
+
+        .room-title {
+            font-size: 1.4em;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 12px;
+            min-height: 60px;
+        }
+
+        .room-address {
+            color: #718096;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .room-price {
+            font-size: 2.2em;
+            font-weight: 800;
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 20px 0;
+        }
+
+        .room-stats {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+            padding: 20px 0;
+            border-top: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #4a5568;
+            font-size: 14px;
+        }
+
+        .stat-item i {
+            color: #667eea;
+        }
+
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 700;
+            text-align: center;
+            text-decoration: none;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-view {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-view:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+            text-decoration: none;
+            color: white;
+        }
+
+        .btn-book {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+        }
+
+        .btn-book:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(72, 187, 120, 0.3);
+            text-decoration: none;
+            color: white;
+        }
+
+        .info-box {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+        }
+
+        .info-box h3 {
+            color: #2d3748;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .info-box ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .info-box li {
+            padding: 10px 0;
+            color: #4a5568;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .info-box li:last-child {
+            border-bottom: none;
+        }
+
+        .info-box li i {
+            color: #48bb78;
+            margin-right: 10px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        .empty-state i {
+            font-size: 80px;
+            color: #e2e8f0;
+            margin-bottom: 20px;
+        }
+    </style>
+}
+
+<div class="rooms-page">
+    <div class="container">
+        <div class="page-header">
+            <h1><i class="fa fa-star"></i> Phòng Trọ Đề Xuất Cho Bạn</h1>
+            <p>Những căn phòng chất lượng phù hợp với nhu cầu của bạn</p>
+        </div>
+
+        <!-- Info Box -->
+        <div class="info-box">
+            <h3><i class="fa fa-lightbulb"></i> Hướng Dẫn Đặt Phòng</h3>
+            <ul>
+                <li><i class="fa fa-check-circle"></i> Xem thông tin chi tiết phòng và đánh giá từ người thuê khác</li>
+                <li><i class="fa fa-check-circle"></i> Click "Đặt Lịch" để đăng ký xem phòng trực tiếp</li>
+                <li><i class="fa fa-check-circle"></i> Chủ trọ sẽ liên hệ xác nhận thời gian trong 24h</li>
+                <li><i class="fa fa-check-circle"></i> Đến xem phòng và ký hợp đồng nếu hài lòng</li>
+            </ul>
+        </div>
+
+        @if (Model != null && Model.Any())
+        {
+            <div class="rooms-grid">
+                @foreach (var room in Model)
+                {
+                    <div class="room-card">
+                        <div class="room-image">
+                            <i class="fa fa-home"></i>
+                            @if (room.IsDuyet)
+                            {
+                                <span class="room-badge">✓ Đã Duyệt</span>
+                            }
+                        </div>
+
+                        <div class="room-content">
+                            <h3 class="room-title">@room.TieuDe</h3>
+
+                            @if (room.NhaTro != null)
+                            {
+                                <div class="room-address">
+                                    <i class="fa fa-map-marker-alt"></i>
+                                    <span>@room.NhaTro.DiaChi</span>
+                                </div>
+                            }
+
+                            @if (room.DiemTrungBinh.HasValue && room.DiemTrungBinh > 0)
+                            {
+                                <div style="color: #ffa500; margin-bottom: 10px;">
+                                    @for (int i = 0; i < (int)Math.Floor(room.DiemTrungBinh.Value); i++)
+                                    {
+                                        <i class="fa fa-star"></i>
+                                    }
+                                    <span style="color: #2d3748; font-weight: 600; margin-left: 8px;">
+                                        @room.DiemTrungBinh.Value.ToString("0.0")
+                                    </span>
+                                </div>
+                            }
+
+                            <div class="room-price">
+                                @room.GiaTien.ToString("N0")đ
+                                <span style="font-size: 0.4em; color: #718096;">/tháng</span>
+                            </div>
+
+                            <div class="room-stats">
+                                @if (room.DienTich.HasValue)
+                                {
+                                    <div class="stat-item">
+                                        <i class="fa fa-expand-arrows-alt"></i>
+                                        <span>@room.DienTich m²</span>
+                                    </div>
+                                }
+                                <div class="stat-item">
+                                    <i class="fa fa-users"></i>
+                                    <span>@room.SoNguoiToiDa người</span>
+                                </div>
+                            </div>
+
+                            <div class="btn-group">
+                                <a href="@Url.Action("ChiTietPhong", "KhachThue", new { id = room.PhongId })" class="btn btn-view">
+                                    <i class="fa fa-eye"></i> Chi Tiết
+                                </a>
+                                <a href="@Url.Action("DatPhong", "KhachThue", new { roomId = room.PhongId })" class="btn btn-book">
+                                    <i class="fa fa-calendar-check"></i> Đặt Lịch
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div style="text-align: center; margin-top: 40px;">
+                <a href="@Url.Action("DanhSachPhong", "Guest")" class="btn btn-view" style="padding: 15px 40px; display: inline-flex; align-items: center; gap: 10px;">
+                    <i class="fa fa-search"></i> Xem Thêm Nhiều Phòng Khác
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="empty-state">
+                <i class="fa fa-home"></i>
+                <h3>Đang cập nhật phòng trọ...</h3>
+                <p>Vui lòng quay lại sau</p>
+            </div>
+        }
+    </div>
+</div>

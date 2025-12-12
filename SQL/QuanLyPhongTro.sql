@@ -3,10 +3,6 @@
  - Ensure admin-related columns exist BEFORE creating stored procedures
  - Idempotent: checks existence before CREATE / ALTER
 **********************************************************************/
-
-USE master;
-GO
-
 -- Create DB if missing
 IF NOT EXISTS (SELECT 1 FROM sys.databases WHERE name = N'QuanLyPhongTro')
 BEGIN
@@ -930,9 +926,429 @@ GO
 PRINT N'Complete: DB QuanLyPhongTro created/updated (admin columns ensured and SPs recreated).';
 GO
 
+-- =========================================================
+-- INSERT SAMPLE DATA - Dữ liệu mẫu cho hệ thống
+-- =========================================================
 
-INSERT INTO NguoiDung (VaiTroId)
-    VALUES(2)
+-- ========== THÊM QUẬN HUYỆN VÀ PHƯỜNG ==========
+IF NOT EXISTS (SELECT 1 FROM dbo.QuanHuyen WHERE Ten = N'Quận 9')
+    INSERT INTO dbo.QuanHuyen (Ten) VALUES (N'Quận 9');
+IF NOT EXISTS (SELECT 1 FROM dbo.QuanHuyen WHERE Ten = N'Thủ Đức')
+    INSERT INTO dbo.QuanHuyen (Ten) VALUES (N'Thủ Đức');
+IF NOT EXISTS (SELECT 1 FROM dbo.QuanHuyen WHERE Ten = N'Bình Thạnh')
+    INSERT INTO dbo.QuanHuyen (Ten) VALUES (N'Bình Thạnh');
+IF NOT EXISTS (SELECT 1 FROM dbo.QuanHuyen WHERE Ten = N'Gò Vấp')
+    INSERT INTO dbo.QuanHuyen (Ten) VALUES (N'Gò Vấp');
 
-INSERT INTO NhaTro (ChuTroId, TieuDe)
-    VALUES('482d7eb8-ee43-4fc4-a02d-a653363c11df','Test load')
+DECLARE @QuanId_Q9 INT = (SELECT QuanHuyenId FROM dbo.QuanHuyen WHERE Ten = N'Quận 9');
+DECLARE @QuanId_ThuDuc INT = (SELECT QuanHuyenId FROM dbo.QuanHuyen WHERE Ten = N'Thủ Đức');
+DECLARE @QuanId_BinhThanh INT = (SELECT QuanHuyenId FROM dbo.QuanHuyen WHERE Ten = N'Bình Thạnh');
+
+IF @QuanId_Q9 IS NOT NULL
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM dbo.Phuong WHERE Ten = N'Phường Linh Trung' AND QuanHuyenId = @QuanId_Q9)
+        INSERT INTO dbo.Phuong (QuanHuyenId, Ten) VALUES (@QuanId_Q9, N'Phường Linh Trung');
+    IF NOT EXISTS (SELECT 1 FROM dbo.Phuong WHERE Ten = N'Phường Linh Chiểu' AND QuanHuyenId = @QuanId_Q9)
+        INSERT INTO dbo.Phuong (QuanHuyenId, Ten) VALUES (@QuanId_Q9, N'Phường Linh Chiểu');
+END
+
+-- ========== THÊM TIỆN ÍCH ==========
+IF NOT EXISTS (SELECT 1 FROM dbo.TienIch WHERE Ten = N'Máy lạnh') INSERT INTO dbo.TienIch (Ten) VALUES (N'Máy lạnh');
+IF NOT EXISTS (SELECT 1 FROM dbo.TienIch WHERE Ten = N'Máy nước nóng') INSERT INTO dbo.TienIch (Ten) VALUES (N'Máy nước nóng');
+IF NOT EXISTS (SELECT 1 FROM dbo.TienIch WHERE Ten = N'Giường') INSERT INTO dbo.TienIch (Ten) VALUES (N'Giường');
+IF NOT EXISTS (SELECT 1 FROM dbo.TienIch WHERE Ten = N'Tủ quần áo') INSERT INTO dbo.TienIch (Ten) VALUES (N'Tủ quần áo');
+IF NOT EXISTS (SELECT 1 FROM dbo.TienIch WHERE Ten = N'Bàn học') INSERT INTO dbo.TienIch (Ten) VALUES (N'Bàn học');
+IF NOT EXISTS (SELECT 1 FROM dbo.TienIch WHERE Ten = N'Chỗ để xe') INSERT INTO dbo.TienIch (Ten) VALUES (N'Chỗ để xe');
+IF NOT EXISTS (SELECT 1 FROM dbo.TienIch WHERE Ten = N'Camera an ninh') INSERT INTO dbo.TienIch (Ten) VALUES (N'Camera an ninh');
+IF NOT EXISTS (SELECT 1 FROM dbo.TienIch WHERE Ten = N'Bếp riêng') INSERT INTO dbo.TienIch (Ten) VALUES (N'Bếp riêng');
+IF NOT EXISTS (SELECT 1 FROM dbo.TienIch WHERE Ten = N'WC riêng') INSERT INTO dbo.TienIch (Ten) VALUES (N'WC riêng');
+IF NOT EXISTS (SELECT 1 FROM dbo.TienIch WHERE Ten = N'Gác lửng') INSERT INTO dbo.TienIch (Ten) VALUES (N'Gác lửng');
+IF NOT EXISTS (SELECT 1 FROM dbo.TienIch WHERE Ten = N'Thang máy') INSERT INTO dbo.TienIch (Ten) VALUES (N'Thang máy');
+IF NOT EXISTS (SELECT 1 FROM dbo.TienIch WHERE Ten = N'Giờ giấc tự do') INSERT INTO dbo.TienIch (Ten) VALUES (N'Giờ giấc tự do');
+IF NOT EXISTS (SELECT 1 FROM dbo.TienIch WHERE Ten = N'Cửa vân tay') INSERT INTO dbo.TienIch (Ten) VALUES (N'Cửa vân tay');
+IF NOT EXISTS (SELECT 1 FROM dbo.TienIch WHERE Ten = N'Bảo vệ 24/7') INSERT INTO dbo.TienIch (Ten) VALUES (N'Bảo vệ 24/7');
+GO
+
+-- ========== TẠO NGƯỜI DÙNG MẪU (TỰ ĐỘNG) ==========
+DECLARE @VaiTroAdmin INT = (SELECT VaiTroId FROM dbo.VaiTro WHERE TenVaiTro = N'Admin');
+DECLARE @VaiTroChuTro INT = (SELECT VaiTroId FROM dbo.VaiTro WHERE TenVaiTro = N'ChuTro');
+DECLARE @VaiTroNguoiThue INT = (SELECT VaiTroId FROM dbo.VaiTro WHERE TenVaiTro = N'NguoiThue');
+
+-- ===== CẤU HÌNH: Thay đổi số lượng ở đây =====
+DECLARE @TotalChuTro INT = 10;        -- Số chủ trọ muốn tạo
+DECLARE @TotalNguoiThue INT = 5;      -- Số người thuê muốn tạo
+-- ============================================
+
+-- 1. TẠO ADMIN
+DECLARE @AdminId UNIQUEIDENTIFIER;
+IF NOT EXISTS (SELECT 1 FROM dbo.NguoiDung WHERE Email = N'admin@example.com')
+BEGIN
+    SET @AdminId = NEWID();
+    INSERT INTO dbo.NguoiDung (NguoiDungId, Email, DienThoai, PasswordHash, VaiTroId, IsEmailXacThuc)
+    VALUES (@AdminId, N'admin@example.com', N'0901234567', N'HashedPassword123', @VaiTroAdmin, 1);
+    
+    INSERT INTO dbo.HoSoNguoiDung (NguoiDungId, HoTen)
+    VALUES (@AdminId, N'Administrator');
+    PRINT N'✓ Created Admin';
+END
+ELSE
+BEGIN
+    SET @AdminId = (SELECT NguoiDungId FROM dbo.NguoiDung WHERE Email = N'admin@example.com');
+    PRINT N'✓ Admin already exists';
+END
+
+-- 2. TẠO CHỦ TRỌ TỰ ĐỘNG (LOOP)
+DECLARE @Counter INT = 1;
+DECLARE @NewUserId UNIQUEIDENTIFIER;
+DECLARE @Email NVARCHAR(255);
+DECLARE @Phone NVARCHAR(50);
+DECLARE @HoTen NVARCHAR(200);
+
+DECLARE @HoList TABLE (Ho NVARCHAR(50));
+INSERT INTO @HoList VALUES (N'Nguyễn'), (N'Trần'), (N'Lê'), (N'Phạm'), (N'Hoàng'), (N'Phan'), (N'Vũ'), (N'Võ'), (N'Đặng'), (N'Bùi');
+DECLARE @TenList TABLE (Ten NVARCHAR(50));
+INSERT INTO @TenList VALUES (N'An'), (N'Bình'), (N'Cường'), (N'Dũng'), (N'Hà'), (N'Hương'), (N'Linh'), (N'Mai'), (N'Nam'), (N'Phương');
+
+WHILE @Counter <= @TotalChuTro
+BEGIN
+    SET @Email = N'chutro' + CAST(@Counter AS NVARCHAR(10)) + N'@example.com';
+    
+    IF NOT EXISTS (SELECT 1 FROM dbo.NguoiDung WHERE Email = @Email)
+    BEGIN
+        SET @NewUserId = NEWID();
+        SET @Phone = N'091' + RIGHT('0000000' + CAST(@Counter AS NVARCHAR(10)), 7);
+        
+        -- Random tên từ lists
+        SET @HoTen = (SELECT TOP 1 Ho FROM @HoList ORDER BY NEWID()) + N' Văn ' + 
+                     (SELECT TOP 1 Ten FROM @TenList ORDER BY NEWID()) + N' (Chủ Trọ ' + CAST(@Counter AS NVARCHAR(10)) + N')';
+        
+        INSERT INTO dbo.NguoiDung (NguoiDungId, Email, DienThoai, PasswordHash, VaiTroId, IsEmailXacThuc)
+        VALUES (@NewUserId, @Email, @Phone, N'HashedPassword123', @VaiTroChuTro, 1);
+        
+        INSERT INTO dbo.HoSoNguoiDung (NguoiDungId, HoTen, NgaySinh)
+        VALUES (@NewUserId, @HoTen, DATEADD(YEAR, -30 - (@Counter % 20), GETDATE()));
+    END
+    
+    SET @Counter = @Counter + 1;
+END
+PRINT N'✓ Created ' + CAST(@TotalChuTro AS NVARCHAR(10)) + N' Chủ Trọ';
+
+-- 3. TẠO NGƯỜI THUÊ TỰ ĐỘNG (LOOP)
+SET @Counter = 1;
+WHILE @Counter <= @TotalNguoiThue
+BEGIN
+    SET @Email = N'nguoithue' + CAST(@Counter AS NVARCHAR(10)) + N'@example.com';
+    
+    IF NOT EXISTS (SELECT 1 FROM dbo.NguoiDung WHERE Email = @Email)
+    BEGIN
+        SET @NewUserId = NEWID();
+        SET @Phone = N'094' + RIGHT('0000000' + CAST(@Counter AS NVARCHAR(10)), 7);
+        
+        SET @HoTen = (SELECT TOP 1 Ho FROM @HoList ORDER BY NEWID()) + N' Thị ' + 
+                     (SELECT TOP 1 Ten FROM @TenList ORDER BY NEWID()) + N' (Người Thuê ' + CAST(@Counter AS NVARCHAR(10)) + N')';
+        
+        INSERT INTO dbo.NguoiDung (NguoiDungId, Email, DienThoai, PasswordHash, VaiTroId, IsEmailXacThuc)
+        VALUES (@NewUserId, @Email, @Phone, N'HashedPassword123', @VaiTroNguoiThue, 1);
+        
+        INSERT INTO dbo.HoSoNguoiDung (NguoiDungId, HoTen, NgaySinh)
+        VALUES (@NewUserId, @HoTen, DATEADD(YEAR, -18 - (@Counter % 10), GETDATE()));
+    END
+    
+    SET @Counter = @Counter + 1;
+END
+PRINT N'✓ Created ' + CAST(@TotalNguoiThue AS NVARCHAR(10)) + N' Người Thuê';
+PRINT N'========================================';
+GO
+
+
+-- ========== TẠO NHÀ TRỌ MẪU (TỰ ĐỘNG ASSIGN CHỦ TRỌ) ==========
+DECLARE @QuanId_Q9 INT = (SELECT QuanHuyenId FROM dbo.QuanHuyen WHERE Ten = N'Quận 9');
+DECLARE @QuanId_ThuDuc INT = (SELECT QuanHuyenId FROM dbo.QuanHuyen WHERE Ten = N'Thủ Đức');
+DECLARE @AdminId UNIQUEIDENTIFIER = (SELECT NguoiDungId FROM dbo.NguoiDung WHERE Email = N'admin@example.com');
+
+-- Danh sách nhà trọ cần tạo
+DECLARE @NhaTroData TABLE (
+    TieuDe NVARCHAR(300),
+    DiaChi NVARCHAR(500),
+    QuanHuyenId INT
+);
+
+INSERT INTO @NhaTroData VALUES
+    (N'Nhà trọ Hoa Mai', N'123 Lê Văn Việt, Quận 9, TP.HCM', @QuanId_Q9),
+    (N'Nhà trọ SUNRISE', N'456 Man Thiện, TP Thủ Đức, TP.HCM', @QuanId_ThuDuc),
+    (N'Căn hộ Mini UTE HOME', N'Đường Hoàng Hữu Nam, Quận 9, TP.HCM', @QuanId_Q9),
+    (N'Nhà trọ Bình Dân', N'Khu phố 6, Linh Trung, Thủ Đức, TP.HCM', @QuanId_ThuDuc),
+    (N'Nhà trọ Kim Phát', N'234 Kha Vạn Cân, Linh Chiểu, Thủ Đức, TP.HCM', @QuanId_ThuDuc);
+
+DECLARE @TieuDeNhaTro NVARCHAR(300);
+DECLARE @DiaChiNhaTro NVARCHAR(500);
+DECLARE @QuanHuyenIdNhaTro INT;
+DECLARE @RandomChuTroId UNIQUEIDENTIFIER;
+DECLARE @NhaTroId UNIQUEIDENTIFIER;
+
+-- Cursor để loop qua danh sách nhà trọ
+DECLARE nhatro_cursor CURSOR FOR
+SELECT TieuDe, DiaChi, QuanHuyenId FROM @NhaTroData;
+
+OPEN nhatro_cursor;
+FETCH NEXT FROM nhatro_cursor INTO @TieuDeNhaTro, @DiaChiNhaTro, @QuanHuyenIdNhaTro;
+
+WHILE @@FETCH_STATUS = 0
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM dbo.NhaTro WHERE TieuDe = @TieuDeNhaTro)
+    BEGIN
+        -- Random pick 1 chủ trọ từ database
+        SELECT TOP 1 @RandomChuTroId = NguoiDungId 
+        FROM dbo.NguoiDung 
+        WHERE VaiTroId = (SELECT VaiTroId FROM dbo.VaiTro WHERE TenVaiTro = N'ChuTro')
+        ORDER BY NEWID();
+        
+        SET @NhaTroId = NEWID();
+        INSERT INTO dbo.NhaTro (NhaTroId, ChuTroId, TieuDe, DiaChi, QuanHuyenId, IsHoatDong)
+        VALUES (@NhaTroId, @RandomChuTroId, @TieuDeNhaTro, @DiaChiNhaTro, @QuanHuyenIdNhaTro, 1);
+    END
+    
+    FETCH NEXT FROM nhatro_cursor INTO @TieuDeNhaTro, @DiaChiNhaTro, @QuanHuyenIdNhaTro;
+END
+
+CLOSE nhatro_cursor;
+DEALLOCATE nhatro_cursor;
+
+PRINT N'✓ Created 5 Nhà Trọ (auto-assigned to random Chủ Trọ)';
+GO
+
+-- ========== TẠO PHÒNG TRỌ MẪU ==========
+DECLARE @NhaTro1Id UNIQUEIDENTIFIER = (SELECT NhaTroId FROM dbo.NhaTro WHERE TieuDe = N'Nhà trọ Hoa Mai');
+DECLARE @NhaTro2Id UNIQUEIDENTIFIER = (SELECT NhaTroId FROM dbo.NhaTro WHERE TieuDe = N'Nhà trọ SUNRISE');
+DECLARE @NhaTro3Id UNIQUEIDENTIFIER = (SELECT NhaTroId FROM dbo.NhaTro WHERE TieuDe = N'Căn hộ Mini UTE HOME');
+DECLARE @NhaTro4Id UNIQUEIDENTIFIER = (SELECT NhaTroId FROM dbo.NhaTro WHERE TieuDe = N'Nhà trọ Bình Dân');
+DECLARE @NhaTro5Id UNIQUEIDENTIFIER = (SELECT NhaTroId FROM dbo.NhaTro WHERE TieuDe = N'Nhà trọ Kim Phát');
+DECLARE @AdminId UNIQUEIDENTIFIER = (SELECT NguoiDungId FROM dbo.NguoiDung WHERE Email = N'admin@example.com');
+
+-- Phòng 1
+DECLARE @Phong1Id UNIQUEIDENTIFIER = NEWID();
+IF NOT EXISTS (SELECT 1 FROM dbo.Phong WHERE TieuDe = N'Phòng trọ sinh viên gần UTE')
+BEGIN
+    INSERT INTO dbo.Phong (PhongId, NhaTroId, TieuDe, DienTich, GiaTien, TienCoc, SoNguoiToiDa, TrangThai, IsDuyet, NguoiDuyet, ThoiGianDuyet, DiemTrungBinh, SoLuongDanhGia)
+    VALUES (@Phong1Id, @NhaTro1Id, N'Phòng trọ sinh viên gần UTE', 18, 1800000, 1800000, 2, N'con_trong', 1, @AdminId, SYSDATETIMEOFFSET(), 4.5, 12);
+END
+ELSE
+    SET @Phong1Id = (SELECT PhongId FROM dbo.Phong WHERE TieuDe = N'Phòng trọ sinh viên gần UTE');
+
+-- Phòng 2
+DECLARE @Phong2Id UNIQUEIDENTIFIER = NEWID();
+IF NOT EXISTS (SELECT 1 FROM dbo.Phong WHERE TieuDe = N'Phòng trọ mới xây, full nội thất')
+BEGIN
+    INSERT INTO dbo.Phong (PhongId, NhaTroId, TieuDe, DienTich, GiaTien, TienCoc, SoNguoiToiDa, TrangThai, IsDuyet, NguoiDuyet, ThoiGianDuyet, DiemTrungBinh, SoLuongDanhGia)
+    VALUES (@Phong2Id, @NhaTro2Id, N'Phòng trọ mới xây, full nội thất', 22, 2500000, 2500000, 2, N'con_trong', 1, @AdminId, SYSDATETIMEOFFSET(), 4.8, 8);
+END
+ELSE
+    SET @Phong2Id = (SELECT PhongId FROM dbo.Phong WHERE TieuDe = N'Phòng trọ mới xây, full nội thất');
+
+-- Phòng 3
+DECLARE @Phong3Id UNIQUEIDENTIFIER = NEWID();
+IF NOT EXISTS (SELECT 1 FROM dbo.Phong WHERE TieuDe = N'Căn hộ mini 1PN cho sinh viên')
+BEGIN
+    INSERT INTO dbo.Phong (PhongId, NhaTroId, TieuDe, DienTich, GiaTien, TienCoc, SoNguoiToiDa, TrangThai, IsDuyet, NguoiDuyet, ThoiGianDuyet, DiemTrungBinh, SoLuongDanhGia)
+    VALUES (@Phong3Id, @NhaTro3Id, N'Căn hộ mini 1PN cho sinh viên', 28, 3200000, 3200000, 2, N'con_trong', 1, @AdminId, SYSDATETIMEOFFSET(), 4.2, 5);
+END
+ELSE
+    SET @Phong3Id = (SELECT PhongId FROM dbo.Phong WHERE TieuDe = N'Căn hộ mini 1PN cho sinh viên');
+
+-- Phòng 4
+DECLARE @Phong4Id UNIQUEIDENTIFIER = NEWID();
+IF NOT EXISTS (SELECT 1 FROM dbo.Phong WHERE TieuDe = N'Phòng giá rẻ cho sinh viên')
+BEGIN
+    INSERT INTO dbo.Phong (PhongId, NhaTroId, TieuDe, DienTich, GiaTien, TienCoc, SoNguoiToiDa, TrangThai, IsDuyet, NguoiDuyet, ThoiGianDuyet, DiemTrungBinh, SoLuongDanhGia)
+    VALUES (@Phong4Id, @NhaTro4Id, N'Phòng giá rẻ cho sinh viên', 16, 1300000, 1300000, 2, N'con_trong', 1, @AdminId, SYSDATETIMEOFFSET(), 3.9, 20);
+END
+ELSE
+    SET @Phong4Id = (SELECT PhongId FROM dbo.Phong WHERE TieuDe = N'Phòng giá rẻ cho sinh viên');
+
+-- Phòng 5
+DECLARE @Phong5Id UNIQUEIDENTIFIER = NEWID();
+IF NOT EXISTS (SELECT 1 FROM dbo.Phong WHERE TieuDe = N'Phòng trọ có gác lửng, rộng rãi')
+BEGIN
+    INSERT INTO dbo.Phong (PhongId, NhaTroId, TieuDe, DienTich, GiaTien, TienCoc, SoNguoiToiDa, TrangThai, IsDuyet, NguoiDuyet, ThoiGianDuyet, DiemTrungBinh, SoLuongDanhGia)
+    VALUES (@Phong5Id, @NhaTro5Id, N'Phòng trọ có gác lửng, rộng rãi', 25, 2200000, 2200000, 3, N'con_trong', 1, @AdminId, SYSDATETIMEOFFSET(), 4.3, 15);
+END
+ELSE
+    SET @Phong5Id = (SELECT PhongId FROM dbo.Phong WHERE TieuDe = N'Phòng trọ có gác lửng, rộng rãi');
+
+-- Phòng 6
+DECLARE @Phong6Id UNIQUEIDENTIFIER = NEWID();
+IF NOT EXISTS (SELECT 1 FROM dbo.Phong WHERE TieuDe = N'Phòng studio cao cấp')
+BEGIN
+    INSERT INTO dbo.Phong (PhongId, NhaTroId, TieuDe, DienTich, GiaTien, TienCoc, SoNguoiToiDa, TrangThai, IsDuyet, NguoiDuyet, ThoiGianDuyet, DiemTrungBinh, SoLuongDanhGia)
+    VALUES (@Phong6Id, @NhaTro2Id, N'Phòng studio cao cấp', 30, 4500000, 4500000, 2, N'con_trong', 1, @AdminId, SYSDATETIMEOFFSET(), 4.9, 25);
+END
+ELSE
+    SET @Phong6Id = (SELECT PhongId FROM dbo.Phong WHERE TieuDe = N'Phòng studio cao cấp');
+
+-- Phòng 7
+DECLARE @Phong7Id UNIQUEIDENTIFIER = NEWID();
+IF NOT EXISTS (SELECT 1 FROM dbo.Phong WHERE TieuDe = N'Phòng trọ nữ only, an ninh')
+BEGIN
+    INSERT INTO dbo.Phong (PhongId, NhaTroId, TieuDe, DienTich, GiaTien, TienCoc, SoNguoiToiDa, TrangThai, IsDuyet, NguoiDuyet, ThoiGianDuyet, DiemTrungBinh, SoLuongDanhGia)
+    VALUES (@Phong7Id, @NhaTro1Id, N'Phòng trọ nữ only, an ninh', 20, 1900000, 1900000, 2, N'con_trong', 1, @AdminId, SYSDATETIMEOFFSET(), 4.6, 18);
+END
+ELSE
+    SET @Phong7Id = (SELECT PhongId FROM dbo.Phong WHERE TieuDe = N'Phòng trọ nữ only, an ninh');
+
+-- Phòng 8
+DECLARE @Phong8Id UNIQUEIDENTIFIER = NEWID();
+IF NOT EXISTS (SELECT 1 FROM dbo.Phong WHERE TieuDe = N'Phòng trọ có bếp riêng')
+BEGIN
+    INSERT INTO dbo.Phong (PhongId, NhaTroId, TieuDe, DienTich, GiaTien, TienCoc, SoNguoiToiDa, TrangThai, IsDuyet, NguoiDuyet, ThoiGianDuyet, DiemTrungBinh, SoLuongDanhGia)
+    VALUES (@Phong8Id, @NhaTro3Id, N'Phòng trọ có bếp riêng', 24, 2800000, 2800000, 2, N'con_trong', 1, @AdminId, SYSDATETIMEOFFSET(), 4.4, 10);
+END
+ELSE
+    SET @Phong8Id = (SELECT PhongId FROM dbo.Phong WHERE TieuDe = N'Phòng trọ có bếp riêng');
+
+PRINT N'Created sample Phong successfully.';
+GO
+
+-- ========== LIÊN KẾT TIỆN ÍCH CHO PHÒNG ==========
+DECLARE @Phong1Id UNIQUEIDENTIFIER = (SELECT PhongId FROM dbo.Phong WHERE TieuDe = N'Phòng trọ sinh viên gần UTE');
+DECLARE @Phong2Id UNIQUEIDENTIFIER = (SELECT PhongId FROM dbo.Phong WHERE TieuDe = N'Phòng trọ mới xây, full nội thất');
+DECLARE @Phong3Id UNIQUEIDENTIFIER = (SELECT PhongId FROM dbo.Phong WHERE TieuDe = N'Căn hộ mini 1PN cho sinh viên');
+DECLARE @Phong4Id UNIQUEIDENTIFIER = (SELECT PhongId FROM dbo.Phong WHERE TieuDe = N'Phòng giá rẻ cho sinh viên');
+DECLARE @Phong5Id UNIQUEIDENTIFIER = (SELECT PhongId FROM dbo.Phong WHERE TieuDe = N'Phòng trọ có gác lửng, rộng rãi');
+DECLARE @Phong6Id UNIQUEIDENTIFIER = (SELECT PhongId FROM dbo.Phong WHERE TieuDe = N'Phòng studio cao cấp');
+DECLARE @Phong7Id UNIQUEIDENTIFIER = (SELECT PhongId FROM dbo.Phong WHERE TieuDe = N'Phòng trọ nữ only, an ninh');
+DECLARE @Phong8Id UNIQUEIDENTIFIER = (SELECT PhongId FROM dbo.Phong WHERE TieuDe = N'Phòng trọ có bếp riêng');
+
+-- Phòng 1: Wifi, Chỗ để xe, Giờ giấc tự do
+IF @Phong1Id IS NOT NULL
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM dbo.PhongTienIch WHERE PhongId = @Phong1Id AND TienIchId = (SELECT TienIchId FROM dbo.TienIch WHERE Ten = N'Wifi'))
+        INSERT INTO dbo.PhongTienIch (PhongId, TienIchId) VALUES (@Phong1Id, (SELECT TienIchId FROM dbo.TienIch WHERE Ten = N'Wifi'));
+    IF NOT EXISTS (SELECT 1 FROM dbo.PhongTienIch WHERE PhongId = @Phong1Id AND TienIchId = (SELECT TienIchId FROM dbo.TienIch WHERE Ten = N'Chỗ để xe'))
+        INSERT INTO dbo.PhongTienIch (PhongId, TienIchId) VALUES (@Phong1Id, (SELECT TienIchId FROM dbo.TienIch WHERE Ten = N'Chỗ để xe'));
+    IF NOT EXISTS (SELECT 1 FROM dbo.PhongTienIch WHERE PhongId = @Phong1Id AND TienIchId = (SELECT TienIchId FROM dbo.TienIch WHERE Ten = N'Giờ giấc tự do'))
+        INSERT INTO dbo.PhongTienIch (PhongId, TienIchId) VALUES (@Phong1Id, (SELECT TienIchId FROM dbo.TienIch WHERE Ten = N'Giờ giấc tự do'));
+END
+
+-- Phòng 2: Máy lạnh, Máy nước nóng, Camera
+IF @Phong2Id IS NOT NULL
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM dbo.PhongTienIch WHERE PhongId = @Phong2Id AND TienIchId = (SELECT TienIchId FROM dbo.TienIch WHERE Ten = N'Máy lạnh'))
+        INSERT INTO dbo.PhongTienIch (PhongId, TienIchId) VALUES (@Phong2Id, (SELECT TienIchId FROM dbo.TienIch WHERE Ten = N'Máy lạnh'));
+    IF NOT EXISTS (SELECT 1 FROM dbo.PhongTienIch WHERE PhongId = @Phong2Id AND TienIchId = (SELECT TienIchId FROM dbo.TienIch WHERE Ten = N'Máy nước nóng'))
+        INSERT INTO dbo.PhongTienIch (PhongId, TienIchId) VALUES (@Phong2Id, (SELECT TienIchId FROM dbo.TienIch WHERE Ten = N'Máy nước nóng'));
+    IF NOT EXISTS (SELECT 1 FROM dbo.PhongTienIch WHERE PhongId = @Phong2Id AND TienIchId = (SELECT TienIchId FROM dbo.TienIch WHERE Ten = N'Camera an ninh'))
+        INSERT INTO dbo.PhongTienIch (PhongId, TienIchId) VALUES (@Phong2Id, (SELECT TienIchId FROM dbo.TienIch WHERE Ten = N'Camera an ninh'));
+END
+
+-- Phòng 3: Thang máy, Ban công, Bếp riêng
+IF @Phong3Id IS NOT NULL
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM dbo.PhongTienIch WHERE PhongId = @Phong3Id AND TienIchId = (SELECT TienIchId FROM dbo.TienIch WHERE Ten = N'Thang máy'))
+        INSERT INTO dbo.PhongTienIch (PhongId, TienIchId) VALUES (@Phong3Id, (SELECT TienIchId FROM dbo.TienIch WHERE Ten = N'Thang máy'));
+    IF NOT EXISTS (SELECT 1 FROM dbo.PhongTienIch WHERE PhongId = @Phong3Id AND TienIchId = (SELECT TienIchId FROM dbo.TienIch WHERE Ten = N'BanCong'))
+        INSERT INTO dbo.PhongTienIch (PhongId, TienIchId) VALUES (@Phong3Id, (SELECT TienIchId FROM dbo.TienIch WHERE Ten = N'BanCong'));
+    IF NOT EXISTS (SELECT 1 FROM dbo.PhongTienIch WHERE PhongId = @Phong3Id AND TienIchId = (SELECT TienIchId FROM dbo.TienIch WHERE Ten = N'Bếp riêng'))
+        INSERT INTO dbo.PhongTienIch (PhongId, TienIchId) VALUES (@Phong3Id, (SELECT TienIchId FROM dbo.TienIch WHERE Ten = N'Bếp riêng'));
+END
+
+-- Phòng 4: Wifi, Giờ giấc tự do
+IF @Phong4Id IS NOT NULL
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM dbo.PhongTienIch WHERE PhongId = @Phong4Id AND TienIchId = (SELECT TienIchId FROM dbo.TienIch WHERE Ten = N'Wifi'))
+        INSERT INTO dbo.PhongTienIch (PhongId, TienIchId) VALUES (@Phong4Id, (SELECT TienIchId FROM dbo.TienIch WHERE Ten = N'Wifi'));
+    IF NOT EXISTS (SELECT 1 FROM dbo.PhongTienIch WHERE PhongId = @Phong4Id AND TienIchId = (SELECT TienIchId FROM dbo.TienIch WHERE Ten = N'Giờ giấc tự do'))
+        INSERT INTO dbo.PhongTienIch (PhongId, TienIchId) VALUES (@Phong4Id, (SELECT TienIchId FROM dbo.TienIch WHERE Ten = N'Giờ giấc tự do'));
+END
+
+-- Phòng 5: Gác lửng, Wifi, Máy lạnh
+IF @Phong5Id IS NOT NULL
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM dbo.PhongTienIch WHERE PhongId = @Phong5Id AND TienIchId = (SELECT TienIchId FROM dbo.TienIch WHERE Ten = N'Gác lửng'))
+        INSERT INTO dbo.PhongTienIch (PhongId, TienIchId) VALUES (@Phong5Id, (SELECT TienIchId FROM dbo.TienIch WHERE Ten = N'Gác lửng'));
+    IF NOT EXISTS (SELECT 1 FROM dbo.PhongTienIch WHERE PhongId = @Phong5Id AND TienIchId = (SELECT TienIchId FROM dbo.TienIch WHERE Ten = N'Wifi'))
+        INSERT INTO dbo.PhongTienIch (PhongId, TienIchId) VALUES (@Phong5Id, (SELECT TienIchId FROM dbo.TienIch WHERE Ten = N'Wifi'));
+    IF NOT EXISTS (SELECT 1 FROM dbo.PhongTienIch WHERE PhongId = @Phong5Id AND TienIchId = (SELECT TienIchId FROM dbo.TienIch WHERE Ten = N'Máy lạnh'))
+        INSERT INTO dbo.PhongTienIch (PhongId, TienIchId) VALUES (@Phong5Id, (SELECT TienIchId FROM dbo.TienIch WHERE Ten = N'Máy lạnh'));
+END
+
+-- Phòng 6: Wifi, Bảo vệ 24/7, Thang máy
+IF @Phong6Id IS NOT NULL
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM dbo.PhongTienIch WHERE PhongId = @Phong6Id AND TienIchId = (SELECT TienIchId FROM dbo.TienIch WHERE Ten = N'Wifi'))
+        INSERT INTO dbo.PhongTienIch (PhongId, TienIchId) VALUES (@Phong6Id, (SELECT TienIchId FROM dbo.TienIch WHERE Ten = N'Wifi'));
+    IF NOT EXISTS (SELECT 1 FROM dbo.PhongTienIch WHERE PhongId = @Phong6Id AND TienIchId = (SELECT TienIchId FROM dbo.TienIch WHERE Ten = N'Bảo vệ 24/7'))
+        INSERT INTO dbo.PhongTienIch (PhongId, TienIchId) VALUES (@Phong6Id, (SELECT TienIchId FROM dbo.TienIch WHERE Ten = N'Bảo vệ 24/7'));
+    IF NOT EXISTS (SELECT 1 FROM dbo.PhongTienIch WHERE PhongId = @Phong6Id AND TienIchId = (SELECT TienIchId FROM dbo.TienIch WHERE Ten = N'Thang máy'))
+        INSERT INTO dbo.PhongTienIch (PhongId, TienIchId) VALUES (@Phong6Id, (SELECT TienIchId FROM dbo.TienIch WHERE Ten = N'Thang máy'));
+END
+
+-- Phòng 7: Camera, Cửa vân tay, Wifi
+IF @Phong7Id IS NOT NULL
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM dbo.PhongTienIch WHERE PhongId = @Phong7Id AND TienIchId = (SELECT TienIchId FROM dbo.TienIch WHERE Ten = N'Camera an ninh'))
+        INSERT INTO dbo.PhongTienIch (PhongId, TienIchId) VALUES (@Phong7Id, (SELECT TienIchId FROM dbo.TienIch WHERE Ten = N'Camera an ninh'));
+    IF NOT EXISTS (SELECT 1 FROM dbo.PhongTienIch WHERE PhongId = @Phong7Id AND TienIchId = (SELECT TienIchId FROM dbo.TienIch WHERE Ten = N'Cửa vân tay'))
+        INSERT INTO dbo.PhongTienIch (PhongId, TienIchId) VALUES (@Phong7Id, (SELECT TienIchId FROM dbo.TienIch WHERE Ten = N'Cửa vân tay'));
+    IF NOT EXISTS (SELECT 1 FROM dbo.PhongTienIch WHERE PhongId = @Phong7Id AND TienIchId = (SELECT TienIchId FROM dbo.TienIch WHERE Ten = N'Wifi'))
+        INSERT INTO dbo.PhongTienIch (PhongId, TienIchId) VALUES (@Phong7Id, (SELECT TienIchId FROM dbo.TienIch WHERE Ten = N'Wifi'));
+END
+
+-- Phòng 8: Bếp riêng, Ban công, WC riêng
+IF @Phong8Id IS NOT NULL
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM dbo.PhongTienIch WHERE PhongId = @Phong8Id AND TienIchId = (SELECT TienIchId FROM dbo.TienIch WHERE Ten = N'Bếp riêng'))
+        INSERT INTO dbo.PhongTienIch (PhongId, TienIchId) VALUES (@Phong8Id, (SELECT TienIchId FROM dbo.TienIch WHERE Ten = N'Bếp riêng'));
+    IF NOT EXISTS (SELECT 1 FROM dbo.PhongTienIch WHERE PhongId = @Phong8Id AND TienIchId = (SELECT TienIchId FROM dbo.TienIch WHERE Ten = N'BanCong'))
+        INSERT INTO dbo.PhongTienIch (PhongId, TienIchId) VALUES (@Phong8Id, (SELECT TienIchId FROM dbo.TienIch WHERE Ten = N'BanCong'));
+    IF NOT EXISTS (SELECT 1 FROM dbo.PhongTienIch WHERE PhongId = @Phong8Id AND TienIchId = (SELECT TienIchId FROM dbo.TienIch WHERE Ten = N'WC riêng'))
+        INSERT INTO dbo.PhongTienIch (PhongId, TienIchId) VALUES (@Phong8Id, (SELECT TienIchId FROM dbo.TienIch WHERE Ten = N'WC riêng'));
+END
+
+PRINT N'Linked TienIch to Phong successfully.';
+GO
+
+-- ========== TẠO ĐÁNH GIÁ MẪU ==========
+DECLARE @Phong1Id UNIQUEIDENTIFIER = (SELECT PhongId FROM dbo.Phong WHERE TieuDe = N'Phòng trọ sinh viên gần UTE');
+DECLARE @Phong2Id UNIQUEIDENTIFIER = (SELECT PhongId FROM dbo.Phong WHERE TieuDe = N'Phòng trọ mới xây, full nội thất');
+DECLARE @NguoiThue1Id UNIQUEIDENTIFIER = (SELECT NguoiDungId FROM dbo.NguoiDung WHERE Email = N'nguoithue1@example.com');
+DECLARE @NguoiThue2Id UNIQUEIDENTIFIER = (SELECT NguoiDungId FROM dbo.NguoiDung WHERE Email = N'nguoithue2@example.com');
+
+IF @Phong1Id IS NOT NULL AND @NguoiThue1Id IS NOT NULL
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM dbo.DanhGiaPhong WHERE PhongId = @Phong1Id AND NguoiDanhGia = @NguoiThue1Id)
+    BEGIN
+        INSERT INTO dbo.DanhGiaPhong (PhongId, NguoiDanhGia, Diem, NoiDung)
+        VALUES (@Phong1Id, @NguoiThue1Id, 5, N'Phòng rất đẹp, sạch sẽ, chủ nhà thân thiện!');
+    END
+END
+
+IF @Phong2Id IS NOT NULL AND @NguoiThue2Id IS NOT NULL
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM dbo.DanhGiaPhong WHERE PhongId = @Phong2Id AND NguoiDanhGia = @NguoiThue2Id)
+    BEGIN
+        INSERT INTO dbo.DanhGiaPhong (PhongId, NguoiDanhGia, Diem, NoiDung)
+        VALUES (@Phong2Id, @NguoiThue2Id, 5, N'Full nội thất như mô tả, vị trí gần trường. Rất hài lòng!');
+    END
+END
+
+PRINT N'Created sample reviews successfully.';
+GO
+
+PRINT N'========================================';
+PRINT N'✅ INSERT SAMPLE DATA COMPLETED!';
+PRINT N'========================================';
+PRINT N'📊 Summary:';
+PRINT N'  - Admin: 1';
+PRINT N'  - Chủ Trọ: 10 (auto-generated)';
+PRINT N'  - Người Thuê: 5 (auto-generated)';
+PRINT N'  - Nhà Trọ: 5 (randomly assigned)';
+PRINT N'  - Phòng: 8 (all approved)';
+PRINT N'  - Tiện Ích: 14+';
+PRINT N'  - PhongTienIch: Linked';
+PRINT N'  - Reviews: Sample data';
+PRINT N'========================================';
+PRINT N'💡 TIP: Muốn thay đổi số lượng?';
+PRINT N'    Tìm dòng: @TotalChuTro = 10';
+PRINT N'    Tìm dòng: @TotalNguoiThue = 5';
+PRINT N'========================================';
+GO
