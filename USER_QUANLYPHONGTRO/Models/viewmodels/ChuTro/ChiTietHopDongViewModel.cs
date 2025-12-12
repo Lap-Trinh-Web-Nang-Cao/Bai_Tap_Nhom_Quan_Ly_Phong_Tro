@@ -1,25 +1,49 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace USER_QUANLYPHONGTRO.Models.ViewModels.ChuTro
 {
     public class ChiTietHopDongViewModel
     {
-        public Guid DatPhongId { get; set; }
+        public Guid HopDongId { get; set; }
 
-        // --- 1. Thông tin bên cho thuê (Lấy từ bảng NguoiDung + HoSoNguoiDung của ChuTroId) ---
-        public string TenChuTro { get; set; }
-        public string SdtChuTro { get; set; }
+        // 1. Thông tin Phòng
+        [Display(Name = "Tên phòng")]
+        public string TenPhong { get; set; }
 
-        // --- 2. Thông tin bên thuê (Lấy từ bảng NguoiDung + HoSoNguoiDung của NguoiThueId) ---
-        public string TenNguoiThue { get; set; }
-        public string CCCD { get; set; }        // Lấy từ cột LoaiGiayTo trong bảng HoSoNguoiDung
-        public string SdtNguoiThue { get; set; }
+        [Display(Name = "Địa chỉ phòng")]
+        public string DiaChiPhong { get; set; }
 
-        // --- 3. Thông tin phòng & Hợp đồng (Lấy từ bảng Phong, NhaTro, DatPhong) ---
-        public string TenPhong { get; set; }    // TieuDe của Phong
-        public string DiaChi { get; set; }      // DiaChi của NhaTro
-        public decimal GiaTien { get; set; }    // GiaTien của Phong
-        public DateTimeOffset NgayBatDau { get; set; } // BatDau của DatPhong
-        public DateTimeOffset? NgayKetThuc { get; set; } // KetThuc của DatPhong (nếu có)
+        // 2. Thông tin Khách thuê
+        [Display(Name = "Họ tên khách")]
+        public string TenKhach { get; set; }
+
+        [Display(Name = "Số điện thoại")]
+        public string DienThoai { get; set; }
+
+        [Display(Name = "CCCD / CMND")]
+        public string CCCD { get; set; }
+
+        [Display(Name = "Địa chỉ thường trú")]
+        public string DiaChiThuongTru { get; set; }
+
+        // 3. Chi tiết thuê
+        [Display(Name = "Ngày bắt đầu")]
+        public DateTime NgayBatDau { get; set; }
+
+        [Display(Name = "Ngày kết thúc")]
+        public DateTime? NgayKetThuc { get; set; }
+
+        [Display(Name = "Giá thuê (VNĐ/tháng)")]
+        public decimal GiaThue { get; set; }
+
+        [Display(Name = "Tiền cọc (VNĐ)")]
+        public decimal TienCoc { get; set; }
+
+        [Display(Name = "Điều khoản")]
+        public string DieuKhoan { get; set; }
+
+        [Display(Name = "Trạng thái")]
+        public string TrangThai { get; set; } // "HieuLuc", "HetHan", "DaHuy"
     }
 }

@@ -9,6 +9,9 @@ namespace USER_QUANLYPHONGTRO.Models.ViewModels.ChuTro
     public class PhongTroEditViewModel
 
     {
+      
+         
+        
         public Guid? PhongId { get; set; } // null = tạo mới
 
         // --- GIỮ LẠI CỦA BẠN (Data Annotations rất tốt) ---

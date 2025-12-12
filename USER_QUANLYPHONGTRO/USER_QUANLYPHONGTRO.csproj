@@ -160,7 +160,6 @@
     <Compile Include="Models\ViewModels\ChuTro\LandlordProfileViewModel.cs" />
     <Compile Include="Models\ViewModels\ChuTro\LichHenViewModel.cs" />
     <Compile Include="Models\ViewModels\ChuTro\PhongTroEditViewModel.cs" />
-    <Compile Include="Models\ViewModels\ChuTro\DanhSachPhongViewModel.cs" />
     <Compile Include="Models\ViewModels\Home\HomeIndexViewModel.cs" />
     <Compile Include="Models\ViewModels\KhachThue\DatLichViewModel.cs" />
     <Compile Include="Models\ViewModels\KhachThue\LichDaDatViewModel.cs" />

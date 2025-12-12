@@ -83,5 +83,31 @@ namespace USER_QUANLYPHONGTRO.Controllers
             // Trả về model hồ sơ rỗng
             return View(new LandlordProfileViewModel());
         }
+        // GET: Xem chi tiết hợp đồng
+        public ActionResult ChiTietHopDong(Guid? id)
+        {
+            // Mock data (Dữ liệu giả lập để test giao diện)
+            var model = new ChiTietHopDongViewModel
+            {
+                HopDongId = id ?? Guid.NewGuid(),
+                TenPhong = "P.101 - Phòng Studio Ban Công",
+                DiaChiPhong = "123 Võ Văn Tần, Q.3, TP.HCM",
+
+                TenKhach = "Nguyễn Văn A",
+                DienThoai = "0987654321",
+                CCCD = "079123456789",
+                DiaChiThuongTru = "Xã A, Huyện B, Tỉnh C",
+
+                NgayBatDau = DateTime.Now.AddMonths(-2),
+                NgayKetThuc = DateTime.Now.AddMonths(10),
+                GiaThue = 5500000,
+                TienCoc = 5500000,
+
+                DieuKhoan = "- Bên B cam kết thanh toán tiền thuê trước ngày 5 hàng tháng.\n- Không được nuôi thú cưng.\n- Giữ gìn vệ sinh chung.",
+                TrangThai = "HieuLuc"
+            };
+
+            return View(model);
+        }
     }
 }
