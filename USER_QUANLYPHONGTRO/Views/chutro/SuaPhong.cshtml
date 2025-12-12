@@ -1,7 +1,30 @@
-﻿
-@{
-    ViewBag.Title = "SuaPhong";
+﻿@model USER_QUANLYPHONGTRO.Models.ViewModels.ChuTro.PhongTroEditViewModel
+    Layout = "~/Views/Shared/_ChutroLayout.cshtml";
+    ViewBag.Title = "Cập nhật phòng";
 }
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1 class="page-title">Cập nhật thông tin phòng</h1>
+    </div>
+    <div class="activity-card" style="padding: 30px;">
+        @using (Html.BeginForm("SuaPhong", "ChuTro", FormMethod.Post, new { enctype = "multipart/form-data" }))
+        {
+            @Html.HiddenFor(m => m.PhongId)
+            @Html.AntiForgeryToken()
 
-<h2>SuaPhong</h2>
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px;">
+                <div>
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label style="font-weight: 600; display: block; margin-bottom: 8px; color: #444;">Tiêu đề bài đăng</label>
+                        @Html.TextBoxFor(m => m.TieuDe, new { @class = "form-control", @style = "width: 100%; padding: 12px; border: 1px solid #e0e0e0; border-radius: 8px; background: #f9f9f9;" })
+                    </div>
+                </div>
+            </div>
 
+            <div style="margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px; text-align: right;">
+                <a href="@Url.Action("DanhSachPhong")" class="btn-action" style="margin-right: 10px; text-decoration: none;">Hủy</a>
+                <button type="submit" class="btn-view-all" style="background-color: #f39c12; color: white; border: none; padding: 12px 30px; font-size: 16px; border-radius: 8px;">Lưu thay đổi</button>
+            </div>
+        }
+    </div>
+</div>

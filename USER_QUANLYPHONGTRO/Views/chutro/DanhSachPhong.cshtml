@@ -1,7 +1,312 @@
-﻿
+﻿@model IEnumerable<USER_QUANLYPHONGTRO.Models.ViewModels.ChuTro.PhongTroEditViewModel>
+
 @{
-    ViewBag.Title = "DanhSachPhong";
+    ViewBag.Title = "Quản lý phòng trọ";
+    Layout = "~/Views/Shared/_ChutroLayout.cshtml";
 }
 
-<h2>DanhSachPhong</h2>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+<style>
+    :root {
+        --primary: #4e73df;
+        --secondary: #858796;
+        --success: #1cc88a;
+        --danger: #e74a3b;
+        --warning: #f6c23e;
+        --dark: #2e384d;
+        --light: #f8f9fc;
+    }
+
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: #f4f6f8;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .page-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--dark);
+        margin: 0;
+    }
+
+    /* Nút thêm mới */
+    .btn-add-new {
+        background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 10px;
+        border: none;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 4px 10px rgba(78, 115, 223, 0.3);
+        transition: all 0.3s;
+        text-decoration: none;
+    }
+
+        .btn-add-new:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(78, 115, 223, 0.4);
+            color: white;
+            text-decoration: none;
+        }
+
+    /* Grid Layout */
+    .room-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 25px;
+    }
+
+    /* Room Card Styling */
+    .room-card {
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid rgba(0,0,0,0.05);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.03);
+        transition: all 0.3s ease;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+    }
+
+        .room-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.08);
+            border-color: rgba(78, 115, 223, 0.2);
+        }
+
+    /* Image Area */
+    .room-img-wrapper {
+        position: relative;
+        height: 200px;
+        overflow: hidden;
+    }
+
+    .room-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+    .room-card:hover .room-img {
+        transform: scale(1.05);
+    }
+
+    /* Status Badge */
+    .room-badge {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        backdrop-filter: blur(5px);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .badge-empty {
+        background: rgba(28, 200, 138, 0.9);
+        color: white;
+    }
+
+    .badge-rented {
+        background: rgba(133, 135, 150, 0.9);
+        color: white;
+    }
+
+    .badge-maintenance {
+        background: rgba(246, 194, 62, 0.9);
+        color: white;
+    }
+
+    /* Card Body */
+    .room-body {
+        padding: 20px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .room-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--dark);
+        margin-bottom: 10px;
+        line-height: 1.4;
+    }
+
+    .room-price {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: var(--primary);
+        margin-bottom: 15px;
+    }
+
+    .room-info-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        color: #8898aa;
+        font-size: 0.9rem;
+        margin-bottom: 8px;
+    }
+
+        .room-info-row i {
+            margin-top: 3px;
+            color: #b0bxc6;
+        }
+
+    /* Action Footer */
+    .room-footer {
+        padding: 15px 20px;
+        background: #f8f9fc;
+        border-top: 1px solid #eaecf4;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .action-btn {
+        width: 35px;
+        height: 35px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #858796;
+        background: white;
+        border: 1px solid #e3e6f0;
+        transition: all 0.2s;
+        text-decoration: none;
+    }
+
+        .action-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+    .btn-delete:hover {
+        background: var(--danger);
+        border-color: var(--danger);
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        background: white;
+        border-radius: 20px;
+        width: 100%;
+        grid-column: 1 / -1;
+    }
+</style>
+
+<div class="container-fluid" style="padding-bottom: 50px;">
+
+    <div class="page-header">
+        <div>
+            <h2 class="page-title">Quản lý phòng trọ</h2>
+            <p style="color: #888; margin: 5px 0 0;">Danh sách tất cả các phòng bạn đang quản lý</p>
+        </div>
+
+        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+            <div style="position: relative;">
+                <input type="text" placeholder="Tìm kiếm phòng..." style="padding: 10px 15px 10px 40px; border-radius: 10px; border: 1px solid #ddd; outline: none; width: 250px;">
+                <i class="fas fa-search" style="position: absolute; left: 15px; top: 13px; color: #aaa;"></i>
+            </div>
+            <a href="@Url.Action("TaoPhong", "ChuTro")" class="btn-add-new">
+                <i class="fas fa-plus"></i> Thêm phòng mới
+            </a>
+        </div>
+    </div>
+
+    <div class="room-grid">
+        @if (Model != null && Model.Any())
+        {
+            foreach (var item in Model)
+            {
+                <div class="room-card">
+                    <div class="room-img-wrapper">
+                        @if (item.TrangThai == "Đã thuê")
+                        {
+                            <span class="room-badge badge-rented">Đã thuê</span>
+                        }
+                        else if (item.TrangThai == "Đang bảo trì")
+                        {
+                            <span class="room-badge badge-maintenance">Bảo trì</span>
+                        }
+                        else
+                        {
+                            <span class="room-badge badge-empty">Đang trống</span>
+                        }
+
+                        <img src="@(!string.IsNullOrEmpty(item.HinhAnh) ? item.HinhAnh : Url.Content("~/Content/images/default-room.png"))"
+                             class="room-img"
+                             alt="Room Image"
+                             onerror="this.src='https://placehold.co/400x300?text=No+Image'">
+                    </div>
+
+                    <div class="room-body">
+                        <h3 class="room-title">@item.TieuDe</h3>
+                        <div class="room-price">@item.GiaTien.ToString("N0")đ <span style="font-size: 0.8rem; color: #888; font-weight: normal;">/ tháng</span></div>
+
+                        <div class="room-info-row">
+                            <i class="fas fa-map-marker-alt" style="width: 20px;"></i>
+                            <span style="flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                @(!string.IsNullOrEmpty(item.DiaChi) ? item.DiaChi : "Chưa cập nhật địa chỉ")
+                            </span>
+                        </div>
+
+                        @if (item.DienTich > 0)
+                        {
+                            <div class="room-info-row">
+                                <i class="fas fa-ruler-combined" style="width: 20px;"></i>
+                                <span>@item.DienTich m²</span>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="room-footer">
+                        <div style="font-size: 0.85rem; color: #aaa;">
+                            <i class="far fa-clock"></i> Mới đăng
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <a href="#" class="action-btn" title="Xem chi tiết"><i class="far fa-eye"></i></a>
+                            <a href="#" class="action-btn" title="Chỉnh sửa"><i class="fas fa-pen"></i></a>
+                            <a href="#" class="action-btn btn-delete" title="Xóa phòng"><i class="far fa-trash-alt"></i></a>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="empty-state">
+                <img src="https://cdn-icons-png.flaticon.com/512/4076/4076432.png" width="100" style="opacity: 0.5; margin-bottom: 20px;">
+                <h3 style="color: var(--dark); font-weight: 700;">Chưa có phòng nào</h3>
+                <p style="color: #888;">Hãy bắt đầu bằng việc đăng tin phòng trọ đầu tiên của bạn.</p>
+                <a href="@Url.Action("TaoPhong", "ChuTro")" class="btn-add-new" style="display: inline-flex; margin-top: 15px;">
+                    Đăng phòng ngay
+                </a>
+            </div>
+        }
+    </div>
+
+</div>
