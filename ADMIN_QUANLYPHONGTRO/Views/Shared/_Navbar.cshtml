@@ -1,0 +1,206 @@
+﻿<nav class="navbar navbar-header navbar-expand-lg" data-background-color="blue2">
+    <div class="container-fluid">
+        <div class="collapse" id="search-nav">
+            <form class="navbar-left navbar-form nav-search mr-md-3">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <button type="submit" class="btn btn-search pr-1" aria-label="Tìm kiếm" title="Tìm kiếm">
+                            <i class="fa fa-search search-icon"></i>
+                        </button>
+                    </div>
+                    <input type="text" placeholder="Tìm kiếm..." class="form-control" aria-label="Ô tìm kiếm">
+                </div>
+            </form>
+        </div>
+        <ul class="navbar-nav topbar-nav ml-md-auto align-items-center">
+            <li class="nav-item toggle-nav-search hidden-caret">
+                <a class="nav-link" data-toggle="collapse" href="#search-nav" role="button" aria-expanded="false" aria-controls="search-nav" aria-label="Mở thanh tìm kiếm">
+                    <i class="fa fa-search"></i>
+                </a>
+            </li>
+
+            <!-- Notifications -->
+            <li class="nav-item dropdown hidden-caret">
+                <a class="nav-link dropdown-toggle" href="#" id="notifDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Thông báo">
+                    <i class="fa fa-bell"></i>
+                    <span class="notification">4</span>
+                </a>
+                <ul class="dropdown-menu notif-box animated fadeIn" aria-labelledby="notifDropdown">
+                    <li>
+                        <div class="dropdown-title">Bạn có 4 thông báo mới</div>
+                    </li>
+                    <li>
+                        <div class="notif-scroll scrollbar-outer">
+                            <div class="notif-center">
+                                <a href="#">
+                                    <div class="notif-icon notif-primary"> <i class="fa fa-user-plus"></i> </div>
+                                    <div class="notif-content">
+                                        <span class="block">
+                                            Chủ trọ mới đăng ký xác minh
+                                        </span>
+                                        <span class="time">5 phút trước</span>
+                                    </div>
+                                </a>
+                                <a href="#">
+                                    <div class="notif-icon notif-success"> <i class="fa fa-home"></i> </div>
+                                    <div class="notif-content">
+                                        <span class="block">
+                                            Phòng mới chờ duyệt
+                                        </span>
+                                        <span class="time">12 phút trước</span>
+                                    </div>
+                                </a>
+                                <a href="#">
+                                    <div class="notif-icon notif-danger"> <i class="fa fa-exclamation-triangle"></i> </div>
+                                    <div class="notif-content">
+                                        <span class="block">
+                                            Báo cáo vi phạm mới
+                                        </span>
+                                        <span class="time">25 phút trước</span>
+                                    </div>
+                                </a>
+                                <a href="#">
+                                    <div class="notif-icon notif-info"> <i class="fa fa-question-circle"></i> </div>
+                                    <div class="notif-content">
+                                        <span class="block">
+                                            Yêu cầu hỗ trợ mới
+                                        </span>
+                                        <span class="time">1 giờ trước</span>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <a class="see-all" href="javascript:void(0);">Xem tất cả thông báo<i class="fa fa-angle-right"></i> </a>
+                    </li>
+                </ul>
+            </li>
+
+            <!-- Messages -->
+            <li class="nav-item dropdown hidden-caret">
+                <a class="nav-link dropdown-toggle" href="#" id="messageDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Tin nhắn">
+                    <i class="fa fa-envelope"></i>
+                    <span class="notification">3</span>
+                </a>
+                <ul class="dropdown-menu messages-notif-box animated fadeIn" aria-labelledby="messageDropdown">
+                    <li>
+                        <div class="dropdown-title d-flex justify-content-between align-items-center">
+                            Tin nhắn mới
+                            <a href="#" class="small">Đánh dấu đã đọc</a>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="message-notif-scroll scrollbar-outer">
+                            <div class="notif-center">
+                                <a href="#">
+                                    <div class="notif-img">
+                                        <img src="~/Content/img/avatar-default.png" alt="Img Profile">
+                                    </div>
+                                    <div class="notif-content">
+                                        <span class="subject">Nguyễn Văn A</span>
+                                        <span class="block">
+                                            Yêu cầu hỗ trợ về phòng trọ...
+                                        </span>
+                                        <span class="time">5 phút trước</span>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <a class="see-all" href="javascript:void(0);">Xem tất cả tin nhắn<i class="fa fa-angle-right"></i> </a>
+                    </li>
+                </ul>
+            </li>
+
+            <!-- Quick Actions -->
+            <li class="nav-item dropdown hidden-caret">
+                <a class="nav-link" data-toggle="dropdown" href="#" aria-expanded="false" aria-label="Thao tác nhanh">
+                    <i class="fas fa-layer-group"></i>
+                </a>
+                <div class="dropdown-menu quick-actions quick-actions-info animated fadeIn">
+                    <div class="quick-actions-header">
+                        <span class="title mb-1">Thao tác nhanh</span>
+                        <span class="subtitle op-8">Shortcuts</span>
+                    </div>
+                    <div class="quick-actions-scroll scrollbar-outer">
+                        <div class="quick-actions-items">
+                            <div class="row m-0">
+                                <a class="col-6 col-md-4 p-0" href="@Url.Action("Pending", "Hosts")">
+                                    <div class="quick-actions-item">
+                                        <i class="fas fa-user-check"></i>
+                                        <span class="text">Duyệt chủ trọ</span>
+                                    </div>
+                                </a>
+                                <a class="col-6 col-md-4 p-0" href="@Url.Action("Pending", "Rooms")">
+                                    <div class="quick-actions-item">
+                                        <i class="fas fa-home"></i>
+                                        <span class="text">Duyệt phòng</span>
+                                    </div>
+                                </a>
+                                <a class="col-6 col-md-4 p-0" href="@Url.Action("Index", "Reports")">
+                                    <div class="quick-actions-item">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        <span class="text">Báo cáo</span>
+                                    </div>
+                                </a>
+                                <a class="col-6 col-md-4 p-0" href="@Url.Action("Index", "Support")">
+                                    <div class="quick-actions-item">
+                                        <i class="fas fa-headset"></i>
+                                        <span class="text">Hỗ trợ</span>
+                                    </div>
+                                </a>
+                                <a class="col-6 col-md-4 p-0" href="@Url.Action("Index", "Transactions")">
+                                    <div class="quick-actions-item">
+                                        <i class="fas fa-money-bill"></i>
+                                        <span class="text">Biên lai</span>
+                                    </div>
+                                </a>
+                                <a class="col-6 col-md-4 p-0" href="@Url.Action("Index", "Settings")">
+                                    <div class="quick-actions-item">
+                                        <i class="fas fa-cog"></i>
+                                        <span class="text">Cài đặt</span>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </li>
+
+            <!-- User Profile -->
+            <li class="nav-item dropdown hidden-caret">
+                <a class="dropdown-toggle profile-pic" data-toggle="dropdown" href="#" aria-expanded="false" aria-label="Hồ sơ người dùng">
+                    <div class="avatar-sm">
+                        <img src="~/Content/img/avatar-admin.png" alt="Avatar quản trị viên" class="avatar-img rounded-circle">
+                    </div>
+                </a>
+                <ul class="dropdown-menu dropdown-user animated fadeIn">
+                    <div class="dropdown-user-scroll scrollbar-outer">
+                    <li>
+                        <div class="user-box">
+                            <div class="avatar-lg">
+                                <img src="~/Content/img/avatar-admin.png" alt="image profile" class="avatar-img rounded">
+                            </div>
+                            <div class="u-text">
+                                <h4>@(Session["AdminName"] ?? "Administrator")</h4>
+                                <p class="text-muted">admin@trotot.com</p>
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="#"><i class="fas fa-user"></i> Hồ sơ cá nhân</a>
+                        <a class="dropdown-item" href="#"><i class="fas fa-key"></i> Đổi mật khẩu</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="#"><i class="fas fa-cog"></i> Cài đặt tài khoản</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="@Url.Action("Logout", "Auth")"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
+                    </li>
+    </div>
+    </ul>
+    </li>
+    </ul>
+    </div>
+</nav>

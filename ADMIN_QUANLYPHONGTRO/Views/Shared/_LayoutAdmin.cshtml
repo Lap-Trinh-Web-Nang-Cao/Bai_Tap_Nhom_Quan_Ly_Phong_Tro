@@ -1,0 +1,178 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>@ViewBag.Title - TroTot Admin</title>
+
+    <!-- Icon -->
+    <link rel="icon" href="@Url.Content("~/Content/img/favicon.ico")" type="image/x-icon" />
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@200;300;400;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome Icons (CDN - Backup) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="~/Content/css/bootstrap.min.css?v=1.0" />
+    <link rel="stylesheet" href="~/Content/css/fonts.min.css?v=@DateTime.Now.Ticks" />
+    <link rel="stylesheet" href="~/Content/css/atlantis.min.css?v=1.0" />
+    <link rel="stylesheet" href="~/Content/css/custom-admin.css?v=@DateTime.Now.Ticks" />
+
+    <!-- Fonts and icons loader -->
+    <script src="~/Scripts/plugin/webfont/webfont.min.js"></script>
+    <script>
+        WebFont.load({
+            google: { "families": ["Lato:300,400,700,900"] },
+            custom: { 
+                "families": ["Flaticon", "Font Awesome 5 Solid", "Font Awesome 5 Regular", "Font Awesome 5 Brands", "simple-line-icons"], 
+                urls: ['@Url.Content("~/Content/css/fonts.min.css")'] 
+            },
+            active: function () {
+                sessionStorage.fonts = true;
+                console.log('✅ Fonts loaded successfully');
+            }
+        });
+    </script>
+
+    @RenderSection("styles", required: false)
+</head>
+<body>
+    <div class="wrapper">
+        <!-- Main Header -->
+        <div class="main-header">
+            <!-- Logo Header -->
+            <div class="logo-header" data-background-color="blue">
+                <a href="@Url.Action("Index", "Dashboard")" class="logo">
+                    <img src="@Url.Content("~/Content/img/logo.png")" alt="TroTot Logo" class="navbar-brand" id="mainLogo">
+                </a>
+                <button class="navbar-toggler sidenav-toggler ml-auto" type="button" data-toggle="collapse" data-target="collapse" aria-expanded="false" aria-label="Toggle navigation" title="Toggle sidebar">
+                    <span class="navbar-toggler-icon">
+                        <i class="fas fa-bars"></i>
+                    </span>
+                </button>
+                <button class="topbar-toggler more" title="More options" aria-label="More options"><i class="fas fa-ellipsis-v"></i></button>
+                <div class="nav-toggle">
+                    <button class="btn btn-toggle toggle-sidebar" title="Toggle sidebar" aria-label="Toggle sidebar">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+            <!-- End Logo Header -->
+            <!-- Navbar Header -->
+            @Html.Partial("_Navbar")
+            <!-- End Navbar -->
+        </div>
+        <!-- End Main Header -->
+        <!-- Sidebar Navigation -->
+        @Html.Partial("_Sidebar")
+        <!-- End Sidebar -->
+        <!-- Main Panel -->
+        <div class="main-panel">
+            <!-- Page Content -->
+            <div class="content">
+                @RenderBody()
+            </div>
+
+            <!-- Footer -->
+            <footer class="footer">
+                <div class="container-fluid">
+                    <nav class="pull-left">
+                        <ul class="nav">
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">
+                                    TroTot
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">
+                                    Hỗ trợ
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">
+                                    Licenses
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                    <div class="copyright ml-auto">
+                        @DateTime.Now.Year, made with <i class="fa fa-heart heart text-danger"></i> by TroTot Team
+                    </div>
+                </div>
+            </footer>
+        </div>
+
+        <!-- Settings Panel -->
+        @Html.Partial("_SettingsPanel")
+    </div>
+
+    <!-- Core JavaScript Files -->
+    <script src="~/Scripts/core/jquery.3.2.1.min.js"></script>
+    <script src="~/Scripts/core/popper.min.js"></script>
+    <script src="~/Scripts/core/bootstrap.min.js"></script>
+
+    <!-- jQuery UI -->
+    <script src="~/Scripts/plugin/jquery-ui-1.12.1.custom/jquery-ui.min.js"></script>
+    <script src="~/Scripts/plugin/jquery-ui-touch-punch/jquery.ui.touch-punch.min.js"></script>
+
+    <!-- jQuery Scrollbar -->
+    <script src="~/Scripts/plugin/jquery-scrollbar/jquery.scrollbar.min.js"></script>
+
+    <!-- Chart JS -->
+    <script src="~/Scripts/plugin/chart.js/chart.min.js"></script>
+
+    <!-- jQuery Sparkline -->
+    <script src="~/Scripts/plugin/jquery.sparkline/jquery.sparkline.min.js"></script>
+
+    <!-- Chart Circle -->
+    <script src="~/Scripts/plugin/chart-circle/circles.min.js"></script>
+
+    <!-- Datatables -->
+    <script src="~/Scripts/plugin/datatables/datatables.min.js"></script>
+
+    <!-- Bootstrap Notify -->
+    <script src="~/Scripts/plugin/bootstrap-notify/bootstrap-notify.min.js"></script>
+
+    <!-- Sweet Alert -->
+    <script src="~/Scripts/plugin/sweetalert/sweetalert.min.js"></script>
+
+    <!-- Atlantis JS -->
+    <script src="~/Scripts/atlantis.min.js"></script>
+
+    <!-- Setting Demo (for color switcher) -->
+    <script src="~/Scripts/setting-demo.js?v=1.0"></script>
+
+    <!-- Custom Scripts -->
+    <script>
+        $(document).ready(function() {
+            console.log('=== TroTot Admin Initialization ===');
+            
+            // Check if settings panel exists
+            var $settingsPanel = $('.custom-template');
+            var $settingsToggle = $('.custom-toggle');
+            
+            console.log('Settings Panel:', $settingsPanel.length > 0 ? '✅ Found' : '❌ NOT FOUND');
+            console.log('Settings Toggle:', $settingsToggle.length > 0 ? '✅ Found' : '❌ NOT FOUND');
+            console.log('Settings Icon:', $('.custom-toggle i').length > 0 ? '✅ Found' : '❌ NOT FOUND');
+            console.log('Sidebar Icons:', $('.sidebar i.fas, .sidebar i.flaticon-settings').length + ' icons found');
+            
+            // Force show settings toggle button
+            if ($settingsToggle.length > 0) {
+                $settingsToggle.css({
+                    'display': 'flex',
+                    'visibility': 'visible',
+                    'opacity': '1'
+                });
+                console.log('✅ Settings toggle button visibility forced');
+            }
+            
+            console.log('=================================');
+        });
+    </script>
+
+    @RenderSection("scripts", required: false)
+</body>
+</html>

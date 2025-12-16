@@ -184,7 +184,7 @@ BEGIN
         BienLaiId UNIQUEIDENTIFIER DEFAULT NEWID() PRIMARY KEY,
         DatPhongId UNIQUEIDENTIFIER NOT NULL,
         NguoiTai UNIQUEIDENTIFIER NOT NULL,
-        TapTinId UNIQUEIDENTIFIER NOT NULL,
+        TapTinId UNIQUEIDENTIFIER NULL,
         SoTien BIGINT NULL,
         ThoiGianTai DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
         DaXacNhan BIT DEFAULT 0,
@@ -928,11 +928,267 @@ SELECT TOP 5 BaoCaoId, LoaiThucThe, TieuDe, TrangThai, ThoiGianBaoCao FROM dbo.B
 GO
 
 PRINT N'Complete: DB QuanLyPhongTro created/updated (admin columns ensured and SPs recreated).';
-GO
 
 
-INSERT INTO NguoiDung (VaiTroId)
-    VALUES(2)
 
-INSERT INTO NhaTro (ChuTroId, TieuDe)
-    VALUES('482d7eb8-ee43-4fc4-a02d-a653363c11df','Test load')
+--SQL: INSERT QUẬN / HUYỆN
+INSERT INTO QuanHuyen (Ten) VALUES
+(N'Hải Châu'),
+(N'Thanh Khê'),
+(N'Sơn Trà'),
+(N'Ngũ Hành Sơn'),
+(N'Liên Chiểu'),
+(N'Cẩm Lệ'),
+(N'Hòa Vang'),
+(N'Hoàng Sa');
+--Quận Hải Châu (1)
+INSERT INTO Phuong (QuanHuyenId, Ten) VALUES
+(1, N'Hải Châu I'),
+(1, N'Hải Châu II'),
+(1, N'Thanh Bình'),
+(1, N'Thuận Phước'),
+(1, N'Thạch Thang'),
+(1, N'Nam Dương'),
+(1, N'Bình Hiên'),
+(1, N'Bình Thuận'),
+(1, N'Hòa Thuận Đông'),
+(1, N'Hòa Thuận Tây'),
+(1, N'Phước Ninh'),
+(1, N'Hòa Cường Bắc'),
+(1, N'Hòa Cường Nam');
+--Quận Thanh Khê (2)
+INSERT INTO Phuong (QuanHuyenId, Ten) VALUES
+(2, N'Tam Thuận'),
+(2, N'Thanh Khê Đông'),
+(2, N'Thanh Khê Tây'),
+(2, N'Xuân Hà'),
+(2, N'Tân Chính'),
+(2, N'Chính Gián'),
+(2, N'Vĩnh Trung'),
+(2, N'Thạc Gián'),
+(2, N'An Khê'),
+(2, N'Hòa Khê');
+--Quận Sơn Trà (3)
+INSERT INTO Phuong (QuanHuyenId, Ten) VALUES
+(3, N'An Hải Bắc'),
+(3, N'An Hải Đông'),
+(3, N'An Hải Tây'),
+(3, N'Mân Thái'),
+(3, N'Thọ Quang'),
+(3, N'Nại Hiên Đông'),
+(3, N'Phước Mỹ');
+--Quận Ngũ Hành Sơn (4)
+INSERT INTO Phuong (QuanHuyenId, Ten) VALUES
+(4, N'Mỹ An'),
+(4, N'Khuê Mỹ'),
+(4, N'Hòa Hải'),
+(4, N'Hòa Quý');
+--Quận Liên Chiểu (5)
+INSERT INTO Phuong (QuanHuyenId, Ten) VALUES
+(5, N'Hòa Hiệp Bắc'),
+(5, N'Hòa Hiệp Nam'),
+(5, N'Hòa Khánh Bắc'),
+(5, N'Hòa Khánh Nam'),
+(5, N'Hòa Minh');
+--Quận Cẩm Lệ (6)
+INSERT INTO Phuong (QuanHuyenId, Ten) VALUES
+(6, N'Khuê Trung'),
+(6, N'Hòa Thọ Đông'),
+(6, N'Hòa Thọ Tây'),
+(6, N'Hòa An'),
+(6, N'Hòa Phát'),
+(6, N'Hòa Xuân');
+--Huyện Hòa Vang (7)
+INSERT INTO Phuong (QuanHuyenId, Ten) VALUES
+(7, N'Hòa Bắc'),
+(7, N'Hòa Liên'),
+(7, N'Hòa Ninh'),
+(7, N'Hòa Sơn'),
+(7, N'Hòa Nhơn'),
+(7, N'Hòa Phong'),
+(7, N'Hòa Châu'),
+(7, N'Hòa Tiến'),
+(7, N'Hòa Phú'),
+(7, N'Hòa Phước'),
+(7, N'Hòa Khương');
+-- Huyện đảo Hoàng Sa (8)
+INSERT INTO Phuong (QuanHuyenId, Ten) VALUES
+(8, N'Không có đơn vị phường');
+
+/* ==========================================================
+   1. VAI TRÒ
+========================================================== */
+INSERT INTO VaiTro (TenVaiTro)
+SELECT N'Admin' WHERE NOT EXISTS (SELECT 1 FROM VaiTro WHERE TenVaiTro=N'Admin');
+INSERT INTO VaiTro (TenVaiTro)
+SELECT N'ChuTro' WHERE NOT EXISTS (SELECT 1 FROM VaiTro WHERE TenVaiTro=N'ChuTro');
+INSERT INTO VaiTro (TenVaiTro)
+SELECT N'NguoiThue' WHERE NOT EXISTS (SELECT 1 FROM VaiTro WHERE TenVaiTro=N'NguoiThue');
+
+
+/* ==========================================================
+   2. NGƯỜI DÙNG – GIỮ GUID TỰ ĐẶT
+========================================================== */
+
+DECLARE @NguoiThue1 UNIQUEIDENTIFIER = '11111111-1111-1111-1111-111111111111';
+DECLARE @NguoiThue2 UNIQUEIDENTIFIER = '22222222-2222-2222-2222-222222222222';
+DECLARE @ChuTro1    UNIQUEIDENTIFIER = '33333333-3333-3333-3333-333333333333';
+DECLARE @ChuTro2    UNIQUEIDENTIFIER = '44444444-4444-4444-4444-444444444444';
+DECLARE @Admin      UNIQUEIDENTIFIER = '55555555-5555-5555-5555-555555555555';
+
+-- NGƯỜI THUÊ
+INSERT INTO NguoiDung (NguoiDungId, Email, DienThoai, PasswordHash, VaiTroId)
+SELECT @NguoiThue1, 'rentera@example.com','0905000001','hash123',
+       (SELECT VaiTroId FROM VaiTro WHERE TenVaiTro='NguoiThue')
+WHERE NOT EXISTS (SELECT 1 FROM NguoiDung WHERE NguoiDungId=@NguoiThue1);
+
+INSERT INTO HoSoNguoiDung (NguoiDungId, HoTen)
+SELECT @NguoiThue1, N'Người Thuê A'
+WHERE NOT EXISTS (SELECT 1 FROM HoSoNguoiDung WHERE NguoiDungId=@NguoiThue1);
+
+
+INSERT INTO NguoiDung (NguoiDungId, Email, DienThoai, PasswordHash, VaiTroId)
+SELECT @NguoiThue2, 'renterb@example.com','0905000002','hash123',
+       (SELECT VaiTroId FROM VaiTro WHERE TenVaiTro='NguoiThue')
+WHERE NOT EXISTS (SELECT 1 FROM NguoiDung WHERE NguoiDungId=@NguoiThue2);
+
+INSERT INTO HoSoNguoiDung (NguoiDungId, HoTen)
+SELECT @NguoiThue2, N'Người Thuê B'
+WHERE NOT EXISTS (SELECT 1 FROM HoSoNguoiDung WHERE NguoiDungId=@NguoiThue2);
+
+
+-- CHỦ TRỌ
+INSERT INTO NguoiDung (NguoiDungId, Email, DienThoai, PasswordHash, VaiTroId)
+SELECT @ChuTro1, 'hosta@example.com','0905123456','hash123',
+       (SELECT VaiTroId FROM VaiTro WHERE TenVaiTro='ChuTro')
+WHERE NOT EXISTS (SELECT 1 FROM NguoiDung WHERE NguoiDungId=@ChuTro1);
+
+INSERT INTO HoSoNguoiDung (NguoiDungId, HoTen)
+SELECT @ChuTro1, N'Chủ Trọ A'
+WHERE NOT EXISTS (SELECT 1 FROM HoSoNguoiDung WHERE NguoiDungId=@ChuTro1);
+
+
+INSERT INTO NguoiDung (NguoiDungId, Email, DienThoai, PasswordHash, VaiTroId)
+SELECT @ChuTro2, 'hostb@example.com','0905234567','hash123',
+       (SELECT VaiTroId FROM VaiTro WHERE TenVaiTro='ChuTro')
+WHERE NOT EXISTS (SELECT 1 FROM NguoiDung WHERE NguoiDungId=@ChuTro2);
+
+INSERT INTO HoSoNguoiDung (NguoiDungId, HoTen)
+SELECT @ChuTro2, N'Chủ Trọ B'
+WHERE NOT EXISTS (SELECT 1 FROM HoSoNguoiDung WHERE NguoiDungId=@ChuTro2);
+
+
+-- ADMIN
+INSERT INTO NguoiDung (NguoiDungId, Email, DienThoai, PasswordHash, VaiTroId)
+SELECT @Admin, 'admin@trotot.com','0905999999','adminhash',
+       (SELECT VaiTroId FROM VaiTro WHERE TenVaiTro='Admin')
+WHERE NOT EXISTS (SELECT 1 FROM NguoiDung WHERE NguoiDungId=@Admin);
+
+INSERT INTO HoSoNguoiDung (NguoiDungId, HoTen)
+SELECT @Admin, N'Quản trị viên'
+WHERE NOT EXISTS (SELECT 1 FROM HoSoNguoiDung WHERE NguoiDungId=@Admin);
+/* ==========================================================
+   4. NHÀ TRỌ
+========================================================== */
+
+DECLARE @NhaTro1 UNIQUEIDENTIFIER = 'aaaa1111-aaaa-1111-aaaa-111111111111';
+DECLARE @NhaTro2 UNIQUEIDENTIFIER = 'aaaa2222-aaaa-2222-aaaa-222222222222';
+
+INSERT INTO NhaTro (NhaTroId, ChuTroId, TieuDe, DiaChi, QuanHuyenId, PhuongId)
+SELECT @NhaTro1, @ChuTro1, N'Nhà trọ Hòa Khánh', N'123 Hòa Khánh Nam', 5, 4
+WHERE NOT EXISTS (SELECT 1 FROM NhaTro WHERE NhaTroId=@NhaTro1);
+
+INSERT INTO NhaTro (NhaTroId, ChuTroId, TieuDe, DiaChi, QuanHuyenId, PhuongId)
+SELECT @NhaTro2, @ChuTro2, N'Nhà trọ Mỹ An', N'55 Mỹ An', 4, 1
+WHERE NOT EXISTS (SELECT 1 FROM NhaTro WHERE NhaTroId=@NhaTro2);
+/* ==========================================================
+   5. 20 PHÒNG MẪU
+========================================================== */
+
+DECLARE @i INT = 1;
+
+WHILE @i <= 20
+BEGIN
+    DECLARE @PhongId UNIQUEIDENTIFIER = NEWID();
+    DECLARE @NhaTro UNIQUEIDENTIFIER =
+        CASE WHEN @i <= 10 THEN 'aaaa1111-aaaa-1111-aaaa-111111111111'
+             ELSE 'aaaa2222-aaaa-2222-aaaa-222222222222' END;
+
+    INSERT INTO Phong (PhongId, NhaTroId, TieuDe, DienTich, GiaTien, TrangThai, IsDuyet)
+    SELECT @PhongId, @NhaTro,
+           CONCAT(N'Phòng mẫu số ', @i),
+           15 + (@i % 10),
+           2000000 + (@i * 50000),
+           N'con_trong', 1;
+
+    SET @i += 1;
+END
+/* ==========================================================
+   6. TIỆN ÍCH
+========================================================== */
+
+INSERT INTO TienIch (Ten) SELECT N'Wifi' WHERE NOT EXISTS (SELECT 1 FROM TienIch WHERE Ten=N'Wifi');
+INSERT INTO TienIch (Ten) SELECT N'Máy lạnh' WHERE NOT EXISTS (SELECT 1 FROM TienIch WHERE Ten=N'Máy lạnh');
+INSERT INTO TienIch (Ten) SELECT N'Giường nệm' WHERE NOT EXISTS (SELECT 1 FROM TienIch WHERE Ten=N'Giường nệm');
+INSERT INTO TienIch (Ten) SELECT N'Bãi đỗ xe' WHERE NOT EXISTS (SELECT 1 FROM TienIch WHERE Ten=N'Bãi đỗ xe');
+
+
+/* GẮN MẶC ĐỊNH 2 TIỆN ÍCH NGẪU NHIÊN CHO 20 PHÒNG */
+INSERT INTO PhongTienIch (PhongId, TienIchId)
+SELECT P.PhongId, TI.TienIchId
+FROM Phong P
+CROSS JOIN (SELECT TOP 2 TienIchId FROM TienIch ORDER BY NEWID()) TI
+WHERE NOT EXISTS (
+    SELECT 1 FROM PhongTienIch PT
+    WHERE PT.PhongId = P.PhongId AND PT.TienIchId = TI.TienIchId
+);
+/* ==========================================================
+   7. DAT PHONG + BIÊN LAI
+========================================================== */
+
+DECLARE @DatId UNIQUEIDENTIFIER = 'dddd1111-dddd-1111-dddd-111111111111';
+DECLARE @BienLai UNIQUEIDENTIFIER = 'eeee1111-eeee-1111-eeee-111111111111';
+
+INSERT INTO DatPhong (DatPhongId, PhongId, NguoiThueId, ChuTroId, Loai, BatDau, TrangThaiId)
+SELECT @DatId,
+       (SELECT TOP 1 PhongId FROM Phong),
+       @NguoiThue1,
+       @ChuTro1,
+       N'giucho',
+       SYSDATETIMEOFFSET(),
+       (SELECT TOP 1 TrangThaiId FROM TrangThaiDatPhong WHERE TenTrangThai=N'ChoXacNhan')
+WHERE NOT EXISTS (SELECT 1 FROM DatPhong WHERE DatPhongId=@DatId);
+
+
+INSERT INTO BienLai (BienLaiId, DatPhongId, NguoiTai, TapTinId, SoTien)
+SELECT @BienLai, @DatId, @NguoiThue1, NULL, 500000
+WHERE NOT EXISTS (SELECT 1 FROM BienLai WHERE BienLaiId=@BienLai);
+/* ==========================================================
+   8. TIN NHẮN
+========================================================== */
+
+INSERT INTO TinNhan (FromUser, ToUser, NoiDung)
+SELECT @NguoiThue1, @ChuTro1, N'Cho em hỏi phòng này còn trống không ạ?'
+WHERE NOT EXISTS (SELECT 1 FROM TinNhan WHERE FromUser=@NguoiThue1);
+
+INSERT INTO TinNhan (FromUser, ToUser, NoiDung)
+SELECT @ChuTro1, @NguoiThue1, N'Phòng còn em nhé!'
+WHERE NOT EXISTS (SELECT 1 FROM TinNhan WHERE FromUser=@ChuTro1);
+
+
+/* ==========================================================
+   9. BÁO CÁO VI PHẠM
+========================================================== */
+
+DECLARE @Report UNIQUEIDENTIFIER = 'cccc1111-cccc-1111-cccc-111111111111';
+
+INSERT INTO BaoCaoViPham (BaoCaoId, LoaiThucThe, ThucTheId, NguoiBaoCao, ViPhamId, TieuDe, MoTa)
+SELECT @Report, N'Phong',
+       (SELECT TOP 1 PhongId FROM Phong),
+       @NguoiThue2,
+       NULL,
+       N'Phòng không đúng mô tả',
+       N'Hình ảnh phòng không giống thực tế'
+WHERE NOT EXISTS (SELECT 1 FROM BaoCaoViPham WHERE BaoCaoId=@Report);
+ALTER TABLE BienLai
+ALTER COLUMN TapTinId UNIQUEIDENTIFIER NULL;

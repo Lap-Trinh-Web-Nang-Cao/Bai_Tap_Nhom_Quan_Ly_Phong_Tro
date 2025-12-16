@@ -29,6 +29,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddScoped<IBaoCaoViPhamService, BaoCaoViPhamService>();
 builder.Services.AddScoped<IBienLaiService, BienLaiService>();
 builder.Services.AddScoped<IChuTroThongTinPhapLyService, ChuTroThongTinPhapLyService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<INguoiDungService, NguoiDungService>();
 builder.Services.AddScoped<IDanhGiaPhongService, DanhGiaPhongService>();
 builder.Services.AddScoped<IDatPhongService, DatPhongService>();

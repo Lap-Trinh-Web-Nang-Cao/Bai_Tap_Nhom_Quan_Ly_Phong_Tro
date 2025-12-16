@@ -1,0 +1,537 @@
+﻿@model IEnumerable<ADMIN_QUANLYPHONGTRO.Models.ViewModels.UserItemViewModel>
+
+@{
+    ViewBag.Title = "Quản lý người dùng";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<!-- Page Header -->
+<div class="page-header">
+    <h4 class="page-title">Quản lý người dùng</h4>
+    <ul class="breadcrumbs">
+        <li class="nav-home">
+            <a href="@Url.Action("Index", "Dashboard")">
+                <i class="flaticon-home"></i>
+            </a>
+        </li>
+        <li class="separator">
+            <i class="flaticon-right-arrow"></i>
+        </li>
+        <li class="nav-item">
+            <a href="#">Người dùng</a>
+        </li>
+        <li class="separator">
+            <i class="flaticon-right-arrow"></i>
+        </li>
+        <li class="nav-item">
+            <a href="#">Danh sách</a>
+        </li>
+    </ul>
+</div>
+
+<!-- Main Content Card -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex align-items-center">
+                    <h4 class="card-title">Danh sách người dùng</h4>
+                    <button class="btn btn-primary btn-round ml-auto" data-toggle="modal" data-target="#addUserModal">
+                        <i class="fa fa-plus"></i>
+                        Thêm người dùng
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- Filter & Search Section -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Vai trò</label>
+                            <select class="form-control form-control-sm" id="filterRole">
+                                <option value="">Tất cả</option>
+                                <option value="1">Admin</option>
+                                <option value="2">Chủ trọ</option>
+                                <option value="3">Người thuê</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Trạng thái</label>
+                            <select class="form-control form-control-sm" id="filterStatus">
+                                <option value="">Tất cả</option>
+                                <option value="active">Đang hoạt động</option>
+                                <option value="locked">Đã khóa</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Tìm kiếm</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control form-control-sm" id="searchInput" placeholder="Tìm theo tên, email, SĐT...">
+                                <div class="input-group-append">
+                                    <button class="btn btn-primary btn-sm" type="button" id="btnSearch">
+                                        <i class="fa fa-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data Table -->
+                <div class="table-responsive">
+                    <table id="usersTable" class="display table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Avatar</th>
+                                <th>Họ tên</th>
+                                <th>Email</th>
+                                <th>Điện thoại</th>
+                                <th>Vai trò</th>
+                                <th>Hoạt động</th>
+                                <th>Trạng thái</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model != null && Model.Any())
+                            {
+                                foreach (var user in Model)
+                                {
+                                    <tr data-user-id="@user.NguoiDungId">
+                                        <td>
+                                            <div class="avatar avatar-sm">
+                                                <img src="@(string.IsNullOrEmpty(user.Avatar) ? "/Content/img/default-avatar.png" : user.Avatar)" 
+                                                     alt="@user.HoTen" class="avatar-img rounded-circle"
+                                                     onerror="this.onerror=null; this.src='/Content/img/default-avatar.png';" />
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <strong>@user.HoTen</strong>
+                                        </td>
+                                        <td>@user.Email</td>
+                                        <td>@user.DienThoai</td>
+                                        <td>
+                                            @if (user.VaiTroId == 1)
+                                            {
+                                                <span class="badge badge-danger">Admin</span>
+                                            }
+                                            else if (user.VaiTroId == 2)
+                                            {
+                                                <span class="badge badge-info">Chủ trọ</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge badge-primary">Người thuê</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">
+                                                @if (user.VaiTroId == 2)
+                                                {
+                                                    <span><i class="fa fa-building"></i> @user.SoPhongDaDang phòng</span>
+                                                }
+                                                else if (user.VaiTroId == 3)
+                                                {
+                                                    <span><i class="fa fa-calendar"></i> @user.SoPhongDaThue đặt phòng</span>
+                                                }
+                                                else
+                                                {
+                                                    <span>-</span>
+                                                }
+                                            </small>
+                                        </td>
+                                        <td>
+                                            @if (user.IsKhoa)
+                                            {
+                                                <span class="badge badge-danger">Đã khóa</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge badge-success">Hoạt động</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <div class="form-button-action">
+                                                <button type="button" class="btn btn-link btn-primary btn-lg" 
+                                                        data-toggle="tooltip" title="Xem chi tiết"
+                                                        onclick="viewUserDetail('@user.NguoiDungId')">
+                                                    <i class="fa fa-eye"></i>
+                                                </button>
+                                                @if (!user.IsKhoa)
+                                                {
+                                                    <button type="button" class="btn btn-link btn-danger" 
+                                                            data-toggle="tooltip" title="Khóa tài khoản"
+                                                            onclick="lockUser('@user.NguoiDungId', '@user.HoTen')">
+                                                        <i class="fa fa-ban"></i>
+                                                    </button>
+                                                }
+                                                else
+                                                {
+                                                    <button type="button" class="btn btn-link btn-success" 
+                                                            data-toggle="tooltip" title="Mở khóa"
+                                                            onclick="unlockUser('@user.NguoiDungId', '@user.HoTen')">
+                                                        <i class="fa fa-unlock"></i>
+                                                    </button>
+                                                }
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="8" class="text-center py-5">
+                                        <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                                        <p class="text-muted">Chưa có người dùng nào</p>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Chi tiết người dùng -->
+<div class="modal fade" id="userDetailModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title">
+                    <span class="fw-mediumbold">Chi tiết người dùng</span>
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Loading State -->
+                <div id="userDetailLoading" class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="sr-only">Đang tải...</span>
+                    </div>
+                </div>
+
+                <!-- User Detail Content -->
+                <div id="userDetailContent" style="display: none;">
+                    <div class="row">
+                        <!-- Left: Avatar & Basic Info -->
+                        <div class="col-md-4">
+                            <div class="text-center mb-4">
+                                <img id="detailAvatar" src="/Content/img/default-avatar.png" 
+                                     alt="Avatar" class="img-fluid rounded-circle mb-3"
+                                     style="width: 150px; height: 150px; object-fit: cover;">
+                                <h4 id="detailHoTen" class="mb-1">-</h4>
+                                <p id="detailVaiTro" class="text-muted mb-2">-</p>
+                                <div id="detailTrangThai"></div>
+                            </div>
+                            <hr>
+                            <div class="text-left">
+                                <p><strong><i class="fa fa-envelope"></i> Email:</strong><br> <span id="detailEmail">-</span></p>
+                                <p><strong><i class="fa fa-phone"></i> Điện thoại:</strong><br> <span id="detailDienThoai">-</span></p>
+                                <p><strong><i class="fa fa-id-card"></i> CCCD:</strong><br> <span id="detailCCCD">-</span></p>
+                                <p><strong><i class="fa fa-calendar"></i> Ngày đăng ký:</strong><br> <span id="detailNgayDangKy">-</span></p>
+                            </div>
+                        </div>
+
+                        <!-- Right: Detailed Info -->
+                        <div class="col-md-8">
+                            <ul class="nav nav-pills nav-secondary nav-pills-no-bd" id="pills-tab" role="tablist">
+                                <li class="nav-item">
+                                    <a class="nav-link active" id="pills-overview-tab" data-toggle="pill" href="#pills-overview">
+                                        Tổng quan
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" id="pills-activity-tab" data-toggle="pill" href="#pills-activity">
+                                        Hoạt động
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" id="pills-documents-tab" data-toggle="pill" href="#pills-documents">
+                                        Giấy tờ
+                                    </a>
+                                </li>
+                            </ul>
+                            <div class="tab-content mt-3" id="pills-tabContent">
+                                <!-- Overview Tab -->
+                                <div class="tab-pane fade show active" id="pills-overview">
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="card card-stats">
+                                                <div class="card-body">
+                                                    <div class="row">
+                                                        <div class="col-6">
+                                                            <div class="stats-icon purple">
+                                                                <i class="fas fa-building"></i>
+                                                            </div>
+                                                            <h5 class="mb-0" id="detailSoPhong">0</h5>
+                                                            <small class="text-muted">Số phòng</small>
+                                                        </div>
+                                                        <div class="col-6">
+                                                            <div class="stats-icon green">
+                                                                <i class="fas fa-star"></i>
+                                                            </div>
+                                                            <h5 class="mb-0">4.5/5</h5>
+                                                            <small class="text-muted">Đánh giá TB</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3">
+                                        <h6><i class="fa fa-map-marker-alt"></i> Địa chỉ thường trú</h6>
+                                        <p id="detailDiaChi" class="text-muted">-</p>
+                                        
+                                        <h6><i class="fa fa-info-circle"></i> Ghi chú</h6>
+                                        <p id="detailGhiChu" class="text-muted">-</p>
+                                    </div>
+                                </div>
+
+                                <!-- Activity Tab -->
+                                <div class="tab-pane fade" id="pills-activity">
+                                    <div class="timeline timeline-simple">
+                                        <div class="timeline-item">
+                                            <div class="timeline-badge success"><i class="fa fa-check"></i></div>
+                                            <div class="timeline-content">
+                                                <h6 class="m-0">Đăng ký tài khoản</h6>
+                                                <small class="text-muted">3 tháng trước</small>
+                                            </div>
+                                        </div>
+                                        <div class="timeline-item">
+                                            <div class="timeline-badge info"><i class="fa fa-building"></i></div>
+                                            <div class="timeline-content">
+                                                <h6 class="m-0">Đăng 5 phòng mới</h6>
+                                                <small class="text-muted">1 tháng trước</small>
+                                            </div>
+                                        </div>
+                                        <div class="timeline-item">
+                                            <div class="timeline-badge warning"><i class="fa fa-star"></i></div>
+                                            <div class="timeline-content">
+                                                <h6 class="m-0">Nhận đánh giá 5 sao</h6>
+                                                <small class="text-muted">2 tuần trước</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Documents Tab -->
+                                <div class="tab-pane fade" id="pills-documents">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <div class="card">
+                                                <div class="card-body text-center">
+                                                    <h6>CCCD Mặt trước</h6>
+                                                    <img id="detailCCCDMatTruoc" src="/Content/img/no-image.png" 
+                                                         class="img-fluid rounded" style="max-height: 150px;">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <div class="card">
+                                                <div class="card-body text-center">
+                                                    <h6>CCCD Mặt sau</h6>
+                                                    <img id="detailCCCDMatSau" src="/Content/img/no-image.png" 
+                                                         class="img-fluid rounded" style="max-height: 150px;">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <div class="card">
+                                                <div class="card-body text-center">
+                                                    <h6>Giấy phép kinh doanh</h6>
+                                                    <img id="detailGiayPhep" src="/Content/img/no-image.png" 
+                                                         class="img-fluid rounded" style="max-height: 200px;">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-danger" onclick="lockUserFromModal()">
+                    <i class="fa fa-ban"></i> Khóa tài khoản
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Add User (Placeholder) -->
+<div class="modal fade" id="addUserModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Thêm người dùng mới</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="text-center text-muted py-4">
+                    <i class="fas fa-tools fa-3x mb-3"></i><br>
+                    Chức năng đang phát triển
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+<script>
+    $(document).ready(function() {
+        // Initialize DataTable
+        var table = $('#usersTable').DataTable({
+            "pageLength": 10,
+            "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "Tất cả"]],
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.13.7/i18n/vi.json"
+            },
+            "order": [[1, "asc"]],
+            "columnDefs": [
+                { "orderable": false, "targets": [0, 7] }
+            ]
+        });
+
+        // Filter by Role
+        $('#filterRole').on('change', function() {
+            var val = $(this).val();
+            if (val === "") {
+                table.column(4).search('').draw();
+            } else {
+                var roleText = val == 1 ? 'Admin' : (val == 2 ? 'Chủ trọ' : 'Người thuê');
+                table.column(4).search(roleText).draw();
+            }
+        });
+
+        // Filter by Status
+        $('#filterStatus').on('change', function() {
+            var val = $(this).val();
+            if (val === "") {
+                table.column(6).search('').draw();
+            } else {
+                var statusText = val === 'active' ? 'Hoạt động' : 'Đã khóa';
+                table.column(6).search(statusText).draw();
+            }
+        });
+
+        // Search
+        $('#btnSearch').on('click', function() {
+            var val = $('#searchInput').val();
+            table.search(val).draw();
+        });
+
+        $('#searchInput').on('keyup', function(e) {
+            if (e.keyCode === 13) {
+                $('#btnSearch').click();
+            }
+        });
+
+        // Initialize Tooltips
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+
+    // View User Detail
+    function viewUserDetail(userId) {
+        $('#userDetailModal').modal('show');
+        $('#userDetailLoading').show();
+        $('#userDetailContent').hide();
+
+        // TODO: Call API to get user detail
+        // Mock data for now
+        setTimeout(function() {
+            $('#userDetailLoading').hide();
+            $('#userDetailContent').show();
+            
+            // Fill mock data
+            $('#detailAvatar').attr('src', '/Content/img/default-avatar.png');
+            $('#detailHoTen').text('Nguyễn Văn A');
+            $('#detailVaiTro').text('Chủ trọ');
+            $('#detailTrangThai').html('<span class="badge badge-success">Hoạt động</span>');
+            $('#detailEmail').text('chutro@example.com');
+            $('#detailDienThoai').text('0905123456');
+            $('#detailCCCD').text('001234567890');
+            $('#detailNgayDangKy').text('01/01/2024');
+            $('#detailSoPhong').text('12');
+            $('#detailDiaChi').text('123 Đường ABC, Quận 1, TP.HCM');
+            $('#detailGhiChu').text('Không có ghi chú');
+        }, 1000);
+    }
+
+    // Lock User
+    function lockUser(userId, userName) {
+        swal({
+            title: 'Xác nhận khóa tài khoản?',
+            text: "Bạn có chắc muốn khóa tài khoản: " + userName + "?",
+            icon: 'warning',
+            buttons: {
+                cancel: {
+                    text: 'Hủy',
+                    visible: true,
+                    className: 'btn btn-secondary'
+                },
+                confirm: {
+                    text: 'Khóa',
+                    className: 'btn btn-danger'
+                }
+            }
+        }).then((willLock) => {
+            if (willLock) {
+                // TODO: Call API to lock user
+                swal("Thành công!", "Đã khóa tài khoản: " + userName, "success")
+                    .then(() => {
+                        location.reload();
+                    });
+            }
+        });
+    }
+
+    // Unlock User
+    function unlockUser(userId, userName) {
+        swal({
+            title: 'Xác nhận mở khóa?',
+            text: "Bạn có chắc muốn mở khóa tài khoản: " + userName + "?",
+            icon: 'info',
+            buttons: {
+                cancel: {
+                    text: 'Hủy',
+                    visible: true,
+                    className: 'btn btn-secondary'
+                },
+                confirm: {
+                    text: 'Mở khóa',
+                    className: 'btn btn-success'
+                }
+            }
+        }).then((willUnlock) => {
+            if (willUnlock) {
+                // TODO: Call API to unlock user
+                swal("Thành công!", "Đã mở khóa tài khoản: " + userName, "success")
+                    .then(() => {
+                        location.reload();
+                    });
+            }
+        });
+    }
+
+    // Lock from Modal
+    function lockUserFromModal() {
+        var userName = $('#detailHoTen').text();
+        lockUser('temp-id', userName);
+    }
+</script>
+}
+

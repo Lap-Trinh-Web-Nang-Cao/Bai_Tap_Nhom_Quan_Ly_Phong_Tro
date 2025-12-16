@@ -1,0 +1,184 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+
+<!-- Report Detail Modal -->
+<div class="modal fade" id="reportDetailModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title">
+                    <span class="fw-mediumbold">Chi tiết</span> 
+                    <span class="fw-light">báo cáo vi phạm</span>
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="reportDetailContent">
+                <!-- Content loaded via AJAX -->
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+<script>
+    $(document).ready(function() {
+        // Initialize DataTable
+        $('#reports-table').DataTable({
+            "pageLength": 10,
+            "searching": false,
+            "ordering": true,
+            "info": false,
+            "paging": false,
+            "order": [[4, 'desc']], // Sort by date
+            "language": {
+                "emptyTable": "Không có dữ liệu"
+            }
+        });
+
+        // Calculate statistics
+        calculateStats();
+    });
+
+    function calculateStats() {
+        var pending = 0, highPriority = 0, resolved = 0;
+
+        $('#reports-table tbody tr').each(function() {
+            var status = $(this).data('status');
+            var severity = $(this).data('severity');
+
+            if (status === 'Chờ xử lý') pending++;
+            if (severity === 'Cao') highPriority++;
+            if (status === 'Đã xử lý') resolved++;
+        });
+
+        $('#pendingCount').text(pending);
+        $('#highPriorityCount').text(highPriority);
+        $('#resolvedCount').text(resolved);
+    }
+
+    function filterBySeverity(severity) {
+        var table = $('#reports-table').DataTable();
+        if (severity === '') {
+            table.column(5).search('').draw();
+        } else {
+            table.column(5).search(severity).draw();
+        }
+    }
+
+    function filterByStatus(status) {
+        var table = $('#reports-table').DataTable();
+        if (status === '') {
+            table.column(6).search('').draw();
+        } else {
+            table.column(6).search(status).draw();
+        }
+    }
+
+    function filterByType(type) {
+        var table = $('#reports-table').DataTable();
+        if (type === '') {
+            table.column(1).search('').draw();
+        } else {
+            table.column(1).search(type).draw();
+        }
+    }
+
+    function clearFilters() {
+        $('#severityFilter').val('');
+        $('#statusFilter').val('');
+        $('#typeFilter').val('');
+        $('#reports-table').DataTable().search('').columns().search('').draw();
+    }
+
+    function viewReportDetails(reportId) {
+        $('#reportDetailModal').modal('show');
+        $('#reportDetailContent').html('<div class="text-center py-5"><div class="spinner-border text-primary"></div></div>');
+        
+        // TODO: Load report details via AJAX
+        setTimeout(function() {
+            $('#reportDetailContent').html('<p>Chi tiết báo cáo: ' + reportId + '</p>');
+        }, 500);
+    }
+
+    function resolveReport(reportId) {
+        swal({
+            title: 'Xác nhận xử lý',
+            text: 'Bạn có chắc muốn đánh dấu báo cáo này đã được xử lý?',
+            icon: 'info',
+            buttons: {
+                cancel: {
+                    text: 'Hủy',
+                    visible: true,
+                    className: 'btn btn-secondary'
+                },
+                confirm: {
+                    text: 'Xác nhận',
+                    className: 'btn btn-success'
+                }
+            }
+        }).then((willResolve) => {
+            if (willResolve) {
+                $.ajax({
+                    url: '@Url.Action("Resolve", "Reports")' + '/' + reportId,
+                    type: 'POST',
+                    success: function() {
+                        swal("Thành công!", "Đã xử lý báo cáo", "success")
+                            .then(() => location.reload());
+                    },
+                    error: function() {
+                        swal("Lỗi!", "Không thể xử lý báo cáo", "error");
+                    }
+                });
+            }
+        });
+    }
+
+    function rejectReport(reportId) {
+        swal({
+            title: 'Từ chối báo cáo',
+            text: 'Nhập lý do từ chối:',
+            content: {
+                element: "input",
+                attributes: {
+                    placeholder: "Lý do từ chối...",
+                    type: "text",
+                }
+            },
+            icon: 'warning',
+            buttons: {
+                cancel: {
+                    text: 'Hủy',
+                    visible: true,
+                    className: 'btn btn-secondary'
+                },
+                confirm: {
+                    text: 'Từ chối',
+                    className: 'btn btn-danger'
+                }
+            }
+        }).then((reason) => {
+            if (reason) {
+                // TODO: Implement reject logic
+                swal("Đã từ chối!", "Báo cáo đã bị từ chối", "success")
+                    .then(() => location.reload());
+            }
+        });
+    }
+
+    function exportReports() {
+        swal("Đang xuất", "Đang tạo file báo cáo...", "info");
+        // TODO: Implement export functionality
+    }
+</script>
+}
+

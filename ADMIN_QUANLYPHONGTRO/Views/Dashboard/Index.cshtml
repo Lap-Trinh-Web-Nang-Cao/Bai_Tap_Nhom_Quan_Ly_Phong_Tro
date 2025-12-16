@@ -1,0 +1,498 @@
+﻿@model ADMIN_QUANLYPHONGTRO.Models.ViewModels.DashboardViewModel
+
+@{
+    ViewBag.Title = "Dashboard";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<!-- Page Header -->
+<div class="page-header">
+    <h4 class="page-title">Dashboard</h4>
+    <ul class="breadcrumbs">
+        <li class="nav-home">
+            <a href="@Url.Action("Index", "Dashboard")">
+                <i class="flaticon-home"></i>
+            </a>
+        </li>
+        <li class="separator">
+            <i class="flaticon-right-arrow"></i>
+        </li>
+        <li class="nav-item">
+            <a href="#">Tổng quan</a>
+        </li>
+    </ul>
+</div>
+
+@if (!string.IsNullOrEmpty(ViewBag.Error as string))
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong><i class="fas fa-exclamation-triangle"></i> Lỗi!</strong> @ViewBag.Error
+        @if (!string.IsNullOrEmpty(ViewBag.ErrorDetails as string))
+        {
+            <br /><small>Chi tiết: @ViewBag.ErrorDetails</small>
+        }
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+}
+
+<!-- Stats Cards -->
+<div class="row">
+    <!-- Card 1: Tổng phòng -->
+    <div class="col-sm-6 col-md-3">
+        <div class="card card-stats card-round">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-icon">
+                        <div class="icon-big text-center icon-primary bubble-shadow-small">
+                            <i class="fas fa-building"></i>
+                        </div>
+                    </div>
+                    <div class="col col-stats ml-3 ml-sm-0">
+                        <div class="numbers">
+                            <p class="card-category">Tổng số phòng</p>
+                            <h4 class="card-title">@Model.TotalRooms.ToString("N0")</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 2: Chủ trọ đã xác minh -->
+    <div class="col-sm-6 col-md-3">
+        <div class="card card-stats card-round">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-icon">
+                        <div class="icon-big text-center icon-info bubble-shadow-small">
+                            <i class="fas fa-user-check"></i>
+                        </div>
+                    </div>
+                    <div class="col col-stats ml-3 ml-sm-0">
+                        <div class="numbers">
+                            <p class="card-category">Chủ trọ xác minh</p>
+                            <h4 class="card-title">@Model.VerifiedHosts.ToString("N0")</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 3: Người thuê -->
+    <div class="col-sm-6 col-md-3">
+        <div class="card card-stats card-round">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-icon">
+                        <div class="icon-big text-center icon-success bubble-shadow-small">
+                            <i class="fas fa-users"></i>
+                        </div>
+                    </div>
+                    <div class="col col-stats ml-3 ml-sm-0">
+                        <div class="numbers">
+                            <p class="card-category">Người thuê</p>
+                            <h4 class="card-title">@Model.TotalTenants.ToString("N0")</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 4: Báo cáo chờ xử lý -->
+    <div class="col-sm-6 col-md-3">
+        <div class="card card-stats card-round">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-icon">
+                        <div class="icon-big text-center icon-danger bubble-shadow-small">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                    </div>
+                    <div class="col col-stats ml-3 ml-sm-0">
+                        <div class="numbers">
+                            <p class="card-category">Báo cáo chờ xử lý</p>
+                            <h4 class="card-title">@Model.PendingReports</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row">
+    <!-- Rooms Statistics Chart -->
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-head-row">
+                    <div class="card-title">Thống kê phòng đăng theo tháng</div>
+                    <div class="card-tools">
+                        <button class="btn btn-info btn-border btn-round btn-sm mr-2" onclick="exportChart()">
+                            <span class="btn-label">
+                                <i class="fa fa-download"></i>
+                            </span>
+                            Export
+                        </button>
+                        <button class="btn btn-info btn-border btn-round btn-sm" onclick="printChart()">
+                            <span class="btn-label">
+                                <i class="fa fa-print"></i>
+                            </span>
+                            Print
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="chart-container" style="min-height: 375px">
+                    <canvas id="roomsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Room Status Pie Chart -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">Trạng thái phòng</div>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="roomStatusChart" style="width: 50%; height: 50%"></canvas>
+                </div>
+                <div id="roomStatusLegend"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Activities & Pending Items -->
+<div class="row">
+    <!-- Recent Activities -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-head-row card-tools-still-right">
+                    <h4 class="card-title">Hoạt động gần đây</h4>
+                    <div class="card-tools">
+                        <button class="btn btn-icon btn-link btn-primary btn-xs" aria-label="Thu gọn" title="Thu gọn"><span class="fa fa-angle-down"></span></button>
+                        <button class="btn btn-icon btn-link btn-primary btn-xs btn-refresh-card" aria-label="Làm mới" title="Làm mới"><span class="fa fa-sync-alt"></span></button>
+                        <button class="btn btn-icon btn-link btn-primary btn-xs" aria-label="Đóng" title="Đóng"><span class="fa fa-times"></span></button>
+                    </div>
+                </div>
+                <p class="card-category">
+                    @Model.RecentActivities.Count hoạt động gần nhất
+                </p>
+            </div>
+            <div class="card-body">
+                @if (Model.RecentActivities != null && Model.RecentActivities.Any())
+                {
+                    <ol class="activity-feed">
+                        @foreach (var activity in Model.RecentActivities)
+                        {
+                            <li class="feed-item feed-item-@activity.Type">
+                                <time class="date" datetime="@activity.Timestamp.ToString("yyyy-MM-dd")">
+                                    @GetTimeAgo(activity.Timestamp)
+                                </time>
+                                <span class="text">
+                                    <strong>@activity.PerformedBy</strong> @activity.Description
+                                </span>
+                            </li>
+                        }
+                    </ol>
+                }
+                else
+                {
+                    <p class="text-muted text-center py-4">
+                        <i class="fas fa-info-circle"></i> Chưa có hoạt động nào
+                    </p>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Rooms -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-head-row">
+                    <h4 class="card-title">Phòng chờ duyệt <span class="badge badge-warning">@Model.PendingRooms</span></h4>
+                    <div class="card-tools">
+                        <a href="@Url.Action("Pending", "Rooms")" class="btn btn-info btn-border btn-round btn-sm">
+                            <span class="btn-label">
+                                <i class="fa fa-eye"></i>
+                            </span>
+                            Xem tất cả
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                @if (Model.PendingRoomsList != null && Model.PendingRoomsList.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Ảnh</th>
+                                    <th scope="col">Tiêu đề</th>
+                                    <th scope="col">Giá</th>
+                                    <th scope="col">Chủ trọ</th>
+                                    <th scope="col">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var room in Model.PendingRoomsList)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="avatar avatar-sm">
+                                                <img src="@room.ImageUrl" alt="Room" class="avatar-img rounded" 
+                                                     onerror="this.onerror=null; this.src='/Content/img/room-default.jpg';" />
+                                            </div>
+                                        </td>
+                                        <td>@room.Title</td>
+                                        <td>@room.Price.ToString("N0") đ</td>
+                                        <td>@room.OwnerName</td>
+                                        <td>
+                                            <a href="@Url.Action("Detail", "Rooms", new { id = room.RoomId })" 
+                                               class="btn btn-sm btn-primary" title="Xem chi tiết">
+                                                <i class="fa fa-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="p-4 text-center text-muted">
+                        <i class="fas fa-check-circle fa-3x mb-3"></i>
+                        <p>Không có phòng nào chờ duyệt</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pending Reports -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-head-row">
+                    <h4 class="card-title">Báo cáo vi phạm chờ xử lý</h4>
+                    <div class="card-tools">
+                        <a href="@Url.Action("Index", "Reports")" class="btn btn-danger btn-border btn-round btn-sm">
+                            <span class="btn-label">
+                                <i class="fa fa-exclamation-circle"></i>
+                            </span>
+                            Xem tất cả
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                @if (Model.PendingReportsList != null && Model.PendingReportsList.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover table-head-bg-info mt-1">
+                            <thead>
+                                <tr>
+                                    <th scope="col">#</th>
+                                    <th scope="col">Loại vi phạm</th>
+                                    <th scope="col">Đối tượng</th>
+                                    <th scope="col">Người báo cáo</th>
+                                    <th scope="col">Thời gian</th>
+                                    <th scope="col">Mức độ</th>
+                                    <th scope="col">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var report in Model.PendingReportsList)
+                                {
+                                    <tr>
+                                        <td>@report.ReportId</td>
+                                        <td>@report.ViolationType</td>
+                                        <td>@report.TargetType @report.TargetName</td>
+                                        <td>@report.ReporterName</td>
+                                        <td>@GetTimeAgo(report.ReportedDate)</td>
+                                        <td>
+                                            @if (report.Severity == "Cao")
+                                            {
+                                                <span class="badge badge-danger">@report.Severity</span>
+                                            }
+                                            else if (report.Severity == "Trung bình")
+                                            {
+                                                <span class="badge badge-warning">@report.Severity</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge badge-info">@report.Severity</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <a href="@Url.Action("Detail", "Reports", new { id = report.ReportId })" 
+                                               class="btn btn-sm btn-primary">Xử lý</a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-check-circle fa-3x mb-3"></i>
+                        <p>Không có báo cáo nào chờ xử lý</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetTimeAgo(DateTime dateTime)
+    {
+        var timeSpan = DateTime.Now - dateTime;
+        
+        if (timeSpan.TotalMinutes < 1) return "Vừa xong";
+        if (timeSpan.TotalMinutes < 60) return string.Format("{0} phút trước", (int)timeSpan.TotalMinutes);
+        if (timeSpan.TotalHours < 24) return string.Format("{0} giờ trước", (int)timeSpan.TotalHours);
+        if (timeSpan.TotalDays < 30) return string.Format("{0} ngày trước", (int)timeSpan.TotalDays);
+        if (timeSpan.TotalDays < 365) return string.Format("{0} tháng trước", (int)(timeSpan.TotalDays / 30));
+        return string.Format("{0} năm trước", (int)(timeSpan.TotalDays / 365));
+    }
+}
+
+@section scripts {
+<script>
+    // Data from Model
+    var roomsChartData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.RoomsChartData));
+    var roomStatusData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.RoomStatusChartData));
+    
+    // Rooms Chart (Line Chart)
+    var ctx = document.getElementById('roomsChart').getContext('2d');
+    var roomsChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: roomsChartData.map(d => d.Month),
+            datasets: [{
+                label: "Số phòng đăng",
+                borderColor: '#1572E8',
+                pointBorderColor: "#FFF",
+                pointBackgroundColor: "#1572E8",
+                pointBorderWidth: 2,
+                pointHoverRadius: 4,
+                pointHoverBorderWidth: 1,
+                pointRadius: 4,
+                backgroundColor: 'rgba(21, 114, 232, 0.1)',
+                fill: true,
+                borderWidth: 2,
+                data: roomsChartData.map(d => d.Count)
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            legend: { display: true },
+            tooltips: {
+                bodySpacing: 4,
+                mode: "nearest",
+                intersect: 0,
+                position: "nearest",
+                xPadding: 10,
+                yPadding: 10,
+                caretPadding: 10
+            },
+            layout: {
+                padding: { left: 15, right: 15, top: 15, bottom: 15 }
+            },
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true,
+                        stepSize: 20
+                    }
+                }]
+            }
+        }
+    });
+
+    // Room Status Chart (Doughnut Chart)
+    var ctx2 = document.getElementById('roomStatusChart').getContext('2d');
+    var roomStatusChart = new Chart(ctx2, {
+        type: 'doughnut',
+        data: {
+            labels: ['Đã duyệt', 'Chờ duyệt', 'Bị khóa'],
+            datasets: [{
+                data: [roomStatusData.Approved, roomStatusData.Pending, roomStatusData.Locked],
+                backgroundColor: ['#1572E8', '#FEB019', '#FF4560']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            legend: { display: false },
+            tooltips: {
+                bodySpacing: 4,
+                mode: "nearest",
+                intersect: 0,
+                position: "nearest",
+                xPadding: 10,
+                yPadding: 10,
+                caretPadding: 10
+            },
+            layout: {
+                padding: { left: 20, right: 20, top: 20, bottom: 20 }
+            }
+        }
+    });
+
+    // Generate custom legend
+    function generateCustomLegend(chart) {
+        var legendHtml = '<ul class="legend-list" style="list-style: none; padding: 0; margin-top: 15px;">';
+        var data = chart.data;
+        
+        data.labels.forEach(function(label, index) {
+            var backgroundColor = data.datasets[0].backgroundColor[index];
+            var value = data.datasets[0].data[index];
+            var total = data.datasets[0].data.reduce((a, b) => a + b, 0);
+            var percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+            
+            legendHtml += '<li style="margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">';
+            legendHtml += '<span style="display: flex; align-items: center;">';
+            legendHtml += '<span style="display: inline-block; width: 16px; height: 16px; background-color: ' + backgroundColor + '; margin-right: 8px; border-radius: 2px;"></span>';
+            legendHtml += '<span style="font-size: 13px;">' + label + '</span>';
+            legendHtml += '</span>';
+            legendHtml += '<span style="font-weight: bold; font-size: 13px;">' + value.toLocaleString() + ' (' + percentage + '%)</span>';
+            legendHtml += '</li>';
+        });
+        
+        legendHtml += '</ul>';
+        return legendHtml;
+    }
+    
+    document.getElementById('roomStatusLegend').innerHTML = generateCustomLegend(roomStatusChart);
+
+    function exportChart() {
+        swal('Thành công!', 'Đã xuất biểu đồ', 'success');
+    }
+
+    function printChart() {
+        window.print();
+    }
+</script>
+}
+
