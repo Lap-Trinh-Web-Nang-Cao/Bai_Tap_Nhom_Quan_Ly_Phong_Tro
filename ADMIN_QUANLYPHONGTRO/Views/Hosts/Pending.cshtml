@@ -1,7 +1,488 @@
-﻿
+﻿@model List<ADMIN_QUANLYPHONGTRO.Models.ViewModels.HostPendingItemViewModel>
+
 @{
-    ViewBag.Title = "Pending";
+    ViewBag.Title = "Duyệt chủ trọ";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
 }
 
-<h2>Pending</h2>
+<!-- Page Header -->
+<div class="page-header">
+    <h4 class="page-title">Duyệt chủ trọ</h4>
+    <ul class="breadcrumbs">
+        <li class="nav-home">
+            <a href="@Url.Action("Index", "Dashboard")">
+                <i class="flaticon-home"></i>
+            </a>
+        </li>
+        <li class="separator">
+            <i class="flaticon-right-arrow"></i>
+        </li>
+        <li class="nav-item">
+            <a href="#">Quản lý</a>
+        </li>
+        <li class="separator">
+            <i class="flaticon-right-arrow"></i>
+        </li>
+        <li class="nav-item">
+            <a href="#">Duyệt chủ trọ</a>
+        </li>
+    </ul>
+</div>
 
+<!-- Main Content Card -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex align-items-center">
+                    <h4 class="card-title">Danh sách chủ trọ chờ xác minh</h4>
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- Filter & Search Section -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Trạng thái</label>
+                            <select class="form-control form-control-sm" id="filterStatus">
+                                <option value="">Tất cả</option>
+                                <option value="pending" selected>Chờ duyệt</option>
+                                <option value="approved">Đã xác minh</option>
+                                <option value="rejected">Từ chối</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Tìm kiếm</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control form-control-sm" id="searchInput" placeholder="Tìm theo tên chủ trọ, số điện thoại...">
+                                <div class="input-group-append">
+                                    <button class="btn btn-primary btn-sm" type="button" id="btnSearch">
+                                        <i class="fa fa-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Loading State -->
+                <div id="tableLoading" class="text-center py-5" style="display: none;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="sr-only">Đang tải...</span>
+                    </div>
+                </div>
+
+                <!-- Data Table -->
+                <div id="tableContainer" class="table-responsive">
+                    <table id="hostsTable" class="display table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Chủ trọ</th>
+                                <th>Số điện thoại</th>
+                                <th>Số giấy tờ</th>
+                                <th>Giấy tờ đính kèm</th>
+                                <th>Ngày đăng ký</th>
+                                <th>Trạng thái</th>
+                                <th>Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Approve/Reject -->
+<div class="modal fade" id="approveModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title">
+                    <span class="fw-mediumbold">Kiểm tra hồ sơ chủ trọ</span>
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Loading State -->
+                <div id="hostDetailLoading" class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="sr-only">Đang tải...</span>
+                    </div>
+                </div>
+
+                <!-- Host Detail Content -->
+                <div id="hostDetailContent" style="display: none;">
+                    <div class="row">
+                        <!-- Cột Trái: Hình ảnh giấy tờ -->
+                        <div class="col-md-6">
+                            <h6 class="mb-3"><i class="fa fa-image"></i> Giấy tờ minh chứng</h6>
+
+                            <div class="mb-3">
+                                <p class="text-muted small">CCCD Mặt trước</p>
+                                <img id="detailCCCDFront" src="" alt="CCCD Mặt trước"
+                                     class="img-thumbnail w-100" style="max-height: 250px; object-fit: cover;">
+                            </div>
+
+                            <div class="mb-3">
+                                <p class="text-muted small">CCCD Mặt sau</p>
+                                <img id="detailCCCDBack" src="" alt="CCCD Mặt sau"
+                                     class="img-thumbnail w-100" style="max-height: 250px; object-fit: cover;">
+                            </div>
+
+                            <div class="mb-3">
+                                <p class="text-muted small">Giấy phép kinh doanh</p>
+                                <img id="detailBusinessLicense" src="" alt="Giấy phép kinh doanh"
+                                     class="img-thumbnail w-100" style="max-height: 250px; object-fit: cover;">
+                            </div>
+                        </div>
+
+                        <!-- Cột Phải: Thông tin đối chiếu -->
+                        <div class="col-md-6">
+                            <h6 class="mb-3"><i class="fa fa-info-circle"></i> Thông tin cá nhân</h6>
+
+                            <div class="form-group">
+                                <label>Họ tên</label>
+                                <input type="text" class="form-control" id="detailHoTen" readonly>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Email</label>
+                                <input type="email" class="form-control" id="detailEmail" readonly>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Số điện thoại</label>
+                                <input type="text" class="form-control" id="detailDienThoai" readonly>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Số CCCD/CMND</label>
+                                <input type="text" class="form-control" id="detailSoCCCD" readonly>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Ngày sinh</label>
+                                <input type="text" class="form-control" id="detailNgaySinh" readonly>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Quê quán</label>
+                                <input type="text" class="form-control" id="detailQueQuan" readonly>
+                            </div>
+
+                            <hr>
+
+                            <h6 class="mb-3">Quyết định duyệt</h6>
+
+                            <div class="form-group">
+                                <label>Lý do từ chối (nếu cần)</label>
+                                <textarea class="form-control" id="rejectReason" rows="3" placeholder="Ví dụ: Ảnh mờ, Sai thông tin..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-danger" onclick="rejectHost()">
+                    <i class="fa fa-times"></i> Từ chối
+                </button>
+                <button type="button" class="btn btn-success" onclick="approveHost()">
+                    <i class="fa fa-check"></i> Xác thực
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+    var hostsTable = null;
+    var currentHostId = null;
+
+    $(document).ready(function() {
+        // Khởi tạo DataTable với tùy chọn serverSide
+        hostsTable = $('#hostsTable').DataTable({
+            "processing": true,
+            "serverSide": true,
+            "pageLength": 10,
+            "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "Tất cả"]],
+            "ajax": {
+                "url": "@Url.Action("GetPendingHosts", "Hosts")",
+                "type": "POST",
+                "dataType": "json",
+                "error": function(xhr, error, thrown) {
+                    console.error('Lỗi tải dữ liệu:', error);
+                    showAlert('Lỗi', 'Không thể tải dữ liệu', 'error');
+                }
+            },
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.13.7/i18n/vi.json"
+            },
+            "order": [[4, "desc"]],
+            "columnDefs": [
+                { "orderable": false, "targets": [6] },
+                {
+                    "targets": 0,
+                    "render": function(data, type, row) {
+                        var avatar = row.Avatar || '/Content/img/default-avatar.png';
+                        return '<div class="d-flex align-items-center">' +
+                            '<div class="avatar avatar-sm mr-3">' +
+                            '<img src="' + avatar + '" alt="' + row.HoTen + '" class="avatar-img rounded-circle" ' +
+                            'onerror="this.onerror=null; this.src=\'/Content/img/default-avatar.png\';" />' +
+                            '</div>' +
+                            '<div><h6 class="mb-0">' + row.HoTen + '</h6>' +
+                            '<small class="text-muted">' + (row.Email || '-') + '</small></div>' +
+                            '</div>';
+                    }
+                },
+                {
+                    "targets": 2,
+                    "render": function(data, type, row) {
+                        return row.SoCCCD ? row.SoCCCD : '<span class="text-danger">Chưa cập nhật</span>';
+                    }
+                },
+                {
+                    "targets": 3,
+                    "render": function(data, type, row) {
+                        if (row.DaTaiGiayTo) {
+                            return '<span class="text-success"><i class="fa fa-paperclip"></i> Đã tải ' + row.SoTapTinDinhKem + ' ảnh</span>';
+                        }
+                        return '<span class="text-danger">Chưa tải</span>';
+                    }
+                },
+                {
+                    "targets": 4,
+                    "render": function(data, type, row) {
+                        var date = new Date(row.NgayDangKy);
+                        return '<small>' + formatDate(date) + '</small>';
+                    }
+                },
+                {
+                    "targets": 5,
+                    "render": function(data, type, row) {
+                        var statusClass = '';
+                        var statusText = '';
+
+                        switch(row.TrangThaiXacThuc) {
+                            case 'Chờ duyệt':
+                                statusClass = 'badge-warning';
+                                statusText = 'Chờ duyệt';
+                                break;
+                            case 'Đã xác minh':
+                                statusClass = 'badge-success';
+                                statusText = 'Đã xác minh';
+                                break;
+                            case 'Từ chối':
+                                statusClass = 'badge-danger';
+                                statusText = 'Từ chối';
+                                break;
+                            default:
+                                statusClass = 'badge-secondary';
+                                statusText = 'Không xác định';
+                        }
+
+                        return '<span class="badge ' + statusClass + '">' + statusText + '</span>';
+                    }
+                },
+                {
+                    "targets": 6,
+                    "render": function(data, type, row) {
+                        return '<button type="button" class="btn btn-link btn-primary btn-lg" ' +
+                            'data-toggle="modal" data-target="#approveModal" ' +
+                            'onclick="loadHostDetail(\'' + row.NguoiDungId + '\')" ' +
+                            'title="Kiểm tra hồ sơ"><i class="fa fa-eye"></i></button>';
+                    }
+                }
+            ]
+        });
+
+        // Search
+        $('#btnSearch').on('click', function() {
+            hostsTable.search($('#searchInput').val()).draw();
+        });
+
+        $('#searchInput').on('keyup', function(e) {
+            if (e.keyCode === 13) {
+                $('#btnSearch').click();
+            }
+        });
+
+        // Filter by status
+        $('#filterStatus').on('change', function() {
+            hostsTable.columns(5).search($(this).val()).draw();
+        });
+
+        // Initialize Tooltips
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+
+    // Load host detail
+    function loadHostDetail(hostId) {
+        currentHostId = hostId;
+        $('#hostDetailLoading').show();
+        $('#hostDetailContent').hide();
+
+        $.ajax({
+            url: "@Url.Action("GetHostDetail", "Hosts")",
+            type: 'GET',
+            data: { id: hostId },
+            dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    var host = response.data;
+
+                    // Fill form
+                    $('#detailHoTen').val(host.HoTen || '');
+                    $('#detailEmail').val(host.Email || '');
+                    $('#detailDienThoai').val(host.DienThoai || '');
+                    $('#detailSoCCCD').val(host.SoCCCD || '');
+                    $('#detailNgaySinh').val(host.NgaySinh ? formatDate(new Date(host.NgaySinh)) : '');
+                    $('#detailQueQuan').val(host.QueQuan || '');
+
+                    // Set images
+                    $('#detailCCCDFront').attr('src', host.CCCDMatTruoc || '/Content/img/no-image.png');
+                    $('#detailCCCDBack').attr('src', host.CCCDMatSau || '/Content/img/no-image.png');
+                    $('#detailBusinessLicense').attr('src', host.GiayPhepKinhDoanh || '/Content/img/no-image.png');
+
+                    // Clear reject reason
+                    $('#rejectReason').val('');
+
+                    $('#hostDetailLoading').hide();
+                    $('#hostDetailContent').show();
+                } else {
+                    showAlert('Lỗi', response.message || 'Không thể tải thông tin', 'error');
+                }
+            },
+            error: function() {
+                showAlert('Lỗi', 'Không thể tải thông tin chủ trọ', 'error');
+            }
+        });
+    }
+
+    // Approve host
+    function approveHost() {
+        if (!currentHostId) {
+            showAlert('Lỗi', 'Không thể xác định chủ trọ', 'error');
+            return;
+        }
+
+        swal({
+            title: 'Xác thực chủ trọ?',
+            text: 'Chủ trọ này sẽ được phép đăng phòng trọ',
+            icon: 'success',
+            buttons: {
+                cancel: {
+                    text: 'Hủy',
+                    visible: true,
+                    className: 'btn btn-secondary'
+                },
+                confirm: {
+                    text: 'Xác thực',
+                    className: 'btn btn-success'
+                }
+            }
+        }).then((result) => {
+            if (result) {
+                $.ajax({
+                    url: "@Url.Action("ApproveHost", "Hosts")",
+                    type: 'POST',
+                    data: { id: currentHostId },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            swal('Thành công!', 'Đã xác thực chủ trọ', 'success').then(() => {
+                                $('#approveModal').modal('hide');
+                                hostsTable.ajax.reload();
+                                currentHostId = null;
+                            });
+                        } else {
+                            showAlert('Lỗi', response.message || 'Không thể xác thực', 'error');
+                        }
+                    },
+                    error: function() {
+                        showAlert('Lỗi', 'Lỗi server', 'error');
+                    }
+                });
+            }
+        });
+    }
+
+    // Reject host
+    function rejectHost() {
+        if (!currentHostId) {
+            showAlert('Lỗi', 'Không thể xác định chủ trọ', 'error');
+            return;
+        }
+
+        var reason = $('#rejectReason').val().trim();
+        if (!reason) {
+            showAlert('Cảnh báo', 'Vui lòng nhập lý do từ chối', 'warning');
+            return;
+        }
+
+        swal({
+            title: 'Từ chối chủ trọ?',
+            text: 'Lý do: ' + reason,
+            icon: 'warning',
+            buttons: {
+                cancel: {
+                    text: 'Hủy',
+                    visible: true,
+                    className: 'btn btn-secondary'
+                },
+                confirm: {
+                    text: 'Từ chối',
+                    className: 'btn btn-danger'
+                }
+            }
+        }).then((result) => {
+            if (result) {
+                $.ajax({
+                    url: "@Url.Action("RejectHost", "Hosts")",
+                    type: 'POST',
+                    data: { id: currentHostId, reason: reason },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            swal('Thành công!', 'Đã từ chối chủ trọ', 'success').then(() => {
+                                $('#approveModal').modal('hide');
+                                hostsTable.ajax.reload();
+                                currentHostId = null;
+                            });
+                        } else {
+                            showAlert('Lỗi', response.message || 'Không thể từ chối', 'error');
+                        }
+                    },
+                    error: function() {
+                        showAlert('Lỗi', 'Lỗi server', 'error');
+                    }
+                });
+            }
+        });
+    }
+
+    // Helper functions
+    function formatDate(date) {
+        if (!date) return '-';
+        var d = new Date(date),
+            month = '' + (d.getMonth() + 1),
+            day = '' + d.getDate(),
+            year = d.getFullYear();
+        if (month.length < 2) month = '0' + month;
+        if (day.length < 2) day = '0' + day;
+        return [day, month, year].join('/');
+    }
+
+    function showAlert(title, message, icon) {
+        swal(title, message, icon);
+    }
+    </script>
+}

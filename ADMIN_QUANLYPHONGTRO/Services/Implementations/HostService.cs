@@ -1,7 +1,11 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using ADMIN_QUANLYPHONGTRO.ApiClients;
 using ADMIN_QUANLYPHONGTRO.Models.Common;
 using ADMIN_QUANLYPHONGTRO.Models.DTO;
+using ADMIN_QUANLYPHONGTRO.Models.ViewModels;
 using ADMIN_QUANLYPHONGTRO.Services.Interfaces;
 
 namespace ADMIN_QUANLYPHONGTRO.Services.Implementations
@@ -15,19 +19,71 @@ namespace ADMIN_QUANLYPHONGTRO.Services.Implementations
             _apiClient = new HostApiClient();
         }
 
-        //public Task<PagedResult<ChuTroThongTinPhapLyDto>> GetPendingHostsAsync(int pageIndex, int pageSize)
-        //{
-        //    return _apiClient.GetPendingHosts(pageIndex, pageSize);
-        //}
-
-        public Task<ApiResponse<bool>> ApproveHostAsync(string nguoiDungId)
+        /// <summary>
+        /// Lấy danh sách chủ trọ chờ duyệt
+        /// </summary>
+        public async Task<List<HostPendingItemViewModel>> GetPendingHostsAsync(int pageIndex, int pageSize, string keyword = "")
         {
-            return _apiClient.ApproveHost(nguoiDungId);
+            try
+            {
+                var result = await _apiClient.GetPendingHosts(pageIndex, pageSize, keyword);
+                return result?.Items ?? new List<HostPendingItemViewModel>();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ HostService.GetPendingHostsAsync Error: {ex.Message}");
+                return new List<HostPendingItemViewModel>();
+            }
         }
 
-        public Task<ApiResponse<bool>> RejectHostAsync(string nguoiDungId, string reason)
+        /// <summary>
+        /// Lấy chi tiết chủ trọ để duyệt
+        /// </summary>
+        public async Task<HostApprovalDetailViewModel> GetHostDetailAsync(string hostId)
         {
-            return _apiClient.RejectHost(nguoiDungId, reason);
+            try
+            {
+                return await _apiClient.GetHostDetail(hostId);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ HostService.GetHostDetailAsync Error: {ex.Message}");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Phê duyệt chủ trọ
+        /// </summary>
+        public async Task<bool> ApproveHostAsync(string hostId)
+        {
+            try
+            {
+                var result = await _apiClient.ApproveHost(hostId);
+                return result?.Success ?? false;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ HostService.ApproveHostAsync Error: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Từ chối chủ trọ
+        /// </summary>
+        public async Task<bool> RejectHostAsync(string hostId, string reason)
+        {
+            try
+            {
+                var result = await _apiClient.RejectHost(hostId, reason);
+                return result?.Success ?? false;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ HostService.RejectHostAsync Error: {ex.Message}");
+                return false;
+            }
         }
     }
 }

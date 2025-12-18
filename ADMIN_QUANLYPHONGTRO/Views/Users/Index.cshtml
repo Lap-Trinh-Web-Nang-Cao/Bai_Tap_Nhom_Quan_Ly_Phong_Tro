@@ -97,100 +97,6 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @if (Model != null && Model.Any())
-                            {
-                                foreach (var user in Model)
-                                {
-                                    <tr data-user-id="@user.NguoiDungId">
-                                        <td>
-                                            <div class="avatar avatar-sm">
-                                                <img src="@(string.IsNullOrEmpty(user.Avatar) ? "/Content/img/default-avatar.png" : user.Avatar)" 
-                                                     alt="@user.HoTen" class="avatar-img rounded-circle"
-                                                     onerror="this.onerror=null; this.src='/Content/img/default-avatar.png';" />
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <strong>@user.HoTen</strong>
-                                        </td>
-                                        <td>@user.Email</td>
-                                        <td>@user.DienThoai</td>
-                                        <td>
-                                            @if (user.VaiTroId == 1)
-                                            {
-                                                <span class="badge badge-danger">Admin</span>
-                                            }
-                                            else if (user.VaiTroId == 2)
-                                            {
-                                                <span class="badge badge-info">Chủ trọ</span>
-                                            }
-                                            else
-                                            {
-                                                <span class="badge badge-primary">Người thuê</span>
-                                            }
-                                        </td>
-                                        <td>
-                                            <small class="text-muted">
-                                                @if (user.VaiTroId == 2)
-                                                {
-                                                    <span><i class="fa fa-building"></i> @user.SoPhongDaDang phòng</span>
-                                                }
-                                                else if (user.VaiTroId == 3)
-                                                {
-                                                    <span><i class="fa fa-calendar"></i> @user.SoPhongDaThue đặt phòng</span>
-                                                }
-                                                else
-                                                {
-                                                    <span>-</span>
-                                                }
-                                            </small>
-                                        </td>
-                                        <td>
-                                            @if (user.IsKhoa)
-                                            {
-                                                <span class="badge badge-danger">Đã khóa</span>
-                                            }
-                                            else
-                                            {
-                                                <span class="badge badge-success">Hoạt động</span>
-                                            }
-                                        </td>
-                                        <td>
-                                            <div class="form-button-action">
-                                                <button type="button" class="btn btn-link btn-primary btn-lg" 
-                                                        data-toggle="tooltip" title="Xem chi tiết"
-                                                        onclick="viewUserDetail('@user.NguoiDungId')">
-                                                    <i class="fa fa-eye"></i>
-                                                </button>
-                                                @if (!user.IsKhoa)
-                                                {
-                                                    <button type="button" class="btn btn-link btn-danger" 
-                                                            data-toggle="tooltip" title="Khóa tài khoản"
-                                                            onclick="lockUser('@user.NguoiDungId', '@user.HoTen')">
-                                                        <i class="fa fa-ban"></i>
-                                                    </button>
-                                                }
-                                                else
-                                                {
-                                                    <button type="button" class="btn btn-link btn-success" 
-                                                            data-toggle="tooltip" title="Mở khóa"
-                                                            onclick="unlockUser('@user.NguoiDungId', '@user.HoTen')">
-                                                        <i class="fa fa-unlock"></i>
-                                                    </button>
-                                                }
-                                            </div>
-                                        </td>
-                                    </tr>
-                                }
-                            }
-                            else
-                            {
-                                <tr>
-                                    <td colspan="8" class="text-center py-5">
-                                        <i class="fas fa-users fa-3x text-muted mb-3"></i>
-                                        <p class="text-muted">Chưa có người dùng nào</p>
-                                    </td>
-                                </tr>
-                            }
                         </tbody>
                     </table>
                 </div>
@@ -225,7 +131,7 @@
                         <!-- Left: Avatar & Basic Info -->
                         <div class="col-md-4">
                             <div class="text-center mb-4">
-                                <img id="detailAvatar" src="/Content/img/default-avatar.png" 
+                                <img id="detailAvatar" src="/Content/img/default-avatar.png"
                                      alt="Avatar" class="img-fluid rounded-circle mb-3"
                                      style="width: 150px; height: 150px; object-fit: cover;">
                                 <h4 id="detailHoTen" class="mb-1">-</h4>
@@ -279,7 +185,7 @@
                                                             <div class="stats-icon green">
                                                                 <i class="fas fa-star"></i>
                                                             </div>
-                                                            <h5 class="mb-0">4.5/5</h5>
+                                                            <h5 class="mb-0" id="detailRating">4.5/5</h5>
                                                             <small class="text-muted">Đánh giá TB</small>
                                                         </div>
                                                     </div>
@@ -290,7 +196,7 @@
                                     <div class="mt-3">
                                         <h6><i class="fa fa-map-marker-alt"></i> Địa chỉ thường trú</h6>
                                         <p id="detailDiaChi" class="text-muted">-</p>
-                                        
+
                                         <h6><i class="fa fa-info-circle"></i> Ghi chú</h6>
                                         <p id="detailGhiChu" class="text-muted">-</p>
                                     </div>
@@ -298,29 +204,7 @@
 
                                 <!-- Activity Tab -->
                                 <div class="tab-pane fade" id="pills-activity">
-                                    <div class="timeline timeline-simple">
-                                        <div class="timeline-item">
-                                            <div class="timeline-badge success"><i class="fa fa-check"></i></div>
-                                            <div class="timeline-content">
-                                                <h6 class="m-0">Đăng ký tài khoản</h6>
-                                                <small class="text-muted">3 tháng trước</small>
-                                            </div>
-                                        </div>
-                                        <div class="timeline-item">
-                                            <div class="timeline-badge info"><i class="fa fa-building"></i></div>
-                                            <div class="timeline-content">
-                                                <h6 class="m-0">Đăng 5 phòng mới</h6>
-                                                <small class="text-muted">1 tháng trước</small>
-                                            </div>
-                                        </div>
-                                        <div class="timeline-item">
-                                            <div class="timeline-badge warning"><i class="fa fa-star"></i></div>
-                                            <div class="timeline-content">
-                                                <h6 class="m-0">Nhận đánh giá 5 sao</h6>
-                                                <small class="text-muted">2 tuần trước</small>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <div id="detailTimeline"></div>
                                 </div>
 
                                 <!-- Documents Tab -->
@@ -330,7 +214,7 @@
                                             <div class="card">
                                                 <div class="card-body text-center">
                                                     <h6>CCCD Mặt trước</h6>
-                                                    <img id="detailCCCDMatTruoc" src="/Content/img/no-image.png" 
+                                                    <img id="detailCCCDMatTruoc" src="/Content/img/no-image.png"
                                                          class="img-fluid rounded" style="max-height: 150px;">
                                                 </div>
                                             </div>
@@ -339,17 +223,8 @@
                                             <div class="card">
                                                 <div class="card-body text-center">
                                                     <h6>CCCD Mặt sau</h6>
-                                                    <img id="detailCCCDMatSau" src="/Content/img/no-image.png" 
+                                                    <img id="detailCCCDMatSau" src="/Content/img/no-image.png"
                                                          class="img-fluid rounded" style="max-height: 150px;">
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-12">
-                                            <div class="card">
-                                                <div class="card-body text-center">
-                                                    <h6>Giấy phép kinh doanh</h6>
-                                                    <img id="detailGiayPhep" src="/Content/img/no-image.png" 
-                                                         class="img-fluid rounded" style="max-height: 200px;">
                                                 </div>
                                             </div>
                                         </div>
@@ -360,92 +235,171 @@
                     </div>
                 </div>
             </div>
-            <div class="modal-footer border-0">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
-                <button type="button" class="btn btn-danger" onclick="lockUserFromModal()">
-                    <i class="fa fa-ban"></i> Khóa tài khoản
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal: Add User (Placeholder) -->
-<div class="modal fade" id="addUserModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Thêm người dùng mới</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <p class="text-center text-muted py-4">
-                    <i class="fas fa-tools fa-3x mb-3"></i><br>
-                    Chức năng đang phát triển
-                </p>
-            </div>
         </div>
     </div>
 </div>
 
 @section scripts {
-<script>
+    <script>
+    var usersTable = null;
+
     $(document).ready(function() {
-        // Check if table has data
-        var hasData = $('#usersTable tbody tr').length > 1 || !$('#usersTable tbody tr:first td[colspan]').length;
-        
-        if (hasData) {
-            // Initialize DataTable only if there's actual data
-            var table = $('#usersTable').DataTable({
-                "pageLength": 10,
-                "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "Tất cả"]],
-                "language": {
-                    "url": "//cdn.datatables.net/plug-ins/1.13.7/i18n/vi.json"
+        // Initialize DataTable with server-side processing
+        usersTable = $('#usersTable').DataTable({
+            "processing": true,
+            "serverSide": true,
+            "pageLength": 10,
+            "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "Tất cả"]],
+            "ajax": {
+                "url": "@Url.Action("GetUsers", "Users")",
+                "type": "POST",
+                "dataType": "json",
+                "error": function(xhr, error, thrown) {
+                    console.error('Lỗi tải dữ liệu:', error);
+                }
+            },
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.13.7/i18n/vi.json"
+            },
+            "order": [[1, "asc"]],
+            "columnDefs": [
+                { "orderable": false, "targets": [0, 7] },
+                {
+                    "targets": 0,
+                    "data": "Avatar",
+                    "render": function(data, type, row) {
+                        var avatar = row.Avatar || '/Content/img/default-avatar.png';
+                        return '<div class="avatar avatar-sm">' +
+                            '<img src="' + avatar + '" alt="' + row.HoTen + '" class="avatar-img rounded-circle" ' +
+                            'onerror="this.onerror=null; this.src=\'/Content/img/default-avatar.png\';" />' +
+                            '</div>';
+                    }
                 },
-                "order": [[1, "asc"]],
-                "columnDefs": [
-                    { "orderable": false, "targets": [0, 7] }
-                ]
-            });
+                {
+                    "targets": 1,
+                    "data": "HoTen",
+                    "render": function(data, type, row) {
+                        return '<strong>' + (data || '-') + '</strong>';
+                    }
+                },
+                {
+                    "targets": 2,
+                    "data": "Email",
+                    "render": function(data, type, row) {
+                        return data || '-';
+                    }
+                },
+                {
+                    "targets": 3,
+                    "data": "DienThoai",
+                    "render": function(data, type, row) {
+                        return data || '-';
+                    }
+                },
+                {
+                    "targets": 4,
+                    "data": "VaiTroId",
+                    "render": function(data, type, row) {
+                        var badgeClass = '';
+                        var roleText = '';
 
-            // Filter by Role
-            $('#filterRole').on('change', function() {
-                var val = $(this).val();
-                if (val === "") {
-                    table.column(4).search('').draw();
-                } else {
-                    var roleText = val == 1 ? 'Admin' : (val == 2 ? 'Chủ trọ' : 'Người thuê');
-                    table.column(4).search(roleText).draw();
+                        if (row.VaiTroId == 1) {
+                            badgeClass = 'badge-danger';
+                            roleText = 'Admin';
+                        } else if (row.VaiTroId == 2) {
+                            badgeClass = 'badge-info';
+                            roleText = 'Chủ trọ';
+                        } else {
+                            badgeClass = 'badge-primary';
+                            roleText = 'Người thuê';
+                        }
+
+                        return '<span class="badge ' + badgeClass + '">' + roleText + '</span>';
+                    }
+                },
+                {
+                    "targets": 5,
+                    "data": "SoPhongDaDang",
+                    "render": function(data, type, row) {
+                        var activity = '-';
+                        if (row.VaiTroId == 2) {
+                            activity = '<span><i class="fa fa-building"></i> ' + (row.SoPhongDaDang || 0) + ' phòng</span>';
+                        } else if (row.VaiTroId == 3) {
+                            activity = '<span><i class="fa fa-calendar"></i> ' + (row.SoPhongDaThue || 0) + ' đặt phòng</span>';
+                        }
+                        return '<small class="text-muted">' + activity + '</small>';
+                    }
+                },
+                {
+                    "targets": 6,
+                    "data": "IsKhoa",
+                    "render": function(data, type, row) {
+                        var statusClass = row.IsKhoa ? 'badge-danger' : 'badge-success';
+                        var statusText = row.IsKhoa ? 'Đã khóa' : 'Hoạt động';
+                        return '<span class="badge ' + statusClass + '">' + statusText + '</span>';
+                    }
+                },
+                {
+                    "targets": 7,
+                    "data": "NguoiDungId",
+                    "render": function(data, type, row) {
+                        var buttons = '<button type="button" class="btn btn-link btn-primary btn-lg" ' +
+                            'data-toggle="tooltip" title="Xem chi tiết" ' +
+                            'onclick="viewUserDetail(\'' + row.NguoiDungId + '\')">' +
+                            '<i class="fa fa-eye"></i></button>';
+
+                        if (!row.IsKhoa) {
+                            buttons += '<button type="button" class="btn btn-link btn-danger" ' +
+                                'data-toggle="tooltip" title="Khóa tài khoản" ' +
+                                'onclick="lockUser(\'' + row.NguoiDungId + '\', \'' + (row.HoTen || 'Người dùng').replace(/'/g, "\\'") + '\')">' +
+                                '<i class="fa fa-ban"></i></button>';
+                        } else {
+                            buttons += '<button type="button" class="btn btn-link btn-success" ' +
+                                'data-toggle="tooltip" title="Mở khóa" ' +
+                                'onclick="unlockUser(\'' + row.NguoiDungId + '\', \'' + (row.HoTen || 'Người dùng').replace(/'/g, "\\'") + '\')">' +
+                                '<i class="fa fa-unlock"></i></button>';
+                        }
+
+                        return buttons;
+                    }
                 }
-            });
+            ]
+        });
 
-            // Filter by Status
-            $('#filterStatus').on('change', function() {
-                var val = $(this).val();
-                if (val === "") {
-                    table.column(6).search('').draw();
-                } else {
-                    var statusText = val === 'active' ? 'Hoạt động' : 'Đã khóa';
-                    table.column(6).search(statusText).draw();
-                }
-            });
+        // Filter by Role
+        $('#filterRole').on('change', function() {
+            var val = $(this).val();
+            if (val === "") {
+                usersTable.columns(4).search('').draw();
+            } else {
+                var roleText = val == 1 ? 'Admin' : (val == 2 ? 'Chủ trọ' : 'Người thuê');
+                usersTable.columns(4).search(roleText).draw();
+            }
+        });
 
-            // Search
-            $('#btnSearch').on('click', function() {
-                var val = $('#searchInput').val();
-                table.search(val).draw();
-            });
+        // Filter by Status
+        $('#filterStatus').on('change', function() {
+            var val = $(this).val();
+            if (val === "") {
+                usersTable.columns(6).search('').draw();
+            } else {
+                var statusText = val === 'active' ? 'Hoạt động' : 'Đã khóa';
+                usersTable.columns(6).search(statusText).draw();
+            }
+        });
 
-            $('#searchInput').on('keyup', function(e) {
-                if (e.keyCode === 13) {
-                    $('#btnSearch').click();
-                }
-            });
-        }
+        // Search
+        $('#btnSearch').on('click', function() {
+            usersTable.search($('#searchInput').val()).draw();
+        });
 
-        // Initialize Tooltips (always)
+        $('#searchInput').on('keyup', function(e) {
+            if (e.keyCode === 13) {
+                $('#btnSearch').click();
+            }
+        });
+
+        // Initialize Tooltips
         $('[data-toggle="tooltip"]').tooltip();
     });
 
@@ -455,25 +409,53 @@
         $('#userDetailLoading').show();
         $('#userDetailContent').hide();
 
-        // TODO: Call API to get user detail
-        // Mock data for now
-        setTimeout(function() {
-            $('#userDetailLoading').hide();
-            $('#userDetailContent').show();
-            
-            // Fill mock data
-            $('#detailAvatar').attr('src', '/Content/img/default-avatar.png');
-            $('#detailHoTen').text('Nguyễn Văn A');
-            $('#detailVaiTro').text('Chủ trọ');
-            $('#detailTrangThai').html('<span class="badge badge-success">Hoạt động</span>');
-            $('#detailEmail').text('chutro@example.com');
-            $('#detailDienThoai').text('0905123456');
-            $('#detailCCCD').text('001234567890');
-            $('#detailNgayDangKy').text('01/01/2024');
-            $('#detailSoPhong').text('12');
-            $('#detailDiaChi').text('123 Đường ABC, Quận 1, TP.HCM');
-            $('#detailGhiChu').text('Không có ghi chú');
-        }, 1000);
+        $.ajax({
+            url: "@Url.Action("GetUserDetail", "Users")",
+            type: 'GET',
+            data: { id: userId },
+            dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    var user = response.data;
+
+                    // Fill data
+                    $('#detailAvatar').attr('src', user.Avatar || '/Content/img/default-avatar.png');
+                    $('#detailHoTen').text(user.HoTen || '-');
+                    $('#detailEmail').text(user.Email || '-');
+                    $('#detailDienThoai').text(user.DienThoai || '-');
+                    $('#detailCCCD').text(user.SoCCCD || '-');
+                    $('#detailNgayDangKy').text(user.NgayDangKy ? formatDate(new Date(user.NgayDangKy)) : '-');
+                    $('#detailSoPhong').text(user.SoPhongDaDang || '0');
+                    $('#detailDiaChi').text(user.DiaChi || '-');
+                    $('#detailGhiChu').text(user.GhiChu || '-');
+
+                    // Set role
+                    var roleText = user.VaiTroId == 1 ? 'Admin' : (user.VaiTroId == 2 ? 'Chủ trọ' : 'Người thuê');
+                    $('#detailVaiTro').text(roleText);
+
+                    // Set status
+                    var statusHtml = user.IsKhoa ?
+                        '<span class="badge badge-danger">Đã khóa</span>' :
+                        '<span class="badge badge-success">Hoạt động</span>';
+                    $('#detailTrangThai').html(statusHtml);
+
+                    // Set images
+                    $('#detailCCCDMatTruoc').attr('src', user.CCCDMatTruoc || '/Content/img/no-image.png');
+                    $('#detailCCCDMatSau').attr('src', user.CCCDMatSau || '/Content/img/no-image.png');
+
+                    // Rating
+                    $('#detailRating').text((user.Rating || 0) + '/5');
+
+                    $('#userDetailLoading').hide();
+                    $('#userDetailContent').show();
+                } else {
+                    showAlert('Lỗi', response.message || 'Không thể tải thông tin', 'error');
+                }
+            },
+            error: function() {
+                showAlert('Lỗi', 'Không thể tải thông tin người dùng', 'error');
+            }
+        });
     }
 
     // Lock User
@@ -495,11 +477,25 @@
             }
         }).then((willLock) => {
             if (willLock) {
-                // TODO: Call API to lock user
-                swal("Thành công!", "Đã khóa tài khoản: " + userName, "success")
-                    .then(() => {
-                        location.reload();
-                    });
+                $.ajax({
+                    url: "@Url.Action("LockUser", "Users")",
+                    type: 'POST',
+                    data: { id: userId },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            swal("Thành công!", "Đã khóa tài khoản: " + userName, "success")
+                                .then(() => {
+                                    usersTable.ajax.reload();
+                                });
+                        } else {
+                            showAlert('Lỗi', response.message || 'Không thể khóa', 'error');
+                        }
+                    },
+                    error: function() {
+                        showAlert('Lỗi', 'Lỗi server', 'error');
+                    }
+                });
             }
         });
     }
@@ -523,20 +519,43 @@
             }
         }).then((willUnlock) => {
             if (willUnlock) {
-                // TODO: Call API to unlock user
-                swal("Thành công!", "Đã mở khóa tài khoản: " + userName, "success")
-                    .then(() => {
-                        location.reload();
-                    });
+                $.ajax({
+                    url: "@Url.Action("UnlockUser", "Users")",
+                    type: 'POST',
+                    data: { id: userId },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            swal("Thành công!", "Đã mở khóa tài khoản: " + userName, "success")
+                                .then(() => {
+                                    usersTable.ajax.reload();
+                                });
+                        } else {
+                            showAlert('Lỗi', response.message || 'Không thể mở khóa', 'error');
+                        }
+                    },
+                    error: function() {
+                        showAlert('Lỗi', 'Lỗi server', 'error');
+                    }
+                });
             }
         });
     }
 
-    // Lock from Modal
-    function lockUserFromModal() {
-        var userName = $('#detailHoTen').text();
-        lockUser('temp-id', userName);
+    // Helper functions
+    function formatDate(date) {
+        if (!date) return '-';
+        var d = new Date(date),
+            month = '' + (d.getMonth() + 1),
+            day = '' + d.getDate(),
+            year = d.getFullYear();
+        if (month.length < 2) month = '0' + month;
+        if (day.length < 2) day = '0' + day;
+        return [day, month, year].join('/');
     }
-</script>
-}
 
+    function showAlert(title, message, icon) {
+        swal(title, message, icon);
+    }
+    </script>
+}

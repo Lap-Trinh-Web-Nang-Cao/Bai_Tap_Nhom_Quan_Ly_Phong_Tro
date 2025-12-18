@@ -11,17 +11,36 @@ namespace ADMIN_QUANLYPHONGTRO.Models.ViewModels
         public string HoTen { get; set; }
         public string Email { get; set; }
         public string DienThoai { get; set; }
-        public string CCCD { get; set; }
-        public string DiaChiThuongTru { get; set; }
+        public string SoCCCD { get; set; }
         public string Avatar { get; set; }
         public DateTime NgayDangKy { get; set; }
         public bool DaTaiGiayTo { get; set; }
         public string TrangThaiXacThuc { get; set; }
-        
-        // Giấy tờ
+        public string LoaiGiayTo { get; set; }
+        public int SoTapTinDinhKem { get; set; }
+    }
+
+    /// <summary>
+    /// ViewModel chi tiết chủ trọ để duyệt (sử dụng trong Modal)
+    /// </summary>
+    public class HostApprovalDetailViewModel
+    {
+        public Guid NguoiDungId { get; set; }
+        public string HoTen { get; set; }
+        public string Email { get; set; }
+        public string DienThoai { get; set; }
+        public DateTime NgaySinh { get; set; }
+        public string QueQuan { get; set; }
+        public string SoCCCD { get; set; }
+        public string Avatar { get; set; }
+
+        // Ảnh giấy tờ
         public string CCCDMatTruocUrl { get; set; }
         public string CCCDMatSauUrl { get; set; }
         public string GiayPhepKinhDoanhUrl { get; set; }
+
+        // Trạng thái hiện tại
+        public string TrangThaiXacThuc { get; set; }
     }
 
     /// <summary>

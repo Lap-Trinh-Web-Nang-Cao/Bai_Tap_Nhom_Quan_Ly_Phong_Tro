@@ -189,7 +189,7 @@
     <Content Include="Content\fonts\fontawesome\fa-solid-900.svg" />
     <Content Include="Content\fonts\simple-line-icons\Simple-Line-Icons.svg" />
     <Content Include="Content\img\avatar-admin.png" />
-    <Content Include="Content\css\avatar-default.png" />
+    <Content Include="Content\img\avatar-default.png" />
     <Content Include="Content\img\logo.ico" />
     <Content Include="Content\img\logo.png" />
     <Content Include="Content\img\logo.svg" />
@@ -285,12 +285,12 @@
     <Content Include="Content\fonts\summernote\summernote.eot" />
     <Content Include="Content\fonts\summernote\summernote.ttf" />
     <Content Include="Content\fonts\summernote\summernote.woff" />
+    <Content Include="DATA_NOT_SHOWING_FIX.md" />
     <None Include="packages.config" />
     <Content Include="Views\Shared\_Sidebar.cshtml" />
     <Content Include="Views\Shared\_Scripts.cshtml" />
     <Content Include="Views\Dashboard\Index.cshtml" />
     <Content Include="Views\Users\Index.cshtml" />
-    <Content Include="Views\Users\Detail.cshtml" />
     <Content Include="Views\Hosts\Pending.cshtml" />
     <Content Include="Views\Hosts\Detail.cshtml" />
     <Content Include="Views\Rooms\Pending.cshtml" />
@@ -307,7 +307,7 @@
     <Content Include="Views\Shared\_Header.cshtml" />
     <Content Include="Views\Shared\_Navbar.cshtml" />
     <Content Include="Views\Shared\_SettingsPanel.cshtml" />
-    <Content Include="Views\Users\AccessDenied.cshtml" />
+    <Content Include="Views\Users\Detail.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

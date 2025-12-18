@@ -1,13 +1,21 @@
-﻿using System.Threading.Tasks;
-using ADMIN_QUANLYPHONGTRO.Models.Common;
-using ADMIN_QUANLYPHONGTRO.Models.DTO;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using ADMIN_QUANLYPHONGTRO.Models.ViewModels;
 
 namespace ADMIN_QUANLYPHONGTRO.Services.Interfaces
 {
     public interface IHostService
     {
-        //Task<PagedResult<ChuTroThongTinPhapLyDto>> GetPendingHostsAsync(int pageIndex, int pageSize);
-        Task<ApiResponse<bool>> ApproveHostAsync(string nguoiDungId);
-        Task<ApiResponse<bool>> RejectHostAsync(string nguoiDungId, string reason);
+        // Lấy danh sách chủ trọ chờ duyệt
+        Task<List<HostPendingItemViewModel>> GetPendingHostsAsync(int pageIndex, int pageSize, string keyword = "");
+        
+        // Lấy chi tiết chủ trọ để duyệt
+        Task<HostApprovalDetailViewModel> GetHostDetailAsync(string hostId);
+        
+        // Phê duyệt chủ trọ
+        Task<bool> ApproveHostAsync(string hostId);
+        
+        // Từ chối chủ trọ
+        Task<bool> RejectHostAsync(string hostId, string reason);
     }
 }
