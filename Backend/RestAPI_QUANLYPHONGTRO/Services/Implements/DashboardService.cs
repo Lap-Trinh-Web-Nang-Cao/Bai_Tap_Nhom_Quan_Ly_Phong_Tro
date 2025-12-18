@@ -125,11 +125,11 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
         {
             var pendingRooms = await _context.Phongs
                 .Where(p => !p.IsDeleted && !p.IsDuyet)
-                .OrderByDescending(p => p.CreatedAt)
-                .Take(top)
                 .Include(p => p.NhaTro)
                     .ThenInclude(n => n.NguoiDung)
                         .ThenInclude(nd => nd.HoSoNguoiDung)
+                .OrderByDescending(p => p.CreatedAt)
+                .Take(top)
                 .Select(p => new PendingRoomResponse
                 {
                     PhongId = p.PhongId,
