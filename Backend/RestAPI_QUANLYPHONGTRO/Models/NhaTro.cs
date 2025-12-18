@@ -26,5 +26,9 @@ namespace RestAPI_QUANLYPHONGTRO.Models
         public DateTimeOffset? CreatedAt { get; set; }
 
         public bool? IsHoatDong { get; set; } // Trạng thái: Đang cho thuê hoặc tạm đóng
+
+        // Navigation Properties
+        [ForeignKey("ChuTroId")]
+        public virtual NguoiDung? NguoiDung { get; set; }
     }
 }

@@ -178,10 +178,10 @@ E:\LapTrinhWebNangCao\QuanLyPhongTro\Bai_Tap_Nhom_Quan_Ly_Phong_Tro\Backend\Rest
 E:\LapTrinhWebNangCao\QuanLyPhongTro\Bai_Tap_Nhom_Quan_Ly_Phong_Tro\Backend\RestAPI_QUANLYPHONGTRO\obj\Debug\net8.0\staticwebassets.build.json.cache
 E:\LapTrinhWebNangCao\QuanLyPhongTro\Bai_Tap_Nhom_Quan_Ly_Phong_Tro\Backend\RestAPI_QUANLYPHONGTRO\obj\Debug\net8.0\staticwebassets.development.json
 E:\LapTrinhWebNangCao\QuanLyPhongTro\Bai_Tap_Nhom_Quan_Ly_Phong_Tro\Backend\RestAPI_QUANLYPHONGTRO\obj\Debug\net8.0\staticwebassets.build.endpoints.json
-E:\LapTrinhWebNangCao\QuanLyPhongTro\Bai_Tap_Nhom_Quan_Ly_Phong_Tro\Backend\RestAPI_QUANLYPHONGTRO\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
 E:\LapTrinhWebNangCao\QuanLyPhongTro\Bai_Tap_Nhom_Quan_Ly_Phong_Tro\Backend\RestAPI_QUANLYPHONGTRO\obj\Debug\net8.0\RestAPI_.9107B43F.Up2Date
 E:\LapTrinhWebNangCao\QuanLyPhongTro\Bai_Tap_Nhom_Quan_Ly_Phong_Tro\Backend\RestAPI_QUANLYPHONGTRO\obj\Debug\net8.0\RestAPI_QUANLYPHONGTRO.dll
 E:\LapTrinhWebNangCao\QuanLyPhongTro\Bai_Tap_Nhom_Quan_Ly_Phong_Tro\Backend\RestAPI_QUANLYPHONGTRO\obj\Debug\net8.0\refint\RestAPI_QUANLYPHONGTRO.dll
 E:\LapTrinhWebNangCao\QuanLyPhongTro\Bai_Tap_Nhom_Quan_Ly_Phong_Tro\Backend\RestAPI_QUANLYPHONGTRO\obj\Debug\net8.0\RestAPI_QUANLYPHONGTRO.pdb
 E:\LapTrinhWebNangCao\QuanLyPhongTro\Bai_Tap_Nhom_Quan_Ly_Phong_Tro\Backend\RestAPI_QUANLYPHONGTRO\obj\Debug\net8.0\RestAPI_QUANLYPHONGTRO.genruntimeconfig.cache
 E:\LapTrinhWebNangCao\QuanLyPhongTro\Bai_Tap_Nhom_Quan_Ly_Phong_Tro\Backend\RestAPI_QUANLYPHONGTRO\obj\Debug\net8.0\ref\RestAPI_QUANLYPHONGTRO.dll
+E:\LapTrinhWebNangCao\QuanLyPhongTro\Bai_Tap_Nhom_Quan_Ly_Phong_Tro\Backend\RestAPI_QUANLYPHONGTRO\bin\Debug\net8.0\Dashboard_API_Tests.postman_collection.json

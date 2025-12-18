@@ -29,5 +29,8 @@ namespace RestAPI_QUANLYPHONGTRO.Models
 
         public DateTimeOffset? CreatedAt { get; set; }
         public DateTimeOffset? UpdatedAt { get; set; }
+
+        // Navigation Property
+        public virtual HoSoNguoiDung? HoSoNguoiDung { get; set; }
     }
 }

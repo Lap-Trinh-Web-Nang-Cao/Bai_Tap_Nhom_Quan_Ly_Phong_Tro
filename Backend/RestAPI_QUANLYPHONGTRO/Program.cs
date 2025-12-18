@@ -28,7 +28,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // 2. Đăng ký Service
 builder.Services.AddScoped<IBaoCaoViPhamService, BaoCaoViPhamService>();
 builder.Services.AddScoped<IBienLaiService, BienLaiService>();
-builder.Services.AddScoped<IChuTroThongTinPhapLyService, ChuTroThongTinPhapLyService>();
+// builder.Services.AddScoped<IChuTroThongTinPhapLyService, ChuTroThongTinPhapLyService>(); // Xóa: bảng không tồn tại
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<INguoiDungService, NguoiDungService>();
 builder.Services.AddScoped<IDanhGiaPhongService, DanhGiaPhongService>();

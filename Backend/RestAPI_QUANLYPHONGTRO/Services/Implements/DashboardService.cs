@@ -37,10 +37,8 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
 
                 // Thống kê chủ trọ (VaiTroId = 2)
                 TotalHosts = await _context.NguoiDungs.CountAsync(u => u.VaiTroId == 2 && !u.IsKhoa),
-                VerifiedHosts = await _context.ChuTroThongTinPhapLys
-                    .CountAsync(c => c.TrangThaiXacThuc == "DaDuyet"),
-                PendingHosts = await _context.ChuTroThongTinPhapLys
-                    .CountAsync(c => c.TrangThaiXacThuc == "ChoDuyet"),
+                VerifiedHosts = await _context.NguoiDungs.CountAsync(u => u.VaiTroId == 2 && u.IsEmailXacThuc && !u.IsKhoa),
+                PendingHosts = await _context.NguoiDungs.CountAsync(u => u.VaiTroId == 2 && !u.IsEmailXacThuc && !u.IsKhoa),
 
                 // Thống kê người thuê (VaiTroId = 3)
                 TotalTenants = await _context.NguoiDungs.CountAsync(u => u.VaiTroId == 3 && !u.IsKhoa),
@@ -51,7 +49,7 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
 
                 // Báo cáo chờ xử lý
                 PendingReports = await _context.BaoCaoViPhams
-                    .CountAsync(b => b.TrangThai == "CHO_XU_LY" || b.TrangThai == "DANG_XU_LY"),
+                    .CountAsync(b => b.TrangThai == "ChoXuLy"),
 
                 // Doanh thu tháng này (từ BienLai - những biên lai đã xác nhận)
                 MonthlyRevenue = await _context.BienLais
@@ -129,12 +127,17 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
                 .Where(p => !p.IsDeleted && !p.IsDuyet)
                 .OrderByDescending(p => p.CreatedAt)
                 .Take(top)
+                .Include(p => p.NhaTro)
+                    .ThenInclude(n => n.NguoiDung)
+                        .ThenInclude(nd => nd.HoSoNguoiDung)
                 .Select(p => new PendingRoomResponse
                 {
                     PhongId = p.PhongId,
                     TieuDe = p.TieuDe ?? "Phòng trọ",
                     GiaTien = p.GiaTien,
-                    ChuTroName = "Chủ trọ", // TODO: Join với NhaTro -> NguoiDung để lấy tên
+                    ChuTroName = p.NhaTro != null && p.NhaTro.NguoiDung != null && p.NhaTro.NguoiDung.HoSoNguoiDung != null 
+                        ? p.NhaTro.NguoiDung.HoSoNguoiDung.HoTen 
+                        : "Chủ trọ",
                     CreatedAt = p.CreatedAt ?? DateTimeOffset.Now
                 })
                 .ToListAsync();
@@ -148,7 +151,7 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
         public async Task<List<RecentReportResponse>> GetRecentReportsAsync(int top = 5)
         {
             var reports = await _context.BaoCaoViPhams
-                .Where(b => b.TrangThai == "CHO_XU_LY" || b.TrangThai == "DANG_XU_LY")
+                .Where(b => b.TrangThai == "ChoXuLy")
                 .OrderByDescending(b => b.ThoiGianBaoCao)
                 .Take(top)
                 .Select(b => new RecentReportResponse
@@ -156,9 +159,9 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
                     BaoCaoId = b.BaoCaoId,
                     TieuDe = b.TieuDe ?? "Báo cáo vi phạm",
                     LoaiThucThe = b.LoaiThucThe ?? "KHAC",
-                    PhongId = b.LoaiThucThe == "PHONG" ? b.ThucTheId : null,
-                    NguoiDungId = b.LoaiThucThe == "NGUOIDUNG" ? b.ThucTheId : null,
-                    TrangThai = b.TrangThai ?? "CHO_XU_LY",
+                    PhongId = b.LoaiThucThe == "Phong" ? b.ThucTheId : null,
+                    NguoiDungId = b.LoaiThucThe == "NguoiDung" ? b.ThucTheId : null,
+                    TrangThai = b.TrangThai ?? "ChoXuLy",
                     CreatedAt = b.ThoiGianBaoCao ?? DateTimeOffset.Now
                 })
                 .ToListAsync();
