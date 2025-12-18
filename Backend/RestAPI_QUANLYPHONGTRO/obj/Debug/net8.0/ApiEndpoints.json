@@ -179,53 +179,6 @@
     "ReturnTypes": []
   },
   {
-    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.ChuTroThongTinPhapLyController",
-    "Method": "Upsert",
-    "RelativePath": "api/ChuTroThongTinPhapLy",
-    "HttpMethod": "POST",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "model",
-        "Type": "RestAPI_QUANLYPHONGTRO.Models.ChuTroThongTinPhapLy",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.ChuTroThongTinPhapLyController",
-    "Method": "Approve",
-    "RelativePath": "api/ChuTroThongTinPhapLy/approve/{userId}",
-    "HttpMethod": "PUT",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "userId",
-        "Type": "System.Guid",
-        "IsRequired": true
-      },
-      {
-        "Name": "status",
-        "Type": "System.String",
-        "IsRequired": false
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.ChuTroThongTinPhapLyController",
-    "Method": "GetMyProfile",
-    "RelativePath": "api/ChuTroThongTinPhapLy/me",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [],
-    "ReturnTypes": []
-  },
-  {
     "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.DanhGiaPhongController",
     "Method": "Create",
     "RelativePath": "api/DanhGiaPhong",

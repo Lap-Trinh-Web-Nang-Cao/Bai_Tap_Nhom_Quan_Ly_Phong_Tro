@@ -9,7 +9,7 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "1")] // Chỉ Admin (VaiTroId = 1) mới truy cập được
+    // [Authorize(Roles = "1")] // TODO: Bật lại khi đã có JWT authentication từ MVC client
     public class DashboardController : ControllerBase
     {
         private readonly IDashboardService _dashboardService;

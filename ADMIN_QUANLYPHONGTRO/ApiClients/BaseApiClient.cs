@@ -22,13 +22,24 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
 
         protected async Task<T> GetAsync<T>(string url)
         {
-            var response = await _client.GetAsync(url);
-            var content = await response.Content.ReadAsStringAsync();
+            try
+            {
+                var response = await _client.GetAsync(url);
+                var content = await response.Content.ReadAsStringAsync();
 
-            if (!response.IsSuccessStatusCode)
-                throw new Exception(content);
+                if (!response.IsSuccessStatusCode)
+                {
+                    System.Diagnostics.Debug.WriteLine($"API Error {(int)response.StatusCode}: {content}");
+                    throw new Exception($"API Error {(int)response.StatusCode}: {content}");
+                }
 
-            return JsonConvert.DeserializeObject<T>(content);
+                return JsonConvert.DeserializeObject<T>(content);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"GetAsync failed: {ex.Message}");
+                throw;
+            }
         }
 
         protected async Task<T> PostAsync<T>(string url, object data)
