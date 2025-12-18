@@ -108,6 +108,37 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
             await _context.SaveChangesAsync();
             return true;
         }
+
+        /// <summary>
+        /// Lấy danh sách users phân trang
+        /// </summary>
+        public async Task<PagedResult<NguoiDung>> GetUsersAsync(int pageIndex, int pageSize, string keyword = "")
+        {
+            var query = _context.NguoiDungs.AsQueryable();
+
+            // Filter by keyword
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                query = query.Where(u => u.Email.Contains(keyword) || u.DienThoai.Contains(keyword));
+            }
+
+            // Pagination
+            var totalCount = await query.CountAsync();
+            var items = await query
+                .OrderByDescending(u => u.CreatedAt)
+                .Skip((pageIndex - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return new PagedResult<NguoiDung>
+            {
+                Items = items,
+                PageIndex = pageIndex,
+                PageSize = pageSize,
+                TotalCount = totalCount
+            };
+        }
+
         public async Task<bool> ChangePasswordAsync(Guid userId, ChangePasswordRequest request)
         {
             var user = await _context.NguoiDungs.FindAsync(userId);

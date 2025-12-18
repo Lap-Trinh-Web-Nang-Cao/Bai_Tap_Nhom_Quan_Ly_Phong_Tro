@@ -18,7 +18,16 @@ namespace ADMIN_QUANLYPHONGTRO.Services.Implementations
 
         public DashboardService()
         {
-            _dashboardApi = new DashboardApiClient();
+            try
+            {
+                _dashboardApi = new DashboardApiClient();
+                System.Diagnostics.Debug.WriteLine($"✅ DashboardService: DashboardApiClient initialized");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ DashboardService Constructor Error: {ex.Message}\n{ex.StackTrace}");
+                throw;
+            }
         }
 
         /// <summary>

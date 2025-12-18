@@ -14,11 +14,12 @@ namespace ADMIN_QUANLYPHONGTRO.Controllers
             _service = new HostService();
         }
 
-        public async Task<ActionResult> Pending(int page = 1, int pageSize = 10)
-        {
-            var data = await _service.GetPendingHostsAsync(page, pageSize);
-            return View(data);
-        }
+        // TODO: Implement when ChuTroThongTinPhapLyDto is defined
+        // public async Task<ActionResult> Pending(int page = 1, int pageSize = 10)
+        // {
+        //     var data = await _service.GetPendingHostsAsync(page, pageSize);
+        //     return View(data);
+        // }
 
         public async Task<ActionResult> Approve(string id)
         {

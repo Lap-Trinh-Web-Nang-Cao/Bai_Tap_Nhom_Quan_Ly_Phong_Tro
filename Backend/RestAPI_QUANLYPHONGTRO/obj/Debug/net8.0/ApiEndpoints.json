@@ -542,6 +542,32 @@
   },
   {
     "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.NguoiDungController",
+    "Method": "GetUsers",
+    "RelativePath": "api/NguoiDung",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "pageIndex",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "keyword",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.NguoiDungController",
     "Method": "ChangePassword",
     "RelativePath": "api/NguoiDung/change-password",
     "HttpMethod": "PUT",

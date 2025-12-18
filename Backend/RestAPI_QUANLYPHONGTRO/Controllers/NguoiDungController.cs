@@ -17,6 +17,21 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
             _service = service;
         }
 
+        // GET: api/nguoidung?pageIndex=1&pageSize=10&keyword=
+        [HttpGet]
+        public async Task<IActionResult> GetUsers(int pageIndex = 1, int pageSize = 10, string keyword = "")
+        {
+            try
+            {
+                var result = await _service.GetUsersAsync(pageIndex, pageSize, keyword);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
         // API Đăng ký (Ai cũng gọi được -> Không cần [Authorize])
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)

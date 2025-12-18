@@ -1,6 +1,6 @@
-@RestAPI_QUANLYPHONGTRO_HostAddress = http://localhost:5101
+@RestAPI_QUANLYPHONGTRO_HostAddress = https://localhost:7039
 
-GET {{RestAPI_QUANLYPHONGTRO_HostAddress}}/weatherforecast/
+GET {{RestAPI_QUANLYPHONGTRO_HostAddress}}/api/dashboard/stats
 Accept: application/json
 
 ###

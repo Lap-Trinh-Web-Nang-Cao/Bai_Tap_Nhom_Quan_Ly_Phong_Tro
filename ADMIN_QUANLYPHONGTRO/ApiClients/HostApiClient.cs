@@ -7,12 +7,13 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
 {
     public class HostApiClient : BaseApiClient
     {
-        public async Task<PagedResult<ChuTroThongTinPhapLyDto>> GetPendingHosts(int pageIndex, int pageSize)
-        {
-            return await GetAsync<PagedResult<ChuTroThongTinPhapLyDto>>(
-                $"hosts/pending?pageIndex={pageIndex}&pageSize={pageSize}"
-            );
-        }
+        // TODO: Uncomment when ChuTroThongTinPhapLyDto is defined
+        // public async Task<PagedResult<ChuTroThongTinPhapLyDto>> GetPendingHosts(int pageIndex, int pageSize)
+        // {
+        //     return await GetAsync<PagedResult<ChuTroThongTinPhapLyDto>>(
+        //         $"hosts/pending?pageIndex={pageIndex}&pageSize={pageSize}"
+        //     );
+        // }
 
         public async Task<ApiResponse<bool>> ApproveHost(string id)
         {

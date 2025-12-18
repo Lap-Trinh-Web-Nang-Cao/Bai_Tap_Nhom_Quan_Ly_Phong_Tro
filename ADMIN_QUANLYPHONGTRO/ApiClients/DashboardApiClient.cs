@@ -10,7 +10,9 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
     /// </summary>
     public class DashboardApiClient : BaseApiClient
     {
-        private const string BASE_PATH = "api/dashboard";
+        // BaseAddress đã là: https://localhost:7039/api/
+        // Nên chỉ cần path từ đó trở đi
+        private const string BASE_PATH = "dashboard";
 
         /// <summary>
         /// Lấy tổng quan thống kê

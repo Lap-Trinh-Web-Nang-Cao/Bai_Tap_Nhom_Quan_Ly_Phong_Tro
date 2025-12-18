@@ -9,18 +9,18 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
     {
         public async Task<PagedResult<NguoiDungDto>> GetUsers(int pageIndex, int pageSize, string keyword = "")
         {
-            string url = $"users?pageIndex={pageIndex}&pageSize={pageSize}&keyword={keyword}";
+            string url = $"nguoidung?pageIndex={pageIndex}&pageSize={pageSize}&keyword={keyword}";
             return await GetAsync<PagedResult<NguoiDungDto>>(url);
         }
 
         public async Task<ApiResponse<NguoiDungDto>> GetUserById(string id)
         {
-            return await GetAsync<ApiResponse<NguoiDungDto>>($"users/{id}");
+            return await GetAsync<ApiResponse<NguoiDungDto>>($"nguoidung/{id}");
         }
 
         public async Task<ApiResponse<bool>> ToggleLockUser(string id)
         {
-            return await PutAsync<ApiResponse<bool>>($"users/{id}/toggle-lock", null);
+            return await PutAsync<ApiResponse<bool>>($"nguoidung/{id}/toggle-lock", null);
         }
     }
 }

@@ -37,6 +37,7 @@ namespace ADMIN_QUANLYPHONGTRO.Models.ViewModels
         public int VaiTroId { get; set; }
         public string VaiTroName { get; set; }
         public bool IsKhoa { get; set; }
+        public bool IsEmailXacThuc { get; set; }
         public DateTime NgayDangKy { get; set; }
         public int SoPhongDaThue { get; set; } // Cho người thuê
         public int SoPhongDaDang { get; set; } // Cho chủ trọ

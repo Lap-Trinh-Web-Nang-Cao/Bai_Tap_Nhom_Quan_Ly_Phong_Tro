@@ -393,54 +393,59 @@
 @section scripts {
 <script>
     $(document).ready(function() {
-        // Initialize DataTable
-        var table = $('#usersTable').DataTable({
-            "pageLength": 10,
-            "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "Tất cả"]],
-            "language": {
-                "url": "//cdn.datatables.net/plug-ins/1.13.7/i18n/vi.json"
-            },
-            "order": [[1, "asc"]],
-            "columnDefs": [
-                { "orderable": false, "targets": [0, 7] }
-            ]
-        });
+        // Check if table has data
+        var hasData = $('#usersTable tbody tr').length > 1 || !$('#usersTable tbody tr:first td[colspan]').length;
+        
+        if (hasData) {
+            // Initialize DataTable only if there's actual data
+            var table = $('#usersTable').DataTable({
+                "pageLength": 10,
+                "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "Tất cả"]],
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.13.7/i18n/vi.json"
+                },
+                "order": [[1, "asc"]],
+                "columnDefs": [
+                    { "orderable": false, "targets": [0, 7] }
+                ]
+            });
 
-        // Filter by Role
-        $('#filterRole').on('change', function() {
-            var val = $(this).val();
-            if (val === "") {
-                table.column(4).search('').draw();
-            } else {
-                var roleText = val == 1 ? 'Admin' : (val == 2 ? 'Chủ trọ' : 'Người thuê');
-                table.column(4).search(roleText).draw();
-            }
-        });
+            // Filter by Role
+            $('#filterRole').on('change', function() {
+                var val = $(this).val();
+                if (val === "") {
+                    table.column(4).search('').draw();
+                } else {
+                    var roleText = val == 1 ? 'Admin' : (val == 2 ? 'Chủ trọ' : 'Người thuê');
+                    table.column(4).search(roleText).draw();
+                }
+            });
 
-        // Filter by Status
-        $('#filterStatus').on('change', function() {
-            var val = $(this).val();
-            if (val === "") {
-                table.column(6).search('').draw();
-            } else {
-                var statusText = val === 'active' ? 'Hoạt động' : 'Đã khóa';
-                table.column(6).search(statusText).draw();
-            }
-        });
+            // Filter by Status
+            $('#filterStatus').on('change', function() {
+                var val = $(this).val();
+                if (val === "") {
+                    table.column(6).search('').draw();
+                } else {
+                    var statusText = val === 'active' ? 'Hoạt động' : 'Đã khóa';
+                    table.column(6).search(statusText).draw();
+                }
+            });
 
-        // Search
-        $('#btnSearch').on('click', function() {
-            var val = $('#searchInput').val();
-            table.search(val).draw();
-        });
+            // Search
+            $('#btnSearch').on('click', function() {
+                var val = $('#searchInput').val();
+                table.search(val).draw();
+            });
 
-        $('#searchInput').on('keyup', function(e) {
-            if (e.keyCode === 13) {
-                $('#btnSearch').click();
-            }
-        });
+            $('#searchInput').on('keyup', function(e) {
+                if (e.keyCode === 13) {
+                    $('#btnSearch').click();
+                }
+            });
+        }
 
-        // Initialize Tooltips
+        // Initialize Tooltips (always)
         $('[data-toggle="tooltip"]').tooltip();
     });
 

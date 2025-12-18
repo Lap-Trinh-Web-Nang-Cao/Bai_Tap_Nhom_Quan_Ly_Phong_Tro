@@ -146,7 +146,6 @@
     <Compile Include="Models\Common\PagingRequest.cs" />
     <Compile Include="Models\DTO\BaoCaoViPhamDto.cs" />
     <Compile Include="Models\DTO\BienLaiDto.cs" />
-    <Compile Include="Models\DTO\ChuTroThongTinPhapLyDto.cs" />
     <Compile Include="Models\DTO\DashboardDto.cs" />
     <Compile Include="Models\DTO\DatPhongDto.cs" />
     <Compile Include="Models\DTO\HoSoNguoiDungDto.cs" />
@@ -308,6 +307,7 @@
     <Content Include="Views\Shared\_Header.cshtml" />
     <Content Include="Views\Shared\_Navbar.cshtml" />
     <Content Include="Views\Shared\_SettingsPanel.cshtml" />
+    <Content Include="Views\Users\AccessDenied.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

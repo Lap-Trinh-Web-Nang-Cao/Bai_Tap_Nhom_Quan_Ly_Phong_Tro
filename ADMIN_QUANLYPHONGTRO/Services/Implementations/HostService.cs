@@ -15,10 +15,10 @@ namespace ADMIN_QUANLYPHONGTRO.Services.Implementations
             _apiClient = new HostApiClient();
         }
 
-        public Task<PagedResult<ChuTroThongTinPhapLyDto>> GetPendingHostsAsync(int pageIndex, int pageSize)
-        {
-            return _apiClient.GetPendingHosts(pageIndex, pageSize);
-        }
+        //public Task<PagedResult<ChuTroThongTinPhapLyDto>> GetPendingHostsAsync(int pageIndex, int pageSize)
+        //{
+        //    return _apiClient.GetPendingHosts(pageIndex, pageSize);
+        //}
 
         public Task<ApiResponse<bool>> ApproveHostAsync(string nguoiDungId)
         {

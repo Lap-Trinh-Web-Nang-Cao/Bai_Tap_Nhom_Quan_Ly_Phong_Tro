@@ -11,6 +11,9 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Interfaces
 
         // Chức năng quản lý User (Ví dụ cho Admin hoặc xem profile)
         Task<NguoiDung?> GetByIdAsync(Guid id);
+        
+        // Lấy danh sách users phân trang
+        Task<PagedResult<NguoiDung>> GetUsersAsync(int pageIndex, int pageSize, string keyword = "");
 
         Task<bool> UpdateProfileAsync(Guid userId, UpdateProfileRequest request);
         Task<bool> ChangePasswordAsync(Guid userId, ChangePasswordRequest request);
