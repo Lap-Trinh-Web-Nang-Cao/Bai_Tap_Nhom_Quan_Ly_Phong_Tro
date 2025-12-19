@@ -1,5 +1,4 @@
 ﻿using ADMIN_QUANLYPHONGTRO.Models.Common;
-using ADMIN_QUANLYPHONGTRO.Models.DTO;
 using ADMIN_QUANLYPHONGTRO.Models.ViewModels;
 using System;
 using System.Collections.Generic;
@@ -17,71 +16,69 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
         {
             try
             {
-                var result = await GetAsync<dynamic>(
+                System.Diagnostics.Debug.WriteLine($"🔍 HostApiClient.GetPendingHosts: pageIndex={pageIndex}, pageSize={pageSize}, keyword={keyword}");
+                
+                var result = await GetAsync<HostPendingListResponse>(
                     $"hosts/pending?pageIndex={pageIndex}&pageSize={pageSize}&keyword={keyword}"
                 );
 
-                if (result == null || result.Items == null)
+                System.Diagnostics.Debug.WriteLine($"📦 Raw API Response: {Newtonsoft.Json.JsonConvert.SerializeObject(result)}");
+
+                if (result == null)
+                {
+                    System.Diagnostics.Debug.WriteLine("⚠️ Result is null");
                     return new PagedResult<HostPendingItemViewModel> { Items = new List<HostPendingItemViewModel>(), TotalRecords = 0 };
+                }
+
+                var items = result.items;
+                System.Diagnostics.Debug.WriteLine($"📋 Items count: {items?.Count ?? 0}");
+
+                if (items == null || items.Count == 0)
+                {
+                    System.Diagnostics.Debug.WriteLine("⚠️ Items is null or empty");
+                    return new PagedResult<HostPendingItemViewModel> 
+                    { 
+                        Items = new List<HostPendingItemViewModel>(), 
+                        TotalRecords = result.totalCount,
+                        PageIndex = result.pageIndex,
+                        PageSize = result.pageSize
+                    };
+                }
 
                 // Map Backend DTOs to ViewModel
-                var items = new List<HostPendingItemViewModel>();
-                
-                try
+                var mappedItems = items.Select(item => new HostPendingItemViewModel
                 {
-                    foreach (var item in result.Items)
-                    {
-                        // Parse Guid safely
-                        Guid nguoiDungId;
-                        if (item.NguoiDungId == null)
-                        {
-                            System.Diagnostics.Debug.WriteLine("⚠️ NguoiDungId is null, skipping this item");
-                            continue;
-                        }
+                    NguoiDungId = item.nguoiDungId,
+                    HoTen = item.hoTen ?? "Chủ trọ",
+                    Email = item.email ?? "",
+                    DienThoai = item.dienThoai ?? "",
+                    Avatar = item.avatar ?? "/Content/img/default-avatar.png",
+                    SoCCCD = item.soCCCD ?? "",
+                    LoaiGiayTo = item.loaiGiayTo ?? "",
+                    DaTaiGiayTo = item.daTaiGiayTo,
+                    SoTapTinDinhKem = item.soTapTinDinhKem,
+                    NgayDangKy = item.ngayDangKy,
+                    TrangThaiXacThuc = item.trangThaiXacThuc ?? "Chờ duyệt"
+                }).ToList();
 
-                        // Try to parse the Guid
-                        if (item.NguoiDungId is Guid guidValue)
-                        {
-                            nguoiDungId = guidValue;
-                        }
-                        else if (item.NguoiDungId is string guidString && Guid.TryParse(guidString, out var parsedGuid))
-                        {
-                            nguoiDungId = parsedGuid;
-                        }
-                        else
-                        {
-                            System.Diagnostics.Debug.WriteLine($"⚠️ Could not parse Guid: {item.NguoiDungId}");
-                            continue;
-                        }
+                System.Diagnostics.Debug.WriteLine($"✅ Mapped {mappedItems.Count} DTOs");
 
-                        items.Add(new HostPendingItemViewModel
-                        {
-                            NguoiDungId = nguoiDungId,
-                            HoTen = item.HoTen ?? "Chủ trọ",
-                            Email = item.Email ?? "",
-                            DienThoai = item.DienThoai ?? "",
-                            Avatar = item.Avatar ?? "/Content/img/default-avatar.png",
-                            SoCCCD = item.SoCCCD ?? "",
-                            DaTaiGiayTo = item.DaTaiGiayTo ?? false,
-                            SoTapTinDinhKem = item.SoTapTinDinhKem ?? 0,
-                            NgayDangKy = item.NgayDangKy ?? DateTime.Now,
-                            TrangThaiXacThuc = item.TrangThaiXacThuc ?? "Chờ duyệt",
-                            LoaiGiayTo = item.LoaiGiayTo ?? ""
-                        });
-                    }
-                }
-                catch (Exception mapEx)
+                if (mappedItems.Any())
                 {
-                    System.Diagnostics.Debug.WriteLine($"❌ Error mapping items: {mapEx.Message}");
-                    System.Diagnostics.Debug.WriteLine($"Stack trace: {mapEx.StackTrace}");
+                    var sample = mappedItems.First();
+                    System.Diagnostics.Debug.WriteLine($"📌 Sample Item:");
+                    System.Diagnostics.Debug.WriteLine($"   - NguoiDungId: {sample.NguoiDungId}");
+                    System.Diagnostics.Debug.WriteLine($"   - HoTen: {sample.HoTen}");
+                    System.Diagnostics.Debug.WriteLine($"   - Email: {sample.Email}");
+                    System.Diagnostics.Debug.WriteLine($"   - TrangThaiXacThuc: {sample.TrangThaiXacThuc}");
                 }
 
                 return new PagedResult<HostPendingItemViewModel>
                 {
-                    Items = items,
-                    PageIndex = result.PageIndex ?? pageIndex,
-                    PageSize = result.PageSize ?? pageSize,
-                    TotalRecords = result.TotalCount ?? result.TotalRecords ?? 0
+                    Items = mappedItems,
+                    PageIndex = result.pageIndex,
+                    PageSize = result.pageSize,
+                    TotalRecords = result.totalCount
                 };
             }
             catch (Exception ex)
@@ -102,25 +99,25 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
                 if (string.IsNullOrEmpty(id))
                     return null;
 
-                var result = await GetAsync<dynamic>($"hosts/{id}/detail");
+                var result = await GetAsync<HostApprovalItemDto>($"hosts/{id}/detail");
 
                 if (result == null)
                     return null;
 
                 return new HostApprovalDetailViewModel
                 {
-                    NguoiDungId = result.NguoiDungId,
-                    HoTen = result.HoTen ?? "Chủ trọ",
-                    Email = result.Email ?? "",
-                    DienThoai = result.DienThoai ?? "",
-                    Avatar = result.Avatar ?? "/Content/img/default-avatar.png",
-                    SoCCCD = result.SoCCCD ?? "",
-                    NgaySinh = result.NgaySinh ?? DateTime.Now,
-                    QueQuan = result.QueQuan ?? "",
-                    CCCDMatTruocUrl = result.CCCDMatTruocUrl ?? "/Content/img/no-image.png",
-                    CCCDMatSauUrl = result.CCCDMatSauUrl ?? "/Content/img/no-image.png",
-                    GiayPhepKinhDoanhUrl = result.GiayPhepKinhDoanhUrl ?? "/Content/img/no-image.png",
-                    TrangThaiXacThuc = result.TrangThaiXacThuc ?? "Chờ duyệt"
+                    NguoiDungId = result.nguoiDungId,
+                    HoTen = result.hoTen ?? "Chủ trọ",
+                    Email = result.email ?? "",
+                    DienThoai = result.dienThoai ?? "",
+                    Avatar = result.avatar ?? "/Content/img/default-avatar.png",
+                    SoCCCD = result.soCCCD ?? "",
+                    NgaySinh = result.ngaySinh,
+                    QueQuan = result.queQuan ?? "",
+                    CCCDMatTruocUrl = result.cccdMatTruocUrl ?? "/Content/img/no-image.png",
+                    CCCDMatSauUrl = result.cccdMatSauUrl ?? "/Content/img/no-image.png",
+                    GiayPhepKinhDoanhUrl = result.giayPhepKinhDoanhUrl ?? "/Content/img/no-image.png",
+                    TrangThaiXacThuc = result.trangThaiXacThuc ?? "Chờ duyệt"
                 };
             }
             catch (Exception ex)

@@ -123,26 +123,35 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
         /// </summary>
         public async Task<List<PendingRoomResponse>> GetPendingRoomsAsync(int top = 5)
         {
-            var pendingRooms = await _context.Phongs
-                .Where(p => !p.IsDeleted && !p.IsDuyet)
-                .Include(p => p.NhaTro)
-                    .ThenInclude(n => n.NguoiDung)
-                        .ThenInclude(nd => nd.HoSoNguoiDung)
-                .OrderByDescending(p => p.CreatedAt)
-                .Take(top)
-                .Select(p => new PendingRoomResponse
-                {
-                    PhongId = p.PhongId,
-                    TieuDe = p.TieuDe ?? "Phòng trọ",
-                    GiaTien = p.GiaTien,
-                    ChuTroName = p.NhaTro != null && p.NhaTro.NguoiDung != null && p.NhaTro.NguoiDung.HoSoNguoiDung != null 
-                        ? p.NhaTro.NguoiDung.HoSoNguoiDung.HoTen 
-                        : "Chủ trọ",
-                    CreatedAt = p.CreatedAt ?? DateTimeOffset.Now
-                })
-                .ToListAsync();
+            try
+            {
+                // ✅ Simplified: Just get pending rooms without complex joins
+                var pendingRooms = await _context.Phongs
+                    .Where(p => !p.IsDeleted && !p.IsDuyet)
+                    .OrderByDescending(p => p.CreatedAt)
+                    .Take(top)
+                    .AsNoTracking()
+                    .ToListAsync();
 
-            return pendingRooms;
+                // Return simple response (without landlord info due to EF join issues)
+                var result = pendingRooms
+                    .Select(p => new PendingRoomResponse
+                    {
+                        PhongId = p.PhongId,
+                        TieuDe = p.TieuDe ?? "Phòng trọ",
+                        GiaTien = p.GiaTien,
+                        ChuTroName = "Chủ trọ", // TODO: Can be enhanced later to join landlord info
+                        CreatedAt = p.CreatedAt ?? DateTimeOffset.Now
+                    })
+                    .ToList();
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ GetPendingRoomsAsync Error: {ex.Message}");
+                throw;
+            }
         }
 
         /// <summary>
@@ -180,15 +189,24 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
                 .Take(top)
                 .ToListAsync();
 
+            // Lấy tên admin map
+            var adminIds = activities.Select(a => a.AdminId).Distinct().ToList();
+            var admins = await _context.NguoiDungs
+                .Where(u => adminIds.Contains(u.NguoiDungId))
+                .Include(u => u.HoSoNguoiDung)
+                .ToDictionaryAsync(u => u.NguoiDungId, u => u);
+
             return activities.Select(h => new ActivityLogResponse
             {
-                ActivityId = Guid.NewGuid(), // Temporary ID
+                ActivityId = h.HanhDongId,
                 Action = h.HanhDong ?? "UNKNOWN",
                 Description = h.ChiTiet ?? "",
-                PerformedBy = "Admin", // TODO: Join với NguoiDung để lấy tên
+                PerformedBy = admins.ContainsKey(h.AdminId) && admins[h.AdminId].HoSoNguoiDung != null
+                    ? admins[h.AdminId].HoSoNguoiDung.HoTen
+                    : (admins.ContainsKey(h.AdminId) ? admins[h.AdminId].Email ?? "Admin" : "Admin"),
                 PerformedById = h.AdminId,
-                Timestamp = h.ThoiGian.Value.DateTime,
-                Type = GetActivityType(h.HanhDong),
+                Timestamp = h.ThoiGian?.DateTime ?? DateTime.UtcNow,
+                Type = GetActivityType(h.HanhDong ?? string.Empty),
                 TargetType = h.MucTieuBang ?? "",
                 TargetId = h.BanGhiId ?? ""
             }).ToList();

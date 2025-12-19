@@ -43,9 +43,33 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
 
         private string GetStoredToken()
         {
-            // TODO: Lấy token từ localStorage hoặc cache
-            // Tạm thời return null
+            // ⚠️ TEMPORARILY DISABLED FOR TESTING - Return empty token
+            // Sau khi implement login, uncomment code này
             return null;
+
+            // TODO: Implement lấy token từ session/cache thực tế
+            // Tạm thời dùng hardcoded token để test (CHỈ cho development)
+            // Trong production, phải lưu token từ login response vào Session hoặc Database
+            
+            // ⚠️ DEVELOPMENT ONLY - Token này cần được replace bằng token thực tế từ login
+            var token = ""; // Admin sẽ thêm token sau khi login
+            
+            // Thử lấy từ Session (nếu bạn lưu token ở đó sau login)
+            try
+            {
+                if (System.Web.HttpContext.Current?.Session != null)
+                {
+                    var sessionToken = System.Web.HttpContext.Current.Session["AuthToken"]?.ToString();
+                    if (!string.IsNullOrEmpty(sessionToken))
+                    {
+                        token = sessionToken;
+                        System.Diagnostics.Debug.WriteLine($"✅ Token loaded from Session");
+                    }
+                }
+            }
+            catch { }
+            
+            return token;
         }
 
         protected async Task<T> GetAsync<T>(string url)

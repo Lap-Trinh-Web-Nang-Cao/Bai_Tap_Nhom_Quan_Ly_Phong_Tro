@@ -29,7 +29,7 @@ namespace ADMIN_QUANLYPHONGTRO.Controllers
                 ViewBag.PageIndex = page;
                 ViewBag.PageSize = pageSize;
                 
-                return View(hosts ?? new List<HostPendingItemViewModel>());
+                return View(hosts != null ? hosts.Items : new List<HostPendingItemViewModel>());  // ✅ Fixed
             }
             catch (Exception ex)
             {
@@ -54,7 +54,7 @@ namespace ADMIN_QUANLYPHONGTRO.Controllers
                 ViewBag.PageSize = pageSize;
                 ViewBag.Status = "approved";
                 
-                return View("Pending", hosts ?? new List<HostPendingItemViewModel>());
+                return View("Pending", hosts != null ? hosts.Items : new List<HostPendingItemViewModel>());  // ✅ Fixed
             }
             catch (Exception ex)
             {
@@ -79,7 +79,7 @@ namespace ADMIN_QUANLYPHONGTRO.Controllers
                 ViewBag.PageSize = pageSize;
                 ViewBag.Status = "rejected";
                 
-                return View("Pending", hosts ?? new List<HostPendingItemViewModel>());
+                return View("Pending", hosts != null ? hosts.Items : new List<HostPendingItemViewModel>());  // ✅ Fixed
             }
             catch (Exception ex)
             {
@@ -156,16 +156,16 @@ namespace ADMIN_QUANLYPHONGTRO.Controllers
                 // Tính toán pageIndex từ start và length
                 int pageIndex = (start / length) + 1;
                 
-                // Gọi service để lấy dữ liệu từ API Backend
-                var hosts = await _service.GetPendingHostsAsync(pageIndex, length, search);
+                // Gọi service để lấy dữ liệu từ API Backend (PagedResult<T>)
+                var pagedResult = await _service.GetPendingHostsAsync(pageIndex, length, search);
 
-                // Trả về format DataTables
+                // Trả về format DataTables đúng
                 return Json(new
                 {
                     draw = draw,
-                    recordsTotal = hosts?.Count ?? 0,
-                    recordsFiltered = hosts?.Count ?? 0,
-                    data = hosts ?? new List<HostPendingItemViewModel>()
+                    recordsTotal = pagedResult?.TotalRecords ?? 0,  // ✅ Tổng số records
+                    recordsFiltered = pagedResult?.TotalRecords ?? 0,  // ✅ Số records sau filter
+                    data = pagedResult?.Items ?? new List<HostPendingItemViewModel>()  // ✅ Items hiện tại
                 });
             }
             catch (Exception ex)

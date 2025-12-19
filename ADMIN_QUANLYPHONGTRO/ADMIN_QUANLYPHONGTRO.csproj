@@ -285,7 +285,6 @@
     <Content Include="Content\fonts\summernote\summernote.eot" />
     <Content Include="Content\fonts\summernote\summernote.ttf" />
     <Content Include="Content\fonts\summernote\summernote.woff" />
-    <Content Include="DATA_NOT_SHOWING_FIX.md" />
     <None Include="packages.config" />
     <Content Include="Views\Shared\_Sidebar.cshtml" />
     <Content Include="Views\Shared\_Scripts.cshtml" />

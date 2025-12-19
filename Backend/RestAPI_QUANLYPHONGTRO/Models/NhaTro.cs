@@ -27,8 +27,6 @@ namespace RestAPI_QUANLYPHONGTRO.Models
 
         public bool? IsHoatDong { get; set; } // Trạng thái: Đang cho thuê hoặc tạm đóng
 
-        // Navigation Properties
-        [ForeignKey("ChuTroId")]
         public virtual NguoiDung? NguoiDung { get; set; }
     }
 }

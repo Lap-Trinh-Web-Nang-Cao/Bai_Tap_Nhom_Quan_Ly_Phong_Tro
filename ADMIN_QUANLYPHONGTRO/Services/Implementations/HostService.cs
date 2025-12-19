@@ -22,17 +22,21 @@ namespace ADMIN_QUANLYPHONGTRO.Services.Implementations
         /// <summary>
         /// Lấy danh sách chủ trọ chờ duyệt
         /// </summary>
-        public async Task<List<HostPendingItemViewModel>> GetPendingHostsAsync(int pageIndex, int pageSize, string keyword = "")
+        public async Task<PagedResult<HostPendingItemViewModel>> GetPendingHostsAsync(int pageIndex, int pageSize, string keyword = "")
         {
             try
             {
                 var result = await _apiClient.GetPendingHosts(pageIndex, pageSize, keyword);
-                return result?.Items ?? new List<HostPendingItemViewModel>();
+                return result;  // ✅ Trả về PagedResult hoàn chỉnh
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"❌ HostService.GetPendingHostsAsync Error: {ex.Message}");
-                return new List<HostPendingItemViewModel>();
+                return new PagedResult<HostPendingItemViewModel> 
+                { 
+                    Items = new List<HostPendingItemViewModel>(), 
+                    TotalRecords = 0 
+                };
             }
         }
 

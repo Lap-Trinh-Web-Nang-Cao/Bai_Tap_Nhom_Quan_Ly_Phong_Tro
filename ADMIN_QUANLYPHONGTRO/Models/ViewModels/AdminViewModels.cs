@@ -1,7 +1,58 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace ADMIN_QUANLYPHONGTRO.Models.ViewModels
 {
+    // ====== API RESPONSE DTOs ======
+    /// <summary>
+    /// DTO Response từ Backend API - Danh sách chủ trọ chờ duyệt
+    /// </summary>
+    public class HostPendingListResponse
+    {
+        public int pageIndex { get; set; }
+        public int pageSize { get; set; }
+        public int totalCount { get; set; }
+        public List<HostPendingItemDto> items { get; set; }
+    }
+
+    /// <summary>
+    /// DTO item từ Backend API
+    /// </summary>
+    public class HostPendingItemDto
+    {
+        public Guid nguoiDungId { get; set; }
+        public string hoTen { get; set; }
+        public string email { get; set; }
+        public string dienThoai { get; set; }
+        public string avatar { get; set; }
+        public string soCCCD { get; set; }
+        public string loaiGiayTo { get; set; }
+        public int soTapTinDinhKem { get; set; }
+        public bool daTaiGiayTo { get; set; }
+        public DateTime ngayDangKy { get; set; }
+        public string trangThaiXacThuc { get; set; }
+    }
+
+    /// <summary>
+    /// DTO Response từ Backend API - Chi tiết chủ trọ
+    /// </summary>
+    public class HostApprovalItemDto
+    {
+        public Guid nguoiDungId { get; set; }
+        public string hoTen { get; set; }
+        public string email { get; set; }
+        public string dienThoai { get; set; }
+        public DateTime ngaySinh { get; set; }
+        public string queQuan { get; set; }
+        public string soCCCD { get; set; }
+        public string avatar { get; set; }
+        public string cccdMatTruocUrl { get; set; }
+        public string cccdMatSauUrl { get; set; }
+        public string giayPhepKinhDoanhUrl { get; set; }
+        public string trangThaiXacThuc { get; set; }
+    }
+
+    // ====== VIEW MODELS ======
     /// <summary>
     /// ViewModel cho item trong danh sách chủ trọ chờ duyệt
     /// </summary>

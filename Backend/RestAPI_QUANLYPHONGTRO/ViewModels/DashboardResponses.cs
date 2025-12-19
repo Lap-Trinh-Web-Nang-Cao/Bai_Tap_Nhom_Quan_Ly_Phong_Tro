@@ -71,7 +71,8 @@
     /// </summary>
     public class ActivityLogResponse
     {
-        public Guid ActivityId { get; set; }
+        // Use long to match HanhDongAdmin.HanhDongId (bigint)
+        public long ActivityId { get; set; }
         public string Action { get; set; }
         public string Description { get; set; }
         public string PerformedBy { get; set; }

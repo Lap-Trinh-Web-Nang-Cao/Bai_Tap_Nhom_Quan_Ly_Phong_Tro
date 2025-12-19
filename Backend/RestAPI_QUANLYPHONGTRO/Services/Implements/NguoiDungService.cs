@@ -108,37 +108,6 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
             await _context.SaveChangesAsync();
             return true;
         }
-
-        /// <summary>
-        /// Lấy danh sách users phân trang
-        /// </summary>
-        public async Task<PagedResult<NguoiDung>> GetUsersAsync(int pageIndex, int pageSize, string keyword = "")
-        {
-            var query = _context.NguoiDungs.AsQueryable();
-
-            // Filter by keyword
-            if (!string.IsNullOrWhiteSpace(keyword))
-            {
-                query = query.Where(u => u.Email.Contains(keyword) || u.DienThoai.Contains(keyword));
-            }
-
-            // Pagination
-            var totalCount = await query.CountAsync();
-            var items = await query
-                .OrderByDescending(u => u.CreatedAt)
-                .Skip((pageIndex - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-
-            return new PagedResult<NguoiDung>
-            {
-                Items = items,
-                PageIndex = pageIndex,
-                PageSize = pageSize,
-                TotalCount = totalCount
-            };
-        }
-
         public async Task<bool> ChangePasswordAsync(Guid userId, ChangePasswordRequest request)
         {
             var user = await _context.NguoiDungs.FindAsync(userId);
@@ -157,6 +126,119 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
 
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        /// <summary>
+        /// Lấy danh sách users (phân trang)
+        /// </summary>
+        public async Task<PagedResult<dynamic>> GetUsersAsync(int pageIndex, int pageSize, string keyword = "")
+        {
+            try
+            {
+                var query = _context.NguoiDungs.AsQueryable();
+
+                // Filter by keyword
+                if (!string.IsNullOrWhiteSpace(keyword))
+                {
+                    query = query.Where(u =>
+                        u.Email.Contains(keyword) ||
+                        u.DienThoai.Contains(keyword)
+                    );
+                }
+
+                var totalCount = await query.CountAsync();
+
+                // Pagination
+                var users = await query
+                    .OrderByDescending(u => u.CreatedAt)
+                    .Skip((pageIndex - 1) * pageSize)
+                    .Take(pageSize)
+                    .Include(u => u.HoSoNguoiDung)
+                    .ToListAsync();
+
+                // Get VaiTro names
+                var vaiTroIds = users.Select(u => u.VaiTroId).Distinct().ToList();
+                var vaiTroMap = await _context.VaiTros
+                    .Where(v => vaiTroIds.Contains(v.VaiTroId))
+                    .ToDictionaryAsync(v => v.VaiTroId, v => v.TenVaiTro ?? "Unknown");
+
+                // Map to anonymous object (không cần DTO)
+                var displayList = users.Select(u => new
+                {
+                    u.NguoiDungId,
+                    u.Email,
+                    u.DienThoai,
+                    HoTen = u.HoSoNguoiDung?.HoTen ?? "N/A",
+                    u.VaiTroId,
+                    VaiTroName = vaiTroMap.ContainsKey(u.VaiTroId) ? vaiTroMap[u.VaiTroId] : "Unknown",
+                    u.IsEmailXacThuc,
+                    u.IsKhoa,
+                    CreatedAt = u.CreatedAt?.DateTime ?? DateTime.Now
+                }).Cast<dynamic>().ToList();
+
+                return new PagedResult<dynamic>
+                {
+                    Items = displayList,
+                    PageIndex = pageIndex,
+                    PageSize = pageSize,
+                    TotalCount = totalCount
+                };
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ GetUsersAsync Error: {ex.Message}");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Khóa tài khoản
+        /// </summary>
+        public async Task<bool> LockUserAsync(Guid userId)
+        {
+            try
+            {
+                var user = await _context.NguoiDungs.FindAsync(userId);
+                if (user == null)
+                    return false;
+
+                user.IsKhoa = true;
+                user.UpdatedAt = DateTimeOffset.Now;
+                await _context.SaveChangesAsync();
+
+                System.Diagnostics.Debug.WriteLine($"✅ User {user.Email} locked");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ LockUserAsync Error: {ex.Message}");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Mở khóa tài khoản
+        /// </summary>
+        public async Task<bool> UnlockUserAsync(Guid userId)
+        {
+            try
+            {
+                var user = await _context.NguoiDungs.FindAsync(userId);
+                if (user == null)
+                    return false;
+
+                user.IsKhoa = false;
+                user.UpdatedAt = DateTimeOffset.Now;
+                await _context.SaveChangesAsync();
+
+                System.Diagnostics.Debug.WriteLine($"✅ User {user.Email} unlocked");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ UnlockUserAsync Error: {ex.Message}");
+                throw;
+            }
         }
     }
 }

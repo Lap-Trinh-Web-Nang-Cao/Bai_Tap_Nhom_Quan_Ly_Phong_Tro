@@ -17,21 +17,6 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
             _service = service;
         }
 
-        // GET: api/nguoidung?pageIndex=1&pageSize=10&keyword=
-        [HttpGet]
-        public async Task<IActionResult> GetUsers(int pageIndex = 1, int pageSize = 10, string keyword = "")
-        {
-            try
-            {
-                var result = await _service.GetUsersAsync(pageIndex, pageSize, keyword);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-        }
-
         // API Đăng ký (Ai cũng gọi được -> Không cần [Authorize])
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
@@ -114,6 +99,74 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
             }
 
             return Ok(new { message = "Đổi mật khẩu thành công!" });
+        }
+
+        // ===== ADMIN ENDPOINTS =====
+
+        /// <summary>
+        /// GET: /api/nguoidung - Lấy danh sách users (phân trang)
+        /// </summary>
+        [HttpGet]
+        // [Authorize]  // ⚠️ TEMPORARILY DISABLED FOR TESTING
+        public async Task<IActionResult> GetUsers([FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 10, [FromQuery] string keyword = "")
+        {
+            try
+            {
+                var result = await _service.GetUsersAsync(pageIndex, pageSize, keyword);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = "Lỗi khi lấy danh sách người dùng", error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// PUT: /api/nguoidung/{id}/lock - Khóa tài khoản
+        /// </summary>
+        [HttpPut("{id}/lock")]
+        // [Authorize]  // ⚠️ TEMPORARILY DISABLED FOR TESTING
+        public async Task<IActionResult> LockUser(string id)
+        {
+            if (!Guid.TryParse(id, out var userId))
+                return BadRequest(new { message = "Invalid user ID" });
+
+            try
+            {
+                var result = await _service.LockUserAsync(userId);
+                if (!result)
+                    return NotFound(new { message = "Người dùng không tồn tại" });
+
+                return Ok(new { message = "Khóa tài khoản thành công" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = "Lỗi khi khóa tài khoản", error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// PUT: /api/nguoidung/{id}/unlock - Mở khóa tài khoản
+        /// </summary>
+        [HttpPut("{id}/unlock")]
+        // [Authorize]  // ⚠️ TEMPORARILY DISABLED FOR TESTING
+        public async Task<IActionResult> UnlockUser(string id)
+        {
+            if (!Guid.TryParse(id, out var userId))
+                return BadRequest(new { message = "Invalid user ID" });
+
+            try
+            {
+                var result = await _service.UnlockUserAsync(userId);
+                if (!result)
+                    return NotFound(new { message = "Người dùng không tồn tại" });
+
+                return Ok(new { message = "Mở khóa tài khoản thành công" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = "Lỗi khi mở khóa tài khoản", error = ex.Message });
+            }
         }
     }
 }

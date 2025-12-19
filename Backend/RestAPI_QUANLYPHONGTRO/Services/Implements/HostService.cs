@@ -26,7 +26,7 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
         {
             try
             {
-                // ===== STEP 1: QUERY =====
+                // ===== STEP 1: QUERY CHỦ TRỌ CHỜ DUYỆT =====
                 var query = _context.NguoiDungs
                     .Where(u => u.VaiTroId == 2) // Role = Chủ trọ (VaiTroId = 2)
                     .AsQueryable();
@@ -43,7 +43,7 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
                     System.Diagnostics.Debug.WriteLine($"🔍 After keyword filter: {query.Count()} users");
                 }
 
-                // ===== STEP 3: COUNT =====
+                // ===== STEP 3: COUNT TOTAL =====
                 var totalCount = await query.CountAsync();
                 System.Diagnostics.Debug.WriteLine($"📊 Total count: {totalCount}");
 
@@ -52,31 +52,67 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
                     .OrderByDescending(u => u.CreatedAt)
                     .Skip((pageIndex - 1) * pageSize)
                     .Take(pageSize)
-                    .Include(u => u.HoSoNguoiDung)  // ✅ JOIN HoSoNguoiDung
+                    .Include(u => u.HoSoNguoiDung)
                     .ToListAsync();
 
                 System.Diagnostics.Debug.WriteLine($"📄 Retrieved {items.Count} items after pagination");
 
-                // ===== STEP 5: MAP TO DTO =====
-                var dtoItems = items.Select(u => new HostPendingDto
+                // ===== STEP 5: GET RELATED DATA =====
+                // Lấy thông tin pháp lý + tệp cho mỗi chủ trọ
+                var nguoiDungIds = items.Select(u => u.NguoiDungId).ToList();
+
+                var phapLyMap = await _context.ChuTroThongTinPhapLys
+                    .Where(p => nguoiDungIds.Contains(p.NguoiDungId))
+                    .ToDictionaryAsync(p => p.NguoiDungId, p => p);
+
+                var tapTinIds = phapLyMap.Values
+                    .Where(p => p.TapTinGiayToId.HasValue)
+                    .Select(p => p.TapTinGiayToId.Value)
+                    .Distinct()
+                    .ToList();
+
+                var tapTinMap = await _context.TapTins
+                    .Where(t => tapTinIds.Contains(t.TapTinId))
+                    .ToDictionaryAsync(t => t.TapTinId, t => t);
+
+                // Đếm tệp cho mỗi người dùng (avatar, CCCD, v.v.)
+                var fileCounts = await _context.TapTins
+                    .Where(t => nguoiDungIds.Contains(t.TaiBangNguoi ?? Guid.Empty))
+                    .GroupBy(t => t.TaiBangNguoi)
+                    .Select(g => new { UserId = g.Key, Count = g.Count() })
+                    .ToDictionaryAsync(x => x.UserId ?? Guid.Empty, x => x.Count);
+
+                // ===== STEP 6: MAP TO DTO =====
+                var dtoItems = items.Select(u =>
                 {
-                    NguoiDungId = u.NguoiDungId,
-                    HoTen = u.HoSoNguoiDung?.HoTen ?? "Chủ trọ",  // ✅ Get from HoSoNguoiDung
-                    Email = u.Email ?? "",
-                    DienThoai = u.DienThoai ?? "",
-                    Avatar = "",  // ⚠️ Avatar không lưu trong HoSoNguoiDung, TODO: lấy từ TapTin
-                    SoCCCD = u.HoSoNguoiDung?.LoaiGiayTo ?? "",  // ⚠️ Dùng LoaiGiayTo thay cho SoCCCD
-                    LoaiGiayTo = u.HoSoNguoiDung?.LoaiGiayTo ?? "CCCD",
-                    DaTaiGiayTo = false,  // TODO: Check TapTin table
-                    SoTapTinDinhKem = 0,  // TODO: Count from TapTin
-                    NgayDangKy = u.CreatedAt?.DateTime ?? DateTime.Now,
-                    TrangThaiXacThuc = u.IsEmailXacThuc ? "Đã xác minh" : 
-                                      u.IsKhoa ? "Từ chối" : "Chờ duyệt"  // ✅ Based on IsEmailXacThuc & IsKhoa
+                    var phapLy = phapLyMap.ContainsKey(u.NguoiDungId) ? phapLyMap[u.NguoiDungId] : null;
+                    var tapTin = phapLy?.TapTinGiayToId.HasValue == true && 
+                                 tapTinMap.ContainsKey(phapLy.TapTinGiayToId.Value)
+                        ? tapTinMap[phapLy.TapTinGiayToId.Value]
+                        : null;
+                    
+                    var soTapTin = fileCounts.ContainsKey(u.NguoiDungId) ? fileCounts[u.NguoiDungId] : 0;
+                    var daTaiGiayTo = phapLy?.TapTinGiayToId.HasValue ?? false;
+
+                    return new HostPendingDto
+                    {
+                        NguoiDungId = u.NguoiDungId,
+                        HoTen = u.HoSoNguoiDung?.HoTen ?? "Chủ trọ",
+                        Email = u.Email ?? "",
+                        DienThoai = u.DienThoai ?? "",
+                        Avatar = tapTin?.DuongDan ?? "", // Lấy từ TapTin nếu có
+                        SoCCCD = phapLy?.CCCD ?? "", // Từ ChuTroThongTinPhapLy
+                        LoaiGiayTo = u.HoSoNguoiDung?.LoaiGiayTo ?? "CCCD",
+                        SoTapTinDinhKem = soTapTin,
+                        DaTaiGiayTo = daTaiGiayTo,
+                        NgayDangKy = u.CreatedAt?.DateTime ?? DateTime.Now,
+                        TrangThaiXacThuc = GetHostStatus(u.IsEmailXacThuc, u.IsKhoa, phapLy?.TrangThaiXacThuc)
+                    };
                 }).ToList();
 
                 System.Diagnostics.Debug.WriteLine($"✅ Mapped {dtoItems.Count} DTOs");
 
-                // ===== STEP 6: LOG SAMPLE =====
+                // ===== STEP 7: LOG SAMPLE =====
                 if (dtoItems.Any())
                 {
                     var sample = dtoItems.First();
@@ -84,12 +120,8 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
                     System.Diagnostics.Debug.WriteLine($"   - NguoiDungId: {sample.NguoiDungId}");
                     System.Diagnostics.Debug.WriteLine($"   - HoTen: {sample.HoTen}");
                     System.Diagnostics.Debug.WriteLine($"   - Email: {sample.Email}");
-                    System.Diagnostics.Debug.WriteLine($"   - DienThoai: {sample.DienThoai}");
+                    System.Diagnostics.Debug.WriteLine($"   - SoCCCD: {sample.SoCCCD}");
                     System.Diagnostics.Debug.WriteLine($"   - TrangThaiXacThuc: {sample.TrangThaiXacThuc}");
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine($"⚠️  No items to return!");
                 }
 
                 var result = new PagedResult<HostPendingDto>
@@ -125,7 +157,7 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
                 }
 
                 var user = await _context.NguoiDungs
-                    .Include(u => u.HoSoNguoiDung)  // ✅ JOIN HoSoNguoiDung
+                    .Include(u => u.HoSoNguoiDung)
                     .FirstOrDefaultAsync(u => u.NguoiDungId == userId && u.VaiTroId == 2);
 
                 if (user == null)
@@ -134,23 +166,46 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
                     return null;
                 }
 
+                // Lấy thông tin pháp lý
+                var phapLy = await _context.ChuTroThongTinPhapLys
+                    .FirstOrDefaultAsync(p => p.NguoiDungId == userId);
+
+                // Lấy các tệp liên quan
+                var tapTins = await _context.TapTins
+                    .Where(t => t.TaiBangNguoi == userId)
+                    .ToListAsync();
+
                 System.Diagnostics.Debug.WriteLine($"✅ Found host: {user.Email}");
+
+                // Giả định: tệp có tên chứa CCCD_Mat_Truoc, CCCD_Mat_Sau, GiayPhep
+                var cccdMatTruoc = tapTins.FirstOrDefault(t => 
+                    t.DuongDan.Contains("CCCD", StringComparison.OrdinalIgnoreCase) && 
+                    t.DuongDan.Contains("truoc", StringComparison.OrdinalIgnoreCase))?.DuongDan ?? "";
+                
+                var cccdMatSau = tapTins.FirstOrDefault(t => 
+                    t.DuongDan.Contains("CCCD", StringComparison.OrdinalIgnoreCase) && 
+                    t.DuongDan.Contains("sau", StringComparison.OrdinalIgnoreCase))?.DuongDan ?? "";
+                
+                var giayPhep = tapTins.FirstOrDefault(t => 
+                    t.DuongDan.Contains("GiayPhep", StringComparison.OrdinalIgnoreCase) ||
+                    t.DuongDan.Contains("HopDong", StringComparison.OrdinalIgnoreCase))?.DuongDan ?? "";
 
                 var dto = new HostApprovalDto
                 {
                     NguoiDungId = user.NguoiDungId,
-                    HoTen = user.HoSoNguoiDung?.HoTen ?? "Chủ trọ",  // ✅ Get from HoSoNguoiDung
+                    HoTen = user.HoSoNguoiDung?.HoTen ?? "Chủ trọ",
                     Email = user.Email ?? "",
                     DienThoai = user.DienThoai ?? "",
-                    SoCCCD = user.HoSoNguoiDung?.LoaiGiayTo ?? "",  // ⚠️ Use LoaiGiayTo
-                    Avatar = "",  // ⚠️ Avatar not in HoSoNguoiDung
-                    NgaySinh = user.HoSoNguoiDung?.NgaySinh ?? DateTime.Now,  // ✅ Get from HoSoNguoiDung
-                    QueQuan = user.HoSoNguoiDung?.GhiChu ?? "",  // Use GhiChu as location
-                    CCCDMatTruocUrl = "",  // TODO: Get from TapTin
-                    CCCDMatSauUrl = "",  // TODO: Get from TapTin
-                    GiayPhepKinhDoanhUrl = "",  // TODO: Get from TapTin
-                    TrangThaiXacThuc = user.IsEmailXacThuc ? "Đã xác minh" : 
-                                      user.IsKhoa ? "Từ chối" : "Chờ duyệt"
+                    SoCCCD = phapLy?.CCCD ?? "",
+                    Avatar = tapTins.FirstOrDefault(t => 
+                        t.DuongDan.Contains("avatar", StringComparison.OrdinalIgnoreCase) ||
+                        t.MimeType?.StartsWith("image") == true)?.DuongDan ?? "",
+                    NgaySinh = user.HoSoNguoiDung?.NgaySinh ?? DateTime.Now,
+                    QueQuan = phapLy?.DiaChiThuongTru ?? "",
+                    CCCDMatTruocUrl = cccdMatTruoc,
+                    CCCDMatSauUrl = cccdMatSau,
+                    GiayPhepKinhDoanhUrl = giayPhep,
+                    TrangThaiXacThuc = GetHostStatus(user.IsEmailXacThuc, user.IsKhoa, phapLy?.TrangThaiXacThuc)
                 };
 
                 System.Diagnostics.Debug.WriteLine($"✅ Returning host detail: {dto.HoTen}");
@@ -180,10 +235,26 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
                 if (user == null)
                     return false;
 
-                // TODO: Update HoSoNguoiDung status to "Đã xác minh"
-                // TODO: Send email notification to user
+                // Cập nhật trạng thái người dùng
+                user.IsEmailXacThuc = true;
+                user.IsKhoa = false;
+                user.UpdatedAt = DateTimeOffset.Now;
+
+                // Cập nhật trạng thái xác thực pháp lý
+                var phapLy = await _context.ChuTroThongTinPhapLys
+                    .FirstOrDefaultAsync(p => p.NguoiDungId == userId);
+
+                if (phapLy != null)
+                {
+                    phapLy.TrangThaiXacThuc = "DaDuyet";
+                    phapLy.UpdatedAt = DateTimeOffset.Now;
+                }
 
                 await _context.SaveChangesAsync();
+
+                // TODO: Gửi email thông báo duyệt cho chủ trọ
+                System.Diagnostics.Debug.WriteLine($"✅ Host {user.Email} approved");
+
                 return true;
             }
             catch (Exception ex)
@@ -209,11 +280,26 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
                 if (user == null)
                     return false;
 
-                // TODO: Update HoSoNguoiDung status to "Từ chối"
-                // TODO: Store rejection reason
-                // TODO: Send email notification to user with reason
+                // Cập nhật trạng thái người dùng (có thể khóa hoặc để chờ)
+                user.IsKhoa = true;
+                user.UpdatedAt = DateTimeOffset.Now;
+
+                // Cập nhật thông tin pháp lý
+                var phapLy = await _context.ChuTroThongTinPhapLys
+                    .FirstOrDefaultAsync(p => p.NguoiDungId == userId);
+
+                if (phapLy != null)
+                {
+                    phapLy.TrangThaiXacThuc = "TuChoi";
+                    phapLy.GhiChu = reason;
+                    phapLy.UpdatedAt = DateTimeOffset.Now;
+                }
 
                 await _context.SaveChangesAsync();
+
+                // TODO: Gửi email thông báo từ chối + lý do cho chủ trọ
+                System.Diagnostics.Debug.WriteLine($"✅ Host {user.Email} rejected. Reason: {reason}");
+
                 return true;
             }
             catch (Exception ex)
@@ -221,6 +307,23 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
                 System.Diagnostics.Debug.WriteLine($"❌ HostService.RejectHostAsync Error: {ex.Message}");
                 throw;
             }
+        }
+
+        /// <summary>
+        /// Helper: Xác định trạng thái xác thực chủ trọ
+        /// </summary>
+        private string GetHostStatus(bool isEmailVerified, bool isLocked, string? phapLyStatus)
+        {
+            if (isLocked)
+                return "Đã từ chối";
+            
+            if (phapLyStatus == "DaDuyet" && isEmailVerified)
+                return "Đã xác minh";
+            
+            if (phapLyStatus == "TuChoi")
+                return "Từ chối";
+            
+            return "Chờ duyệt";
         }
     }
 }

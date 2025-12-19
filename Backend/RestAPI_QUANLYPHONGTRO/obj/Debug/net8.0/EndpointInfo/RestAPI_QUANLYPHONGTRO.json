@@ -286,6 +286,79 @@
         }
       }
     },
+    "/api/ChuTroThongTinPhapLy/me": {
+      "get": {
+        "tags": [
+          "ChuTroThongTinPhapLy"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/ChuTroThongTinPhapLy": {
+      "post": {
+        "tags": [
+          "ChuTroThongTinPhapLy"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChuTroThongTinPhapLy"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChuTroThongTinPhapLy"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChuTroThongTinPhapLy"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/ChuTroThongTinPhapLy/approve/{userId}": {
+      "put": {
+        "tags": [
+          "ChuTroThongTinPhapLy"
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/DanhGiaPhong/phong/{phongId}": {
       "get": {
         "tags": [
@@ -948,46 +1021,6 @@
         }
       }
     },
-    "/api/NguoiDung": {
-      "get": {
-        "tags": [
-          "NguoiDung"
-        ],
-        "parameters": [
-          {
-            "name": "pageIndex",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32",
-              "default": 1
-            }
-          },
-          {
-            "name": "pageSize",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32",
-              "default": 10
-            }
-          },
-          {
-            "name": "keyword",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "default": ""
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
     "/api/NguoiDung/register": {
       "post": {
         "tags": [
@@ -1115,6 +1148,90 @@
             }
           }
         },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/NguoiDung": {
+      "get": {
+        "tags": [
+          "NguoiDung"
+        ],
+        "parameters": [
+          {
+            "name": "pageIndex",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          },
+          {
+            "name": "keyword",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": ""
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/NguoiDung/{id}/lock": {
+      "put": {
+        "tags": [
+          "NguoiDung"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/NguoiDung/{id}/unlock": {
+      "put": {
+        "tags": [
+          "NguoiDung"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK"
@@ -2796,6 +2913,96 @@
           },
           "xacNhanMatKhau": {
             "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ChuTroThongTinPhapLy": {
+        "required": [
+          "cccd",
+          "createdAt",
+          "diaChiThuongTru",
+          "trangThaiXacThuc"
+        ],
+        "type": "object",
+        "properties": {
+          "nguoiDungId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "cccd": {
+            "maxLength": 20,
+            "minLength": 1,
+            "type": "string"
+          },
+          "ngayCapCCCD": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "noiCapCCCD": {
+            "maxLength": 200,
+            "type": "string",
+            "nullable": true
+          },
+          "diaChiThuongTru": {
+            "maxLength": 500,
+            "minLength": 1,
+            "type": "string"
+          },
+          "diaChiLienHe": {
+            "maxLength": 500,
+            "type": "string",
+            "nullable": true
+          },
+          "soDienThoaiLienHe": {
+            "maxLength": 50,
+            "type": "string",
+            "nullable": true
+          },
+          "maSoThueCaNhan": {
+            "maxLength": 50,
+            "type": "string",
+            "nullable": true
+          },
+          "soTaiKhoanNganHang": {
+            "maxLength": 50,
+            "type": "string",
+            "nullable": true
+          },
+          "tenNganHang": {
+            "maxLength": 200,
+            "type": "string",
+            "nullable": true
+          },
+          "chiNhanhNganHang": {
+            "maxLength": 200,
+            "type": "string",
+            "nullable": true
+          },
+          "tapTinGiayToId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "trangThaiXacThuc": {
+            "maxLength": 50,
+            "minLength": 1,
+            "type": "string"
+          },
+          "ghiChu": {
+            "maxLength": 1000,
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           }
         },

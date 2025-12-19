@@ -1,13 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using ADMIN_QUANLYPHONGTRO.Models.Common;
 using ADMIN_QUANLYPHONGTRO.Models.ViewModels;
 
 namespace ADMIN_QUANLYPHONGTRO.Services.Interfaces
 {
     public interface IHostService
     {
-        // Lấy danh sách chủ trọ chờ duyệt
-        Task<List<HostPendingItemViewModel>> GetPendingHostsAsync(int pageIndex, int pageSize, string keyword = "");
+        // Lấy danh sách chủ trọ chờ duyệt (với phân trang)
+        Task<PagedResult<HostPendingItemViewModel>> GetPendingHostsAsync(int pageIndex, int pageSize, string keyword = "");
         
         // Lấy chi tiết chủ trọ để duyệt
         Task<HostApprovalDetailViewModel> GetHostDetailAsync(string hostId);
