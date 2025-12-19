@@ -18,7 +18,10 @@ builder.Services.AddSwaggerGen();
 
 // Cấu hình JSON Reference Loop: Các bảng của bạn có quan hệ vòng tròn (VD: NhaTro->ChuTro->NhaTro). Khi API trả về dữ liệu sẽ bị lỗi "Cycle detected".
 builder.Services.AddControllers().AddJsonOptions(x =>
-    x.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles);
+{
+    x.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+    x.JsonSerializerOptions.PropertyNamingPolicy = null; // Dùng PascalCase thay vì camelCase
+});
 
 
 // 1. Đăng ký DbContext

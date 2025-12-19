@@ -2413,20 +2413,20 @@
     "schemas": {
       "AssignRoleRequest": {
         "required": [
-          "nguoiDungId",
-          "vaiTroId"
+          "NguoiDungId",
+          "VaiTroId"
         ],
         "type": "object",
         "properties": {
-          "nguoiDungId": {
+          "NguoiDungId": {
             "type": "string",
             "format": "uuid"
           },
-          "vaiTroId": {
+          "VaiTroId": {
             "type": "integer",
             "format": "int32"
           },
-          "ghiChu": {
+          "GhiChu": {
             "maxLength": 500,
             "type": "string",
             "nullable": true
@@ -2436,72 +2436,72 @@
       },
       "BaoCaoViPham": {
         "required": [
-          "loaiThucThe",
-          "nguoiBaoCao",
-          "soBaoCao",
-          "tieuDe",
-          "trangThai"
+          "LoaiThucThe",
+          "NguoiBaoCao",
+          "SoBaoCao",
+          "TieuDe",
+          "TrangThai"
         ],
         "type": "object",
         "properties": {
-          "baoCaoId": {
+          "BaoCaoId": {
             "type": "string",
             "format": "uuid"
           },
-          "loaiThucThe": {
+          "LoaiThucThe": {
             "maxLength": 50,
             "minLength": 1,
             "type": "string"
           },
-          "thucTheId": {
+          "ThucTheId": {
             "type": "string",
             "format": "uuid",
             "nullable": true
           },
-          "nguoiBaoCao": {
+          "NguoiBaoCao": {
             "type": "string",
             "format": "uuid"
           },
-          "viPhamId": {
+          "ViPhamId": {
             "type": "integer",
             "format": "int32",
             "nullable": true
           },
-          "tieuDe": {
+          "TieuDe": {
             "maxLength": 300,
             "minLength": 1,
             "type": "string"
           },
-          "moTa": {
+          "MoTa": {
             "type": "string",
             "nullable": true
           },
-          "trangThai": {
+          "TrangThai": {
             "maxLength": 50,
             "minLength": 1,
             "type": "string"
           },
-          "ketQua": {
+          "KetQua": {
             "maxLength": 1000,
             "type": "string",
             "nullable": true
           },
-          "nguoiXuLy": {
+          "NguoiXuLy": {
             "type": "string",
             "format": "uuid",
             "nullable": true
           },
-          "thoiGianBaoCao": {
+          "ThoiGianBaoCao": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "thoiGianXuLy": {
+          "ThoiGianXuLy": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "soBaoCao": {
+          "SoBaoCao": {
             "type": "integer",
             "format": "int32"
           }
@@ -2510,49 +2510,49 @@
       },
       "BienLai": {
         "required": [
-          "datPhongId",
-          "daXacNhan",
-          "nguoiTai",
-          "soBienLai",
-          "tapTinId"
+          "DatPhongId",
+          "DaXacNhan",
+          "NguoiTai",
+          "SoBienLai",
+          "TapTinId"
         ],
         "type": "object",
         "properties": {
-          "bienLaiId": {
+          "BienLaiId": {
             "type": "string",
             "format": "uuid"
           },
-          "datPhongId": {
+          "DatPhongId": {
             "type": "string",
             "format": "uuid"
           },
-          "nguoiTai": {
+          "NguoiTai": {
             "type": "string",
             "format": "uuid"
           },
-          "tapTinId": {
+          "TapTinId": {
             "type": "string",
             "format": "uuid"
           },
-          "soTien": {
+          "SoTien": {
             "type": "integer",
             "format": "int64",
             "nullable": true
           },
-          "thoiGianTai": {
+          "ThoiGianTai": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "daXacNhan": {
+          "DaXacNhan": {
             "type": "boolean"
           },
-          "nguoiXacNhan": {
+          "NguoiXacNhan": {
             "type": "string",
             "format": "uuid",
             "nullable": true
           },
-          "soBienLai": {
+          "SoBienLai": {
             "type": "integer",
             "format": "int32"
           }
@@ -2561,20 +2561,20 @@
       },
       "ChangePasswordRequest": {
         "required": [
-          "matKhauCu",
-          "matKhauMoi"
+          "MatKhauCu",
+          "MatKhauMoi"
         ],
         "type": "object",
         "properties": {
-          "matKhauCu": {
+          "MatKhauCu": {
             "minLength": 1,
             "type": "string"
           },
-          "matKhauMoi": {
+          "MatKhauMoi": {
             "minLength": 6,
             "type": "string"
           },
-          "xacNhanMatKhau": {
+          "XacNhanMatKhau": {
             "type": "string",
             "nullable": true
           }
@@ -2583,87 +2583,87 @@
       },
       "ChuTroThongTinPhapLy": {
         "required": [
-          "cccd",
-          "createdAt",
-          "diaChiThuongTru",
-          "trangThaiXacThuc"
+          "CCCD",
+          "CreatedAt",
+          "DiaChiThuongTru",
+          "TrangThaiXacThuc"
         ],
         "type": "object",
         "properties": {
-          "nguoiDungId": {
+          "NguoiDungId": {
             "type": "string",
             "format": "uuid"
           },
-          "cccd": {
+          "CCCD": {
             "maxLength": 20,
             "minLength": 1,
             "type": "string"
           },
-          "ngayCapCCCD": {
+          "NgayCapCCCD": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "noiCapCCCD": {
+          "NoiCapCCCD": {
             "maxLength": 200,
             "type": "string",
             "nullable": true
           },
-          "diaChiThuongTru": {
+          "DiaChiThuongTru": {
             "maxLength": 500,
             "minLength": 1,
             "type": "string"
           },
-          "diaChiLienHe": {
+          "DiaChiLienHe": {
             "maxLength": 500,
             "type": "string",
             "nullable": true
           },
-          "soDienThoaiLienHe": {
+          "SoDienThoaiLienHe": {
             "maxLength": 50,
             "type": "string",
             "nullable": true
           },
-          "maSoThueCaNhan": {
+          "MaSoThueCaNhan": {
             "maxLength": 50,
             "type": "string",
             "nullable": true
           },
-          "soTaiKhoanNganHang": {
+          "SoTaiKhoanNganHang": {
             "maxLength": 50,
             "type": "string",
             "nullable": true
           },
-          "tenNganHang": {
+          "TenNganHang": {
             "maxLength": 200,
             "type": "string",
             "nullable": true
           },
-          "chiNhanhNganHang": {
+          "ChiNhanhNganHang": {
             "maxLength": 200,
             "type": "string",
             "nullable": true
           },
-          "tapTinGiayToId": {
+          "TapTinGiayToId": {
             "type": "string",
             "format": "uuid",
             "nullable": true
           },
-          "trangThaiXacThuc": {
+          "TrangThaiXacThuc": {
             "maxLength": 50,
             "minLength": 1,
             "type": "string"
           },
-          "ghiChu": {
+          "GhiChu": {
             "maxLength": 1000,
             "type": "string",
             "nullable": true
           },
-          "createdAt": {
+          "CreatedAt": {
             "type": "string",
             "format": "date-time"
           },
-          "updatedAt": {
+          "UpdatedAt": {
             "type": "string",
             "format": "date-time",
             "nullable": true
@@ -2673,22 +2673,22 @@
       },
       "CreateDanhGiaRequest": {
         "required": [
-          "diem",
-          "phongId"
+          "Diem",
+          "PhongId"
         ],
         "type": "object",
         "properties": {
-          "phongId": {
+          "PhongId": {
             "type": "string",
             "format": "uuid"
           },
-          "diem": {
+          "Diem": {
             "maximum": 5,
             "minimum": 1,
             "type": "integer",
             "format": "int32"
           },
-          "noiDung": {
+          "NoiDung": {
             "maxLength": 1000,
             "type": "string",
             "nullable": true
@@ -2698,35 +2698,35 @@
       },
       "CreateDatPhongRequest": {
         "required": [
-          "batDau",
-          "chuTroId",
-          "loai",
-          "phongId"
+          "BatDau",
+          "ChuTroId",
+          "Loai",
+          "PhongId"
         ],
         "type": "object",
         "properties": {
-          "phongId": {
+          "PhongId": {
             "type": "string",
             "format": "uuid"
           },
-          "chuTroId": {
+          "ChuTroId": {
             "type": "string",
             "format": "uuid"
           },
-          "loai": {
+          "Loai": {
             "minLength": 1,
             "type": "string"
           },
-          "batDau": {
+          "BatDau": {
             "type": "string",
             "format": "date-time"
           },
-          "ketThuc": {
+          "KetThuc": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "ghiChu": {
+          "GhiChu": {
             "type": "string",
             "nullable": true
           }
@@ -2735,36 +2735,36 @@
       },
       "CreatePhongRequest": {
         "required": [
-          "giaTien",
-          "nhaTroId"
+          "GiaTien",
+          "NhaTroId"
         ],
         "type": "object",
         "properties": {
-          "nhaTroId": {
+          "NhaTroId": {
             "type": "string",
             "format": "uuid"
           },
-          "tieuDe": {
+          "TieuDe": {
             "maxLength": 250,
             "type": "string",
             "nullable": true
           },
-          "dienTich": {
+          "DienTich": {
             "type": "number",
             "format": "double",
             "nullable": true
           },
-          "giaTien": {
+          "GiaTien": {
             "minimum": 0,
             "type": "integer",
             "format": "int64"
           },
-          "tienCoc": {
+          "TienCoc": {
             "type": "integer",
             "format": "int64",
             "nullable": true
           },
-          "soNguoiToiDa": {
+          "SoNguoiToiDa": {
             "type": "integer",
             "format": "int32",
             "nullable": true
@@ -2774,26 +2774,26 @@
       },
       "CreateYeuCauRequest": {
         "required": [
-          "loaiHoTroId",
-          "phongId",
-          "tieuDe"
+          "LoaiHoTroId",
+          "PhongId",
+          "TieuDe"
         ],
         "type": "object",
         "properties": {
-          "phongId": {
+          "PhongId": {
             "type": "string",
             "format": "uuid"
           },
-          "loaiHoTroId": {
+          "LoaiHoTroId": {
             "type": "integer",
             "format": "int32"
           },
-          "tieuDe": {
+          "TieuDe": {
             "maxLength": 300,
             "minLength": 1,
             "type": "string"
           },
-          "moTa": {
+          "MoTa": {
             "type": "string",
             "nullable": true
           }
@@ -2802,11 +2802,11 @@
       },
       "DeviceTokenRequest": {
         "required": [
-          "token"
+          "Token"
         ],
         "type": "object",
         "properties": {
-          "token": {
+          "Token": {
             "minLength": 1,
             "type": "string"
           }
@@ -2816,22 +2816,22 @@
       "HoSoNguoiDungRequest": {
         "type": "object",
         "properties": {
-          "hoTen": {
+          "HoTen": {
             "maxLength": 200,
             "type": "string",
             "nullable": true
           },
-          "ngaySinh": {
+          "NgaySinh": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "loaiGiayTo": {
+          "LoaiGiayTo": {
             "maxLength": 100,
             "type": "string",
             "nullable": true
           },
-          "ghiChu": {
+          "GhiChu": {
             "maxLength": 1000,
             "type": "string",
             "nullable": true
@@ -2841,11 +2841,11 @@
       },
       "LoaiHoTroRequest": {
         "required": [
-          "tenLoai"
+          "TenLoai"
         ],
         "type": "object",
         "properties": {
-          "tenLoai": {
+          "TenLoai": {
             "maxLength": 200,
             "minLength": 1,
             "type": "string"
@@ -2855,16 +2855,16 @@
       },
       "LoginRequest": {
         "required": [
-          "email",
-          "password"
+          "Email",
+          "Password"
         ],
         "type": "object",
         "properties": {
-          "email": {
+          "Email": {
             "minLength": 1,
             "type": "string"
           },
-          "password": {
+          "Password": {
             "minLength": 1,
             "type": "string"
           }
@@ -2873,31 +2873,31 @@
       },
       "NhaTroRequest": {
         "required": [
-          "tieuDe"
+          "TieuDe"
         ],
         "type": "object",
         "properties": {
-          "tieuDe": {
+          "TieuDe": {
             "maxLength": 300,
             "minLength": 1,
             "type": "string"
           },
-          "diaChi": {
+          "DiaChi": {
             "maxLength": 500,
             "type": "string",
             "nullable": true
           },
-          "quanHuyenId": {
+          "QuanHuyenId": {
             "type": "integer",
             "format": "int32",
             "nullable": true
           },
-          "phuongId": {
+          "PhuongId": {
             "type": "integer",
             "format": "int32",
             "nullable": true
           },
-          "isHoatDong": {
+          "IsHoatDong": {
             "type": "boolean",
             "nullable": true
           }
@@ -2906,16 +2906,16 @@
       },
       "PhongTienIchRequest": {
         "required": [
-          "phongId",
-          "tienIchId"
+          "PhongId",
+          "TienIchId"
         ],
         "type": "object",
         "properties": {
-          "phongId": {
+          "PhongId": {
             "type": "string",
             "format": "uuid"
           },
-          "tienIchId": {
+          "TienIchId": {
             "type": "integer",
             "format": "int32"
           }
@@ -2924,16 +2924,16 @@
       },
       "PhuongRequest": {
         "required": [
-          "quanHuyenId",
-          "ten"
+          "QuanHuyenId",
+          "Ten"
         ],
         "type": "object",
         "properties": {
-          "quanHuyenId": {
+          "QuanHuyenId": {
             "type": "integer",
             "format": "int32"
           },
-          "ten": {
+          "Ten": {
             "maxLength": 200,
             "minLength": 1,
             "type": "string"
@@ -2943,11 +2943,11 @@
       },
       "QuanHuyenRequest": {
         "required": [
-          "ten"
+          "Ten"
         ],
         "type": "object",
         "properties": {
-          "ten": {
+          "Ten": {
             "maxLength": 200,
             "minLength": 1,
             "type": "string"
@@ -2957,21 +2957,21 @@
       },
       "RegisterRequest": {
         "required": [
-          "email",
-          "password"
+          "Email",
+          "Password"
         ],
         "type": "object",
         "properties": {
-          "email": {
+          "Email": {
             "minLength": 1,
             "type": "string",
             "format": "email"
           },
-          "password": {
+          "Password": {
             "minLength": 6,
             "type": "string"
           },
-          "dienThoai": {
+          "DienThoai": {
             "type": "string",
             "nullable": true
           }
@@ -2980,19 +2980,19 @@
       },
       "SendMessageRequest": {
         "required": [
-          "toUser"
+          "ToUser"
         ],
         "type": "object",
         "properties": {
-          "toUser": {
+          "ToUser": {
             "type": "string",
             "format": "uuid"
           },
-          "noiDung": {
+          "NoiDung": {
             "type": "string",
             "nullable": true
           },
-          "tapTinId": {
+          "TapTinId": {
             "type": "string",
             "format": "uuid",
             "nullable": true
@@ -3002,11 +3002,11 @@
       },
       "TienIchRequest": {
         "required": [
-          "ten"
+          "Ten"
         ],
         "type": "object",
         "properties": {
-          "ten": {
+          "Ten": {
             "maxLength": 200,
             "minLength": 1,
             "type": "string"
@@ -3016,11 +3016,11 @@
       },
       "TrangThaiRequest": {
         "required": [
-          "tenTrangThai"
+          "TenTrangThai"
         ],
         "type": "object",
         "properties": {
-          "tenTrangThai": {
+          "TenTrangThai": {
             "maxLength": 100,
             "minLength": 1,
             "type": "string"
@@ -3030,11 +3030,11 @@
       },
       "UpdateProfileRequest": {
         "required": [
-          "dienThoai"
+          "DienThoai"
         ],
         "type": "object",
         "properties": {
-          "dienThoai": {
+          "DienThoai": {
             "maxLength": 50,
             "minLength": 1,
             "type": "string"
@@ -3044,11 +3044,11 @@
       },
       "VaiTroRequest": {
         "required": [
-          "tenVaiTro"
+          "TenVaiTro"
         ],
         "type": "object",
         "properties": {
-          "tenVaiTro": {
+          "TenVaiTro": {
             "maxLength": 100,
             "minLength": 1,
             "type": "string"
@@ -3058,27 +3058,27 @@
       },
       "ViPhamRequest": {
         "required": [
-          "tenViPham"
+          "TenViPham"
         ],
         "type": "object",
         "properties": {
-          "tenViPham": {
+          "TenViPham": {
             "maxLength": 200,
             "minLength": 1,
             "type": "string"
           },
-          "moTa": {
+          "MoTa": {
             "maxLength": 1000,
             "type": "string",
             "nullable": true
           },
-          "hinhPhatTien": {
+          "HinhPhatTien": {
             "minimum": 0,
             "type": "integer",
             "format": "int64",
             "nullable": true
           },
-          "soDiemTru": {
+          "SoDiemTru": {
             "type": "integer",
             "format": "int32",
             "nullable": true

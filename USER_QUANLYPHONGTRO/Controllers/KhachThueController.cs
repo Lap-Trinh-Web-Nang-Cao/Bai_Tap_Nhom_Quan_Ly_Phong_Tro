@@ -13,7 +13,6 @@ namespace USER_QUANLYPHONGTRO.Controllers
     /// Yêu cầu: UserRole = "KhachThue"
     /// Khách vãng lai xem phòng → dùng GuestController
     /// </summary>
-    //[Authorize] // Tất cả actions đều yêu cầu login
     public class KhachThueController : Controller
     {
         private readonly ApiClient _apiClient;
@@ -33,10 +32,10 @@ namespace USER_QUANLYPHONGTRO.Controllers
         // GET: /KhachThue → Welcome page
         public async Task<ActionResult> Index()
         {
-            //if (!CheckKhachThueRole())
-            //{
-            //    return RedirectToAction("Login", "Auth", new { type = "nguoithue" });
-            //}
+            if (!CheckKhachThueRole())
+            {
+                return RedirectToAction("Login", "Auth", new { type = "nguoithue" });
+            }
 
             try
             {
@@ -65,10 +64,10 @@ namespace USER_QUANLYPHONGTRO.Controllers
         // Dashboard người thuê
         public ActionResult Dashboard()
         {
-            //if (!CheckKhachThueRole())
-            //{
-            //    return RedirectToAction("Login", "Auth", new { type = "nguoithue" });
-            //}
+            if (!CheckKhachThueRole())
+            {
+                return RedirectToAction("Login", "Auth", new { type = "nguoithue" });
+            }
 
             // TODO: Lấy dữ liệu thực từ API khi có endpoints
             var model = new TenantDashboardViewModel
@@ -95,10 +94,10 @@ namespace USER_QUANLYPHONGTRO.Controllers
         // Danh sách phòng (lấy từ API - số ít)
         public async Task<ActionResult> DanhSachPhong()
         {
-            //if (!CheckKhachThueRole())
-            //{
-            //    return RedirectToAction("Login", "Auth", new { type = "nguoithue" });
-            //}
+            if (!CheckKhachThueRole())
+            {
+                return RedirectToAction("Login", "Auth", new { type = "nguoithue" });
+            }
 
             try
             {
@@ -123,10 +122,10 @@ namespace USER_QUANLYPHONGTRO.Controllers
         // Chi tiết phòng
         public async Task<ActionResult> ChiTietPhong(Guid? id)
         {
-            //if (!CheckKhachThueRole())
-            //{
-            //    return RedirectToAction("Login", "Auth", new { type = "nguoithue" });
-            //}
+            if (!CheckKhachThueRole())
+            {
+                return RedirectToAction("Login", "Auth", new { type = "nguoithue" });
+            }
 
             if (!id.HasValue)
             {
@@ -154,10 +153,10 @@ namespace USER_QUANLYPHONGTRO.Controllers
         // Đặt phòng (Form)
         public ActionResult DatPhong(Guid? roomId)
         {
-            //if (!CheckKhachThueRole())
-            //{
-            //    return RedirectToAction("Login", "Auth", new { type = "nguoithue" });
-            //}
+            if (!CheckKhachThueRole())
+            {
+                return RedirectToAction("Login", "Auth", new { type = "nguoithue" });
+            }
 
             if (!roomId.HasValue)
             {
@@ -174,10 +173,10 @@ namespace USER_QUANLYPHONGTRO.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DatPhong(FormCollection form)
         {
-            //if (!CheckKhachThueRole())
-            //{
-            //    return RedirectToAction("Login", "Auth", new { type = "nguoithue" });
-            //}
+            if (!CheckKhachThueRole())
+            {
+                return RedirectToAction("Login", "Auth", new { type = "nguoithue" });
+            }
 
             try
             {
@@ -195,10 +194,10 @@ namespace USER_QUANLYPHONGTRO.Controllers
         // Lịch đã đặt
         public ActionResult LichDaDat()
         {
-            //if (!CheckKhachThueRole())
-            //{
-            //    return RedirectToAction("Login", "Auth", new { type = "nguoithue" });
-            //}
+            if (!CheckKhachThueRole())
+            {
+                return RedirectToAction("Login", "Auth", new { type = "nguoithue" });
+            }
 
             // TODO: Lấy từ API /api/datphong khi có
             var list = new List<TenantScheduleItem>();
@@ -208,10 +207,10 @@ namespace USER_QUANLYPHONGTRO.Controllers
         // Hợp đồng
         public ActionResult HopDong()
         {
-            //if (!CheckKhachThueRole())
-            //{
-            //    return RedirectToAction("Login", "Auth", new { type = "nguoithue" });
-            //}
+            if (!CheckKhachThueRole())
+            {
+                return RedirectToAction("Login", "Auth", new { type = "nguoithue" });
+            }
 
             // TODO: Lấy từ API /api/hopdong khi có
             var list = new List<TenantContractItem>();
@@ -221,10 +220,10 @@ namespace USER_QUANLYPHONGTRO.Controllers
         // Hóa đơn
         public ActionResult HoaDon()
         {
-            //if (!CheckKhachThueRole())
-            //{
-            //    return RedirectToAction("Login", "Auth", new { type = "nguoithue" });
-            //}
+            if (!CheckKhachThueRole())
+            {
+                return RedirectToAction("Login", "Auth", new { type = "nguoithue" });
+            }
 
             // TODO: Lấy từ API /api/hoadon khi có
             var list = new List<TenantInvoiceItem>();
@@ -234,16 +233,13 @@ namespace USER_QUANLYPHONGTRO.Controllers
         // Thông tin cá nhân
         public ActionResult ThongTinCaNhan()
         {
-            //if (!CheckKhachThueRole())
-            //{
-            //    return RedirectToAction("Login", "Auth", new { type = "nguoithue" });
-            //}
+            if (!CheckKhachThueRole())
+            {
+                return RedirectToAction("Login", "Auth", new { type = "nguoithue" });
+            }
 
             ViewBag.Message = "Trang thông tin cá nhân đang được phát triển.";
             return View();
         }
-
-        // ================== HELPER METHODS (if needed) ==================
-        // Mock data removed - Use real API calls instead
     }
 }

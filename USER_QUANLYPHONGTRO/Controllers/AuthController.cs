@@ -47,7 +47,7 @@ namespace USER_QUANLYPHONGTRO.Controllers
                     Session["MessageCount"] = 1;
 
                     // REDIRECT VỀ TRANG CHỦ NGƯỜI THUÊ
-                    return RedirectToAction("Index", "Home");
+                    return RedirectToAction("Index", "KhachThue");
                 }
             }
 

@@ -36,14 +36,45 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
         {
             var result = await _service.GetPublicRoomsAsync(nhaTroId, minPrice, maxPrice, page, pageSize);
 
-            // Trả về format chuẩn cho frontend dễ paging
+            // Map Entity -> DTO để tránh circular reference
+            var dtoList = result.Data.Select(p => new ViewModels.PhongDto
+            {
+                PhongId = p.PhongId,
+                NhaTroId = p.NhaTroId,
+                TieuDe = p.TieuDe ?? "",
+                MoTa = p.MoTa,
+                DienTich = p.DienTich,
+                GiaTien = p.GiaTien,
+                TienCoc = p.TienCoc,
+                SoNguoiToiDa = p.SoNguoiToiDa ?? 1,
+                TrangThai = p.TrangThai ?? "Trong",
+                DiemTrungBinh = p.DiemTrungBinh,
+                SoLuongDanhGia = p.SoLuongDanhGia ?? 0,
+                IsDuyet = p.IsDuyet,
+                IsBiKhoa = p.IsBiKhoa,
+                CreatedAt = p.CreatedAt ?? DateTimeOffset.Now,
+                UpdatedAt = p.UpdatedAt,
+                NhaTro = p.NhaTro == null ? null : new ViewModels.NhaTroSimpleDto
+                {
+                    NhaTroId = p.NhaTro.NhaTroId,
+                    TieuDe = p.NhaTro.TieuDe ?? "",
+                    DiaChi = p.NhaTro.DiaChi
+                }
+            }).ToList();
+
+            // Trả về format chuẩn cho frontend dễ paging, WRAP trong { success, data, message }
             return Ok(new
             {
-                Data = result.Data,
-                TotalCount = result.TotalCount,
-                Page = page,
-                PageSize = pageSize,
-                TotalPages = (int)Math.Ceiling(result.TotalCount / (double)pageSize)
+                Success = true,
+                Data = new
+                {
+                    Data = dtoList,
+                    TotalCount = result.TotalCount,
+                    Page = page,
+                    PageSize = pageSize,
+                    TotalPages = (int)Math.Ceiling(result.TotalCount / (double)pageSize)
+                },
+                Message = "Success"
             });
         }
 
@@ -51,9 +82,35 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetDetail(Guid id)
         {
-            var result = await _service.GetByIdAsync(id);
-            if (result == null) return NotFound();
-            return Ok(result);
+            var p = await _service.GetByIdAsync(id);
+            if (p == null) return NotFound(new { Success = false, Message = "Không tìm thấy phòng trọ" });
+
+            var dto = new ViewModels.PhongDto
+            {
+                PhongId = p.PhongId,
+                NhaTroId = p.NhaTroId,
+                TieuDe = p.TieuDe ?? "",
+                MoTa = p.MoTa,
+                DienTich = p.DienTich,
+                GiaTien = p.GiaTien,
+                TienCoc = p.TienCoc,
+                SoNguoiToiDa = p.SoNguoiToiDa ?? 1,
+                TrangThai = p.TrangThai ?? "Trong",
+                DiemTrungBinh = p.DiemTrungBinh,
+                SoLuongDanhGia = p.SoLuongDanhGia ?? 0,
+                IsDuyet = p.IsDuyet,
+                IsBiKhoa = p.IsBiKhoa,
+                CreatedAt = p.CreatedAt ?? DateTimeOffset.Now,
+                UpdatedAt = p.UpdatedAt,
+                NhaTro = p.NhaTro == null ? null : new ViewModels.NhaTroSimpleDto
+                {
+                    NhaTroId = p.NhaTro.NhaTroId,
+                    TieuDe = p.NhaTro.TieuDe ?? "",
+                    DiaChi = p.NhaTro.DiaChi
+                }
+            };
+
+            return Ok(new { Success = true, Data = dto, Message = "Success" });
         }
 
         // 3. Tạo phòng (Chủ trọ)

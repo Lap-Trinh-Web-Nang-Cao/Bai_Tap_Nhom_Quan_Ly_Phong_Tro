@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-
-namespace USER_QUANLYPHONGTRO.Models.Dtos.Rooms
+namespace RestAPI_QUANLYPHONGTRO.ViewModels
 {
     public class PhongDto
     {
@@ -11,12 +6,12 @@ namespace USER_QUANLYPHONGTRO.Models.Dtos.Rooms
         public Guid NhaTroId { get; set; }
 
         public string TieuDe { get; set; }
-        public string MoTa { get; set; }
+        public string? MoTa { get; set; }
         public decimal? DienTich { get; set; }
         public long GiaTien { get; set; }
         public long? TienCoc { get; set; }
         public int SoNguoiToiDa { get; set; }
-        public string TrangThai { get; set; } // "con_trong", ...
+        public string TrangThai { get; set; }
 
         public double? DiemTrungBinh { get; set; }
         public int SoLuongDanhGia { get; set; }
@@ -28,11 +23,20 @@ namespace USER_QUANLYPHONGTRO.Models.Dtos.Rooms
         public DateTimeOffset? UpdatedAt { get; set; }
 
         // Hình ảnh
-        public string HinhAnhDaiDien { get; set; }
-        public List<string> DanhSachHinhAnh { get; set; }
+        public string? HinhAnhDaiDien { get; set; }
+        public List<string>? DanhSachHinhAnh { get; set; }
 
-        // Thông tin liên quan
-        public NhaTroDto NhaTro { get; set; }
-        public IEnumerable<TienIchDto> TienIchList { get; set; }
+        // Thông tin nhà trọ (nested)
+        public NhaTroSimpleDto? NhaTro { get; set; }
+
+        // Danh sách tiện ích
+        public List<string>? TienIchList { get; set; }
+    }
+
+    public class NhaTroSimpleDto
+    {
+        public Guid NhaTroId { get; set; }
+        public string TieuDe { get; set; }
+        public string? DiaChi { get; set; }
     }
 }

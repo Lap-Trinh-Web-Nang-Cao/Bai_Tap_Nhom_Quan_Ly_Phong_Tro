@@ -559,3 +559,4 @@ F:\luu vao day di\C#\Bai_Tap_Nhom_Quan_Ly_Phong_Tro\Backend\RestAPI_QUANLYPHONGT
 F:\luu vao day di\C#\Bai_Tap_Nhom_Quan_Ly_Phong_Tro\Backend\RestAPI_QUANLYPHONGTRO\obj\Debug\net8.0\RestAPI_QUANLYPHONGTRO.pdb
 F:\luu vao day di\C#\Bai_Tap_Nhom_Quan_Ly_Phong_Tro\Backend\RestAPI_QUANLYPHONGTRO\obj\Debug\net8.0\RestAPI_QUANLYPHONGTRO.genruntimeconfig.cache
 F:\luu vao day di\C#\Bai_Tap_Nhom_Quan_Ly_Phong_Tro\Backend\RestAPI_QUANLYPHONGTRO\obj\Debug\net8.0\ref\RestAPI_QUANLYPHONGTRO.dll
+F:\luu vao day di\C#\Bai_Tap_Nhom_Quan_Ly_Phong_Tro\Backend\RestAPI_QUANLYPHONGTRO\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt

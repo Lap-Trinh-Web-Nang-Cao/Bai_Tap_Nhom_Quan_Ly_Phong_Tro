@@ -1,4 +1,4 @@
-﻿@{
+@{
     // Thông tin người dùng (CHỈ CHO NGƯỜI THUÊ VÀ KHÁCH)
     string username = Session["UserName"] as string;
     string hoTen = Session["HoTen"] as string ?? username;
@@ -9,6 +9,18 @@
     int messageCount = Session["MessageCount"] != null ? (int)Session["MessageCount"] : 0;
 
     string userRole = Session["UserRole"] as string;
+
+    // Khai báo các biến dùng chung cho Header
+    var routeValues = ViewContext.RouteData.Values;
+    string currentAction = routeValues["action"] != null ? routeValues["action"].ToString() : "";
+    string currentController = routeValues["controller"] != null ? routeValues["controller"].ToString() : "";
+    string ctrl = currentController.ToUpper();
+    string act = currentAction.ToUpper();
+    
+    // Flags cho navigation
+    bool isTenantContext = isLoggedIn || ctrl == "KHACHTHUE";
+    string homeUrl = isTenantContext ? Url.Action("Index", "KhachThue") : Url.Action("Index", "Guest");
+    string roomsUrl = isTenantContext ? Url.Action("DanhSachPhong", "KhachThue") : Url.Action("DanhSachPhong", "Guest");
 }
 
 @if (userRole != "ChuTro")
@@ -97,7 +109,7 @@
             <div class="header-container">
 
                 <!-- Logo Section -->
-                <a href="@Url.Action("Index", "Home")" class="logo-section">
+                <a href="@homeUrl" class="logo-section">
                     <img src="~/images/logo.png" alt="Logo" class="logo-image" />
                 </a>
 
@@ -106,10 +118,8 @@
                     <form action="@Url.Action("DanhSachPhong", "Home")" method="get" id="searchForm">
                         <!-- Main Search Bar -->
                         <div class="search-wrapper">
-                            <input type="text"
-                                   name="keyword"
-                                   class="search-input"
-                                   placeholder="Tìm kiếm phòng trọ theo khu vực" />
+                            <input type="text" name="keyword" class="search-input"
+                                placeholder="Tìm kiếm phòng trọ theo khu vực" />
                             <button type="submit" class="search-button">
                                 <i class="fa fa-search"></i>
                             </button>
@@ -160,27 +170,40 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- TẦNG 3: NAVIGATION MENU (CHỈ CHO NGƯỜI THUÊ) -->
         <nav class="header-navbar">
             <div class="header-container">
                 <div class="navbar-menu">
-                    <a href="@Url.Action("Index", "Home")" class="navbar-item active">
+                    @{
+                        string ctrl = currentController.ToUpper();
+                        string act = currentAction.ToUpper();
+
+                        bool isKhachThueIndex = (act == "INDEX" && ctrl == "KHACHTHUE");
+                        bool isAllRooms = (act == "DANHSACHPHONG");
+                        bool isHome = (act == "INDEX" && (ctrl == "HOME" || ctrl == "GUEST"));
+                    }
+
+                    <a href="@homeUrl" class="navbar-item @(isHome || isKhachThueIndex ? "active" : "")">
                         <i class="fa fa-home"></i> Trang chủ
                     </a>
-                    <a href="@Url.Action("DanhSachPhong", "Home")" class="navbar-item">
-                        <i class="fa fa-building"></i> Tất cả phòng
+
+                    <a href="@Url.Action("DanhSachPhong", "Guest")" class="navbar-item @(isAllRooms ? "active" : "")">
+                        <i class="fa fa-search"></i> Tìm phòng
                     </a>
 
-                    @if (isLoggedIn)
+                    @if (isLoggedIn || ctrl == "KHACHTHUE")
                     {
-                        <a href="@Url.Action("LichDaDat", "KhachThue")" class="navbar-item">
-                            <i class="fa fa-calendar"></i> Lịch của tôi
+                        <a href="@Url.Action("LichDaDat", "KhachThue")"
+                            class="navbar-item @(currentAction == "LichDaDat" ? "active" : "")">
+                            <i class="fa fa-calendar-check-o"></i> Lịch hẹn
                         </a>
-                        <a href="@Url.Action("HopDong", "KhachThue")" class="navbar-item">
-                            <i class="fa fa-file-text"></i> Hợp đồng
+                        <a href="@Url.Action("HopDong", "KhachThue")"
+                            class="navbar-item @(currentAction == "HopDong" ? "active" : "")">
+                            <i class="fa fa-file-text-o"></i> Hợp đồng
                         </a>
-                        <a href="@Url.Action("HoaDon", "KhachThue")" class="navbar-item">
+                        <a href="@Url.Action("HoaDon", "KhachThue")"
+                            class="navbar-item @(currentAction == "HoaDon" ? "active" : "")">
                             <i class="fa fa-credit-card"></i> Hóa đơn
                         </a>
                     }

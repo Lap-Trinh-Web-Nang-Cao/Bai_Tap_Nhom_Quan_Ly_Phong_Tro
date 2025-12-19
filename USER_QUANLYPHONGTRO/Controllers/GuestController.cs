@@ -35,19 +35,83 @@ namespace USER_QUANLYPHONGTRO.Controllers
         {
             try
             {
-                // Lấy 6 phòng nổi bật (điểm cao, mới nhất)
+                // Lấy 6 phòng (tạm thời không filter theo rating vì API chưa hỗ trợ)
                 var response = await _apiClient.GetAsync<dynamic>("/api/phong?pageSize=6");
 
-                if (response.Success && response.Data != null)
+                // ApiClient wraps response in ApiResponse<dynamic>
+                // response.Data contains the actual API response: { Data: [...], TotalCount: 15 }
+                if (response != null && response.Success && response.Data != null)
                 {
-                    var featuredRooms = response.Data.Data ?? new List<PhongDto>();
-                    return View(featuredRooms);
+                    // DEBUG: Serialize to see structure
+                    var jsonDebug = Newtonsoft.Json.JsonConvert.SerializeObject(response.Data);
+                    ViewBag.DebugResponseData = jsonDebug;
+
+                    // Parse - response.Data is JObject, use indexer
+                    var jData = response.Data as Newtonsoft.Json.Linq.JObject;
+                    if (jData != null)
+                    {
+                        var dataArrayToken = jData["Data"];
+                        var totalCount = (int)(jData["TotalCount"] ?? 0);
+
+                        if (dataArrayToken != null)
+                        {
+                            ViewBag.TotalRooms = totalCount;
+                            ViewBag.ApiSuccess = true;
+
+                            // Convert JArray to List<PhongDto>
+                            var roomsList = new List<PhongDto>();
+                            // Danh sách ảnh mặc định
+                            var defaultImages = new[] {
+                                "/images/banner-login.png",
+                                "/images/banner-register-host.png",
+                                "/images/banner-register-tenant.png",
+                                "/images/Background_vien.jpg"
+                            };
+                            int imageIndex = 0;
+
+                            foreach (var item in dataArrayToken)
+                            {
+                                roomsList.Add(new PhongDto
+                                {
+                                    PhongId = Guid.Parse(item["PhongId"].ToString()),
+                                    NhaTroId = Guid.Parse(item["NhaTroId"].ToString()),
+                                    TieuDe = item["TieuDe"]?.ToString() ?? "",
+                                    DienTich = item["DienTich"] != null ? (decimal?)Convert.ToDecimal(item["DienTich"]) : null,
+                                    GiaTien = (long)item["GiaTien"],
+                                    TienCoc = item["TienCoc"] != null ? (long?)Convert.ToInt64(item["TienCoc"]) : null,
+                                    SoNguoiToiDa = (int)item["SoNguoiToiDa"],
+                                    TrangThai = item["TrangThai"]?.ToString() ?? "",
+                                    DiemTrungBinh = item["DiemTrungBinh"] != null ? (double?)Convert.ToDouble(item["DiemTrungBinh"]) : null,
+                                    SoLuongDanhGia = item["SoLuongDanhGia"] != null ? (int)item["SoLuongDanhGia"] : 0,
+                                    IsDuyet = item["IsDuyet"] != null ? (bool)item["IsDuyet"] : false,
+                                    IsBiKhoa = item["IsBiKhoa"] != null ? (bool)item["IsBiKhoa"] : false,
+                                    CreatedAt = DateTimeOffset.Parse(item["CreatedAt"].ToString()),
+                                    HinhAnhDaiDien = defaultImages[imageIndex % defaultImages.Length], // Rotate images
+                                    NhaTro = item["NhaTro"] != null ? new NhaTroDto
+                                    {
+                                        NhaTroId = Guid.Parse(item["NhaTro"]["NhaTroId"].ToString()),
+                                        TieuDe = item["NhaTro"]["TieuDe"]?.ToString() ?? "",
+                                        DiaChi = item["NhaTro"]["DiaChi"]?.ToString()
+                                    } : null
+                                });
+                                imageIndex++;
+                            }
+
+                            return View(roomsList);
+                        }
+                    }
                 }
 
+                ViewBag.TotalRooms = 0;
+                ViewBag.ApiSuccess = false;
+                ViewBag.ErrorMessage = "Không nhận được dữ liệu từ hệ thống. Vui lòng kiểm tra lại kết nối.";
                 return View(new List<PhongDto>());
             }
-            catch
+            catch (Exception ex)
             {
+                ViewBag.TotalRooms = 0;
+                ViewBag.ApiSuccess = false;
+                ViewBag.ErrorMessage = "Đã xảy ra lỗi trong quá trình xử lý: " + ex.Message;
                 return View(new List<PhongDto>());
             }
         }
@@ -80,25 +144,56 @@ namespace USER_QUANLYPHONGTRO.Controllers
 
                 if (response.Success && response.Data != null)
                 {
-                    var data = response.Data;
+                    // Parse JObject
+                    var jData = response.Data as Newtonsoft.Json.Linq.JObject;
+                    if (jData != null)
+                    {
+                        var dataArrayToken = jData["Data"];
+                        var totalCount = (int)(jData["TotalCount"] ?? 0);
+                        var totalPages = (int)(jData["TotalPages"] ?? 1);
 
-                    // Extract pagination info
-                    var rooms = data.Data ?? new List<PhongDto>();
-                    var totalCount = data.TotalCount ?? 0;
-                    var totalPages = data.TotalPages ?? 1;
+                        // Convert JArray to List<PhongDto>
+                        var roomsList = new List<PhongDto>();
+                        if (dataArrayToken != null)
+                        {
+                            foreach (var item in dataArrayToken)
+                            {
+                                roomsList.Add(new PhongDto
+                                {
+                                    PhongId = Guid.Parse(item["PhongId"].ToString()),
+                                    NhaTroId = Guid.Parse(item["NhaTroId"].ToString()),
+                                    TieuDe = item["TieuDe"]?.ToString() ?? "",
+                                    GiaTien = (long)item["GiaTien"],
+                                    TrangThai = item["TrangThai"]?.ToString() ?? "",
+                                    IsDuyet = item["IsDuyet"] != null ? (bool)item["IsDuyet"] : false,
+                                    IsBiKhoa = item["IsBiKhoa"] != null ? (bool)item["IsBiKhoa"] : false,
+                                    NhaTro = item["NhaTro"] != null ? new NhaTroDto
+                                    {
+                                        NhaTroId = Guid.Parse(item["NhaTro"]["NhaTroId"].ToString()),
+                                        TieuDe = item["NhaTro"]["TieuDe"]?.ToString() ?? "",
+                                        DiaChi = item["NhaTro"]["DiaChi"]?.ToString()
+                                    } : null
+                                });
+                            }
+                        }
 
-                    // ViewBag cho filter và pagination
-                    ViewBag.Keyword = keyword;
-                    ViewBag.District = district;
-                    ViewBag.MinPrice = minPrice;
-                    ViewBag.MaxPrice = maxPrice;
-                    ViewBag.Sort = sort;
-                    ViewBag.CurrentPage = page;
-                    ViewBag.TotalPages = totalPages;
-                    ViewBag.TotalItems = totalCount;
-                    ViewBag.PageSize = pageSize;
+                        // ViewBag cho filter và pagination
+                        ViewBag.Keyword = keyword;
+                        ViewBag.District = district;
+                        ViewBag.MinPrice = minPrice;
+                        ViewBag.MaxPrice = maxPrice;
+                        ViewBag.Sort = sort;
+                        ViewBag.CurrentPage = page;
+                        ViewBag.TotalPages = totalPages;
+                        ViewBag.TotalItems = totalCount;
+                        ViewBag.PageSize = pageSize;
 
-                    return View(rooms);
+
+                        return View(roomsList);
+                    }
+
+                    ViewBag.ErrorMessage = "Invalid API data format";
+                    return View(new List<PhongDto>());
                 }
                 else
                 {
@@ -143,13 +238,13 @@ namespace USER_QUANLYPHONGTRO.Controllers
                 else
                 {
                     ViewBag.ErrorMessage = "Không tìm thấy phòng trọ";
-                    return RedirectToAction("Index");
+                    return RedirectToAction("DanhSachPhong");
                 }
             }
             catch (Exception ex)
             {
                 ViewBag.ErrorMessage = $"Lỗi: {ex.Message}";
-                return RedirectToAction("Index");
+                return RedirectToAction("DanhSachPhong");
             }
         }
 
@@ -174,7 +269,7 @@ namespace USER_QUANLYPHONGTRO.Controllers
         {
             try
             {
-                // Lấy phòng có điểm cao và đã duyệt
+                // Lấy phòng (tạm thời không filter vì API chưa hỗ trợ)
                 var response = await _apiClient.GetAsync<dynamic>("/api/phong?pageSize=6");
 
                 if (response.Success && response.Data != null)

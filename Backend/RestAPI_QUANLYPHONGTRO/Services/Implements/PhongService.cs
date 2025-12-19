@@ -25,6 +25,7 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
             // 1. Query cơ bản (chưa thực thi)
             var query = _context.Phongs
                 .Include(p => p.NhaTro) // Join để lấy thêm địa chỉ nhà trọ nếu cần
+                .AsNoTracking() // Tăng performance, không track changes
                 .Where(x => x.IsDuyet == true && x.IsBiKhoa == false);
 
             // 2. Các bộ lọc
@@ -35,9 +36,10 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
             // 3. Đếm tổng số bản ghi (để tính số trang)
             int totalCount = await query.CountAsync();
 
-            // 4. Phân trang (Skip & Take)
+            // 4. Phân trang & sắp xếp theo điểm đánh giá
             var data = await query
-                .OrderByDescending(x => x.CreatedAt)
+                .OrderByDescending(x => x.DiemTrungBinh ?? 0) // Sắp xếp theo điểm
+                .ThenByDescending(x => x.CreatedAt) // Nếu điểm bằng nhau thì mới nhất
                 .Skip((pageIndex - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
@@ -47,7 +49,9 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
 
         public async Task<Phong?> GetByIdAsync(Guid id)
         {
-            return await _context.Phongs.FindAsync(id);
+            return await _context.Phongs
+                .Include(p => p.NhaTro)
+                .FirstOrDefaultAsync(p => p.PhongId == id);
         }
 
         public async Task<Phong> CreateAsync(CreatePhongRequest request, Guid userId)
