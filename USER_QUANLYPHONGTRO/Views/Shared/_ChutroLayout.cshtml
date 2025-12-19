@@ -2,199 +2,173 @@
 <html lang="vi">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@ViewBag.Title - TroTot Chủ Trọ</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewBag.Title - Quản Lý Trọ</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
 
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4e73df;
+            --secondary-color: #858796;
+            --success-color: #1cc88a;
+            --info-color: #36b9cc;
+            --warning-color: #f6c23e;
+            --danger-color: #e74c3c;
+            --light-bg: #f8f9fc;
+            --sidebar-width: 250px;
+        }
 
-    <!-- CSS Files -->
-    <link href="~/Content/chutro.css?v=2.0" rel="stylesheet" />
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--light-bg);
+            margin: 0;
+            display: flex;
+            min-height: 100vh;
+        }
 
-    <!-- jQuery -->
-    <script src="~/Scripts/jquery-3.7.0.min.js"></script>
+        /* Sidebar Styling */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: #fff;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            position: fixed;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+        }
 
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+        .sidebar-brand {
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            border-bottom: 1px solid #eee;
+        }
 
-    @RenderSection("styles", required: false)
+        .nav-item {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            color: #555;
+            text-decoration: none;
+            transition: 0.3s;
+            border-left: 4px solid transparent;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background-color: #f0f4ff;
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+        }
+
+        .nav-link .material-icons, .nav-link .fas {
+            margin-right: 10px;
+            font-size: 20px;
+            width: 24px; /* Cố định chiều rộng để thẳng hàng */
+            text-align: center;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            padding: 20px;
+            width: calc(100% - var(--sidebar-width));
+        }
+
+        /* Responsive */
+        @@media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s;
+            }
+
+            .sidebar.show {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
+        }
+
+        /* Common Dashboard Classes */
+        .dashboard-container { max-width: 1200px; margin: 0 auto; }
+        .page-title { font-size: 1.8rem; color: #333; margin-bottom: 5px; }
+        .page-subtitle { color: #888; font-size: 0.9rem; margin-bottom: 25px; }
+        .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+
+        /* Helpers */
+        .form-control { border: 1px solid #ddd; border-radius: 5px; padding: 10px; width: 100%; box-sizing: border-box; }
+        .btn-action { padding: 5px 10px; border-radius: 5px; text-decoration: none; font-size: 0.85rem; display: inline-block; cursor: pointer; }
+    </style>
 </head>
 <body>
-    @{
-        string userName = Session["HoTen"] as string ?? Session["UserName"] as string ?? "Chủ Trọ";
-        string avatarUrl = Session["AvatarUrl"] as string ?? "/images/default-avatar.png";
-        int notificationCount = Session["NotificationCount"] as int? ?? 0;
-        int messageCount = Session["MessageCount"] as int? ?? 0;
-    }
 
-    <!-- Top Navigation Bar -->
-    <header class="top-navbar">
-        <div class="navbar-left">
-            <button class="sidebar-toggle" id="sidebarToggle">
-                <span class="material-icons-round">menu</span>
-            </button>
-            <a href="@Url.Action("Dashboard", "ChuTro")" class="logo-link">
-                <img src="~/images/logo.png" alt="TroTot" class="logo-img" />
-            </a>
+    <nav class="sidebar">
+        <div class="sidebar-brand">
+            <span class="material-icons" style="margin-right: 5px;">apartment</span> QUẢN LÝ TRỌ
         </div>
-
-        <div class="navbar-right">
-            <!-- Search -->
-            <div class="navbar-search">
-                <span class="material-icons-round">search</span>
-                <input type="text" placeholder="Tìm kiếm..." />
-            </div>
-
-            <!-- Notifications -->
-            <div class="navbar-icon">
-                <span class="material-icons-round">notifications</span>
-                @if (notificationCount > 0)
-                {
-                    <span class="icon-badge">@notificationCount</span>
-                }
-            </div>
-
-            <!-- Messages -->
-            <div class="navbar-icon">
-                <span class="material-icons-round">chat_bubble</span>
-                @if (messageCount > 0)
-                {
-                    <span class="icon-badge">@messageCount</span>
-                }
-            </div>
-
-            <!-- User Profile -->
-            <div class="user-profile">
-                <img src="@Url.Content(!string.IsNullOrEmpty(avatarUrl) && !avatarUrl.Contains("default-avatar") ? avatarUrl : "/images/logo.png")" alt="Avatar" class="user-avatar" />
-                <div class="user-info">
-                    <span class="user-name">@userName</span>
-                    <span class="user-role">Chủ trọ</span>
-                </div>
-                <span class="material-icons-round arrow">expand_more</span>
-
-                <!-- Dropdown Menu -->
-                <div class="user-dropdown">
-                    <a href="#" class="dropdown-item">
-                        <span class="material-icons-round">person</span>
-                        Hồ sơ cá nhân
-                    </a>
-                    <a href="#" class="dropdown-item">
-                        <span class="material-icons-round">settings</span>
-                        Cài đặt
-                    </a>
-                    <div class="dropdown-divider"></div>
-                    <a href="@Url.Action("Index", "Home")" class="dropdown-item">
-                        <span class="material-icons-round">home</span>
-                        Về trang chủ
-                    </a>
-                    <a href="@Url.Action("Logout", "Auth")" class="dropdown-item text-danger">
-                        <span class="material-icons-round">logout</span>
-                        Đăng xuất
-                    </a>
-                </div>
-            </div>
-        </div>
-    </header>
-
-    <div class="main-wrapper">
-        <!-- Sidebar -->
-        <aside class="sidebar" id="sidebar">
-            <nav class="sidebar-nav">
-                <div class="nav-section">
-                    <span class="nav-section-title">TỔNG QUAN</span>
-
-                    <a href="@Url.Action("Dashboard", "ChuTro")" class="nav-item active">
-                        <span class="nav-icon"><span class="material-icons-round">dashboard</span></span>
-                        <span class="nav-text">Dashboard</span>
-                    </a>
-
-                    <a href="#" class="nav-item">
-                        <span class="nav-icon"><span class="material-icons-round">analytics</span></span>
-                        <span class="nav-text">Thống kê</span>
-                    </a>
-                </div>
-
-                <div class="nav-section">
-                    <span class="nav-section-title">QUẢN LÝ</span>
-
-                    <div class="nav-item has-submenu">
-                        <span class="nav-icon"><span class="material-icons-round">apartment</span></span>
-                        <span class="nav-text">Quản lý phòng</span>
-                        <span class="nav-arrow material-icons-round">chevron_right</span>
-                    </div>
-                    <div class="nav-submenu">
-                        <a href="#" class="nav-submenu-item">Danh sách phòng</a>
-                        <a href="#" class="nav-submenu-item">Thêm phòng mới</a>
-                        <a href="#" class="nav-submenu-item">Chờ duyệt <span class="submenu-badge">3</span></a>
-                    </div>
-
-                    <div class="nav-item has-submenu">
-                        <span class="nav-icon"><span class="material-icons-round">calendar_month</span></span>
-                        <span class="nav-text">Lịch xem phòng</span>
-                        <span class="nav-arrow material-icons-round">chevron_right</span>
-                    </div>
-                    <div class="nav-submenu">
-                        <a href="#" class="nav-submenu-item">Chờ xác nhận <span class="submenu-badge warning">5</span></a>
-                        <a href="#" class="nav-submenu-item">Hôm nay</a>
-                        <a href="#" class="nav-submenu-item">Tất cả lịch hẹn</a>
-                    </div>
-
-                    <a href="#" class="nav-item">
-                        <span class="nav-icon"><span class="material-icons-round">description</span></span>
-                        <span class="nav-text">Hợp đồng</span>
-                    </a>
-
-                    <a href="#" class="nav-item">
-                        <span class="nav-icon"><span class="material-icons-round">receipt_long</span></span>
-                        <span class="nav-text">Hóa đơn</span>
-                    </a>
-                </div>
-
-                <div class="nav-section">
-                    <span class="nav-section-title">TƯƠNG TÁC</span>
-
-                    <a href="#" class="nav-item">
-                        <span class="nav-icon"><span class="material-icons-round">chat</span></span>
-                        <span class="nav-text">Tin nhắn</span>
-                        @if (messageCount > 0)
-                        {
-                            <span class="nav-badge">@messageCount</span>
-                        }
-                    </a>
-
-                    <a href="#" class="nav-item">
-                        <span class="nav-icon"><span class="material-icons-round">build</span></span>
-                        <span class="nav-text">Yêu cầu sửa chữa</span>
-                        <span class="nav-badge warning">2</span>
-                    </a>
-
-                    <a href="#" class="nav-item">
-                        <span class="nav-icon"><span class="material-icons-round">star</span></span>
-                        <span class="nav-text">Đánh giá</span>
-                    </a>
-                </div>
-            </nav>
-
-            <div class="sidebar-footer">
-                <a href="#" class="sidebar-footer-btn">
-                    <span class="material-icons-round">help_outline</span>
-                    <span>Trung tâm hỗ trợ</span>
+        <ul class="nav-item">
+            <li>
+                <a href="@Url.Action("Dashboard", "ChuTro")" class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "Dashboard" ? "active" : "")">
+                    <span class="material-icons">dashboard</span> Tổng quan
                 </a>
-            </div>
-        </aside>
+            </li>
+            <li>
+                <a href="@Url.Action("DanhSachPhong", "ChuTro")" class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "DanhSachPhong" ? "active" : "")">
+                    <span class="material-icons">meeting_room</span> Quản lý phòng
+                </a>
+            </li>
+            <li>
+                <a href="@Url.Action("LichHen", "ChuTro")" class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "LichHen" ? "active" : "")">
+                    <span class="material-icons">calendar_today</span> Lịch hẹn / Đặt phòng
+                </a>
+            </li>
+            <li>
+                <a href="@Url.Action("HopDong", "ChuTro")" class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "HopDong" ? "active" : "")">
+                    <span class="material-icons">assignment</span> Hợp đồng khách thuê
+                </a>
+            </li>
+            <li>
+                <a href="@Url.Action("HoaDon", "ChuTro")" class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "HoaDon" ? "active" : "")">
+                    <span class="material-icons">receipt_long</span> Hóa đơn & Thu tiền
+                </a>
+            </li>
 
-        <!-- Main Content -->
-        <main class="main-content">
-            <div class="content-wrapper">
-                @RenderBody()
-            </div>
-        </main>
-    </div>
+            <li style="border-top: 1px solid #eee; margin-top: 10px; padding-top: 10px;">
+                <a href="@Url.Action("ThongTinCaNhan", "ChuTro")" class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "ThongTinCaNhan" ? "active" : "")">
+                    <span class="material-icons">person</span> Hồ sơ cá nhân
+                </a>
+            </li>
+            <li>
+                <a href="@Url.Action("Logout", "Auth")" class="nav-link" style="color: var(--danger-color);">
+                    <span class="material-icons">logout</span> Đăng xuất
+                </a>
+            </li>
+        </ul>
+    </nav>
 
-    <!-- Scripts -->
-    <script src="~/Scripts/chutro.js?v=2.0"></script>
-    <script src="~/Scripts/dashboard-charts.js?v=2.0"></script>
-    @RenderSection("scripts", required: false)
+    <main class="main-content">
+        @RenderBody()
+    </main>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    @RenderSection("Scripts", required: false)
 </body>
 </html>

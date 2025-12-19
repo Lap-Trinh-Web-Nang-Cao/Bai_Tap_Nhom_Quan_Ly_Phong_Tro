@@ -1,7 +1,400 @@
-﻿
+﻿@model IEnumerable<USER_QUANLYPHONGTRO.Models.ViewModels.ChuTro.LichHenViewModel>
+
 @{
-    ViewBag.Title = "LichHen";
+    ViewBag.Title = "Quản lý lịch hẹn";
+    Layout = "~/Views/Shared/_ChutroLayout.cshtml";
 }
 
-<h2>LichHen</h2>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+<style>
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: #f8f9fc;
+    }
+
+    /* --- HEADER --- */
+    .page-header-custom {
+        background: white;
+        padding: 20px 30px;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.03);
+        margin-bottom: 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .page-title h2 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #2e384d;
+    }
+
+    .page-title p {
+        margin: 5px 0 0;
+        color: #858796;
+        font-size: 0.9rem;
+    }
+
+    /* --- LAYOUT GRID --- */
+    .schedule-grid {
+        display: grid;
+        grid-template-columns: 1fr 1.5fr; /* Cột phải rộng hơn */
+        gap: 30px;
+    }
+
+    /* --- CARD CONTAINER --- */
+    .section-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.03);
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        overflow: hidden;
+    }
+
+    .card-head {
+        padding: 20px;
+        border-bottom: 1px solid #f1f3f9;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .head-title {
+        font-weight: 700;
+        color: #2e384d;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .card-content {
+        padding: 20px;
+        background: #fdfdfe;
+        flex: 1;
+        min-height: 400px;
+    }
+
+    /* --- ITEM LỊCH HẸN --- */
+    .appt-item {
+        background: white;
+        border: 1px solid #edf2f9;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 15px;
+        transition: all 0.2s;
+        border-left: 4px solid transparent;
+        position: relative;
+    }
+
+        .appt-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.05);
+        }
+
+    .type-pending {
+        border-left-color: #f6c23e;
+    }
+    /* Màu vàng */
+    .type-confirmed {
+        border-left-color: #1cc88a;
+    }
+    /* Màu xanh */
+
+    /* User Info */
+    .user-row {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .user-avatar {
+        width: 45px;
+        height: 45px;
+        background: #eaecf4;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #858796;
+        font-size: 1.2rem;
+    }
+
+    .user-info h5 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 700;
+        color: #333;
+    }
+
+    .user-info span {
+        font-size: 0.85rem;
+        color: #888;
+        display: block;
+        margin-top: 3px;
+    }
+
+    /* Meta Info */
+    .appt-meta {
+        background: #f8f9fc;
+        padding: 12px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        color: #555;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: 1px solid #f1f3f9;
+    }
+
+        .appt-meta i {
+            margin-right: 5px;
+            color: #b0bxc6;
+        }
+
+    /* Buttons */
+    .btn-group-action {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+    }
+
+    .btn-accept {
+        flex: 1;
+        background: #e8f5e9;
+        color: #1b5e20;
+        border: none;
+        padding: 10px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.2s;
+        text-align: center;
+        text-decoration: none;
+    }
+
+        .btn-accept:hover {
+            background: #1cc88a;
+            color: white;
+            text-decoration: none;
+        }
+
+    .btn-reject {
+        flex: 1;
+        background: #fce4ec;
+        color: #880e4f;
+        border: none;
+        padding: 10px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.2s;
+        text-align: center;
+        text-decoration: none;
+    }
+
+        .btn-reject:hover {
+            background: #e74a3b;
+            color: white;
+            text-decoration: none;
+        }
+
+    /* --- EMPTY STATE --- */
+    .empty-state-box {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        text-align: center;
+        padding: 40px 20px;
+        color: #858796;
+        min-height: 300px;
+    }
+
+    .empty-icon {
+        width: 80px;
+        height: 80px;
+        background: #f1f3f9;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 30px;
+        color: #d1d3e2;
+        margin-bottom: 20px;
+    }
+
+    .empty-title {
+        font-weight: 700;
+        color: #5a5c69;
+        margin-bottom: 5px;
+        font-size: 1.1rem;
+    }
+
+    .empty-desc {
+        font-size: 0.9rem;
+        max-width: 250px;
+        margin: 0 auto;
+        line-height: 1.5;
+    }
+
+    /* Date Box */
+    .date-box {
+        background: #e1f5fe;
+        color: #0277bd;
+        padding: 8px 15px;
+        border-radius: 8px;
+        text-align: center;
+        font-weight: bold;
+        min-width: 60px;
+    }
+
+    .date-day {
+        font-size: 1.2rem;
+        line-height: 1;
+    }
+
+    .date-month {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+    }
+
+    /* Responsive */
+    @@media (max-width: 992px) {
+        .schedule-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="page-header-custom">
+        <div class="page-title">
+            <h2>Yêu cầu đặt phòng & Xem nhà</h2>
+            <p>Quản lý các yêu cầu xem phòng từ khách thuê tiềm năng.</p>
+        </div>
+    </div>
+
+    <div class="schedule-grid">
+
+        <div class="section-card" style="border-top: 5px solid #f6c23e;">
+            <div class="card-head">
+                <div class="head-title">
+                    <span style="color: #f6c23e;"><i class="fas fa-hourglass-half"></i></span>
+                    Chờ xác nhận
+                    @if (Model != null && Model.Any(x => x.TrangThai == "ChoXacNhan"))
+                    {
+                        <span class="badge badge-warning ml-2" style="background:#fff3cd; color:#856404; font-size:0.8rem;">
+                            @Model.Count(x => x.TrangThai == "ChoXacNhan")
+                        </span>
+                    }
+                </div>
+            </div>
+            <div class="card-content">
+                @if (Model != null && Model.Any(x => x.TrangThai == "ChoXacNhan"))
+                {
+                    foreach (var item in Model.Where(x => x.TrangThai == "ChoXacNhan"))
+                    {
+                        <div class="appt-item type-pending">
+                            <div class="user-row">
+                                <div class="user-avatar"><i class="fas fa-user"></i></div>
+                                <div class="user-info">
+                                    <h5>@item.TenNguoiDat</h5>
+                                    <span><i class="fas fa-phone-alt" style="font-size:0.75rem; margin-right:5px;"></i> @item.DienThoai</span>
+                                </div>
+                            </div>
+                            <div class="appt-meta">
+                                <span title="@item.DiaChiPhong"><i class="fas fa-home"></i> @item.TenPhong</span>
+                                <span style="font-weight:700; color:#4e73df;">
+                                    @item.NgayBatDau.ToString("HH:mm dd/MM")
+                                </span>
+                            </div>
+
+                            @if (!string.IsNullOrEmpty(item.GhiChu))
+                            {
+                                <div style="font-size:0.85rem; color:#666; margin-top:12px; font-style:italic; background:#fef9e7; padding:8px; border-radius:6px;">
+                                    <i class="fas fa-comment-alt" style="margin-right:5px;"></i> "@item.GhiChu"
+                                </div>
+                            }
+
+                            <div class="btn-group-action">
+                                <a href="#" class="btn-accept">Chấp nhận</a>
+                                <a href="#" class="btn-reject">Từ chối</a>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="empty-state-box">
+                        <div class="empty-icon"><i class="far fa-bell-slash"></i></div>
+                        <div class="empty-title">Không có yêu cầu mới</div>
+                        <div class="empty-desc">Hiện tại không có yêu cầu đặt phòng nào cần bạn xử lý.</div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="section-card" style="border-top: 5px solid #1cc88a;">
+            <div class="card-head">
+                <div class="head-title">
+                    <span style="color: #1cc88a;"><i class="far fa-calendar-check"></i></span>
+                    Lịch hẹn sắp tới
+                </div>
+                <div style="font-size: 0.85rem; color: #888;">
+                    Hôm nay: <strong>@DateTime.Now.ToString("dd/MM/yyyy")</strong>
+                </div>
+            </div>
+            <div class="card-content">
+                @if (Model != null && Model.Any(x => x.TrangThai == "DaXacNhan"))
+                {
+                    foreach (var item in Model.Where(x => x.TrangThai == "DaXacNhan").OrderBy(x => x.NgayBatDau))
+                    {
+                        <div class="appt-item type-confirmed" style="display: flex; align-items: center; justify-content: space-between; padding: 15px;">
+                            <div style="display: flex; align-items: center; gap: 15px;">
+                                <div class="date-box">
+                                    <div class="date-day">@item.NgayBatDau.Day</div>
+                                    <div class="date-month">Thg @item.NgayBatDau.Month</div>
+                                </div>
+                                <div>
+                                    <h5 style="margin: 0; font-size: 1rem; color: #333; font-weight:700;">@item.TenNguoiDat</h5>
+                                    <div style="font-size: 0.9rem; color: #666; margin-top:3px;">
+                                        <i class="fas fa-home" style="color:#aaa;"></i> @item.TenPhong
+                                    </div>
+                                    <div style="font-size: 0.8rem; color: #888; margin-top:2px;">
+                                        <i class="fas fa-phone" style="color:#aaa; font-size:0.7rem;"></i> @item.DienThoai
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-weight: 800; color: #1cc88a; font-size: 1.1rem;">
+                                    @item.NgayBatDau.ToString("HH:mm")
+                                </div>
+                                <span class="badge badge-success" style="background:#e8f5e9; color:#1b5e20; padding:4px 8px; border-radius:10px; font-size:0.7rem; font-weight:600;">
+                                    Đã chốt
+                                </span>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="empty-state-box">
+                        <div class="empty-icon"><i class="far fa-calendar-times"></i></div>
+                        <div class="empty-title">Chưa có lịch hẹn nào</div>
+                        <div class="empty-desc">Danh sách lịch hẹn đã xác nhận sẽ hiển thị tại đây.</div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

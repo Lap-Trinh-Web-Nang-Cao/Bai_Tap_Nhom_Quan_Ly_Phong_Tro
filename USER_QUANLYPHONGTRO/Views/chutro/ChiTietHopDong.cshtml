@@ -1,7 +1,227 @@
-﻿
+﻿@model USER_QUANLYPHONGTRO.Models.ViewModels.ChuTro.ChiTietHopDongViewModel
+
 @{
-    ViewBag.Title = "ChiTietHopDong";
+    ViewBag.Title = "Chi tiết hợp đồng";
+    Layout = "~/Views/Shared/_ChutroLayout.cshtml";
 }
 
-<h2>ChiTietHopDong</h2>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+<style>
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: #f8f9fc;
+    }
+
+    .contract-paper {
+        background: white;
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 40px;
+        border-radius: 5px;
+        box-shadow: 0 5px 25px rgba(0,0,0,0.05);
+        border-top: 5px solid #4e73df;
+    }
+
+    .contract-header {
+        text-align: center;
+        border-bottom: 2px solid #f1f3f9;
+        padding-bottom: 20px;
+        margin-bottom: 30px;
+    }
+
+    .contract-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #2e384d;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+    }
+
+    .contract-id {
+        color: #858796;
+        font-size: 0.9rem;
+        font-family: monospace;
+    }
+
+    .section-box {
+        margin-bottom: 30px;
+    }
+
+    .section-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #4e73df;
+        border-left: 4px solid #4e73df;
+        padding-left: 10px;
+        margin-bottom: 15px;
+    }
+
+    .info-row {
+        display: flex;
+        margin-bottom: 12px;
+        border-bottom: 1px dashed #eaecf4;
+        padding-bottom: 8px;
+    }
+
+    .info-label {
+        width: 180px;
+        font-weight: 600;
+        color: #5a5c69;
+        flex-shrink: 0;
+    }
+
+    .info-val {
+        color: #333;
+        flex: 1;
+        font-weight: 500;
+    }
+
+    .terms-box {
+        background: #f8f9fc;
+        padding: 20px;
+        border-radius: 10px;
+        border: 1px solid #e3e6f0;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        color: #555;
+        white-space: pre-line; /* Giữ xuống dòng */
+    }
+
+    .status-badge {
+        padding: 8px 15px;
+        border-radius: 20px;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        display: inline-block;
+        margin-top: 10px;
+    }
+
+    .st-active {
+        background: #e8f5e9;
+        color: #1b5e20;
+        border: 1px solid #c3e6cb;
+    }
+
+    .st-expired {
+        background: #fce4ec;
+        color: #880e4f;
+        border: 1px solid #f5c6cb;
+    }
+
+    /* Buttons */
+    .action-bar {
+        margin-top: 30px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    .btn-print {
+        background: #858796;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 5px;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .btn-edit {
+        background: #4e73df;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 5px;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+</style>
+
+<div class="container-fluid">
+    <div style="margin-bottom: 20px;">
+        <a href="@Url.Action("HopDong", "ChuTro")" style="color: #858796; text-decoration: none;">
+            <i class="fas fa-arrow-left"></i> Quay lại danh sách
+        </a>
+    </div>
+
+    <div class="contract-paper">
+        <div class="contract-header">
+            <div class="contract-title">Hợp đồng thuê phòng trọ</div>
+            <div class="contract-id">Mã số: #@Model.HopDongId.ToString().Substring(0, 8).ToUpper()</div>
+
+            @if (Model.TrangThai == "HieuLuc")
+            {
+                <span class="status-badge st-active">Đang hiệu lực</span>
+            }
+            else
+            {
+                <span class="status-badge st-expired">Đã hết hạn</span>
+            }
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="section-box">
+                    <div class="section-title">BÊN A (BÊN CHO THUÊ)</div>
+                    <div class="info-row"><span class="info-label">Đại diện:</span> <span class="info-val">@(Session["UserName"] ?? "Chủ Trọ")</span></div>
+                    <div class="info-row"><span class="info-label">Phòng cho thuê:</span> <span class="info-val" style="color:#4e73df; font-weight:700;">@Model.TenPhong</span></div>
+                    <div class="info-row"><span class="info-label">Địa chỉ:</span> <span class="info-val">@Model.DiaChiPhong</span></div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="section-box">
+                    <div class="section-title">BÊN B (BÊN THUÊ)</div>
+                    <div class="info-row"><span class="info-label">Họ và tên:</span> <span class="info-val">@Model.TenKhach</span></div>
+                    <div class="info-row"><span class="info-label">CCCD/CMND:</span> <span class="info-val">@Model.CCCD</span></div>
+                    <div class="info-row"><span class="info-label">Điện thoại:</span> <span class="info-val">@Model.DienThoai</span></div>
+                    <div class="info-row"><span class="info-label">Thường trú:</span> <span class="info-val">@Model.DiaChiThuongTru</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-box">
+            <div class="section-title">CHI TIẾT THUÊ & THANH TOÁN</div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="info-row"><span class="info-label">Giá thuê:</span> <span class="info-val" style="font-weight:700; font-size:1.1rem;">@Model.GiaThue.ToString("N0") VNĐ / tháng</span></div>
+                    <div class="info-row"><span class="info-label">Tiền cọc:</span> <span class="info-val">@Model.TienCoc.ToString("N0") VNĐ</span></div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-row"><span class="info-label">Ngày bắt đầu:</span> <span class="info-val">@Model.NgayBatDau.ToString("dd/MM/yyyy")</span></div>
+                    <div class="info-row"><span class="info-label">Ngày kết thúc:</span> <span class="info-val">@(Model.NgayKetThuc.HasValue ? Model.NgayKetThuc.Value.ToString("dd/MM/yyyy") : "Không thời hạn")</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-box">
+            <div class="section-title">ĐIỀU KHOẢN & THỎA THUẬN</div>
+            <div class="terms-box">
+                @Model.DieuKhoan
+            </div>
+        </div>
+
+        <div class="row" style="margin-top: 50px; text-align: center;">
+            <div class="col-6">
+                <p><strong>Đại diện Bên A</strong></p>
+                <p style="margin-top: 60px; color:#888;">(Ký và ghi rõ họ tên)</p>
+            </div>
+            <div class="col-6">
+                <p><strong>Đại diện Bên B</strong></p>
+                <p style="margin-top: 60px; color:#888;">(Ký và ghi rõ họ tên)</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="container" style="max-width:900px;">
+        <div class="action-bar">
+            <a href="#" class="btn-print" onclick="window.print()"><i class="fas fa-print"></i> In hợp đồng</a>
+            <a href="#" class="btn-edit"><i class="fas fa-edit"></i> Chỉnh sửa</a>
+        </div>
+    </div>
+    <div style="height: 50px;"></div>
+</div>

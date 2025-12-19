@@ -5,171 +5,537 @@
     ViewBag.Title = "Tổng quan";
 }
 
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+    :root {
+        --primary: #4e73df;
+        --secondary: #858796;
+        --success: #1cc88a;
+        --warning: #f6c23e;
+        --danger: #e74a3b;
+        --dark: #2e384d;
+        --light: #f8f9fc;
+        --card-bg: #ffffff;
+    }
+
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: var(--light);
+        color: var(--dark);
+    }
+
+    .dashboard-container {
+        padding: 30px;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    /* HEADER */
+    .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 35px;
+    }
+
+    .page-title {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: var(--dark);
+        margin: 0 0 5px 0;
+        letter-spacing: -0.5px;
+    }
+
+    .page-subtitle {
+        color: #8898aa;
+        font-size: 0.95rem;
+        font-weight: 400;
+        margin: 0;
+    }
+
+    .time-filter {
+        padding: 10px 20px;
+        border-radius: 12px;
+        border: 1px solid #e3e6f0;
+        background: white;
+        color: var(--dark);
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        outline: none;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        transition: all 0.2s;
+    }
+
+        .time-filter:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+    /* --- STATS GRID (ĐÃ SỬA CSS ICON) --- */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 25px;
+        margin-bottom: 35px;
+    }
+
+    .stat-card {
+        background: var(--card-bg);
+        border-radius: 20px;
+        padding: 25px 20px; /* Padding vừa phải */
+        position: relative;
+        overflow: hidden; /* Cắt phần thừa của icon */
+        border: none;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-height: 140px; /* Đảm bảo chiều cao đồng đều */
+    }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+        }
+
+    /* --- PHẦN SỬA LỖI ICON BỊ LỆCH --- */
+    .stat-icon-bg {
+        position: absolute;
+        top: 50%; /* Canh giữa theo chiều dọc */
+        right: 20px; /* Cách lề phải 20px */
+        transform: translateY(-50%); /* Kỹ thuật canh giữa chính xác */
+        font-size: 3.5rem; /* Kích thước vừa phải, không quá to */
+        opacity: 0.2; /* Độ mờ tinh tế */
+        pointer-events: none; /* Không che chắn khi click chuột */
+        z-index: 0; /* Nằm dưới chữ */
+    }
+
+    .stat-content-wrapper {
+        position: relative;
+        z-index: 1; /* Chữ nằm trên icon */
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 8px;
+        color: #8898aa;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--dark);
+        margin-bottom: 5px;
+        line-height: 1.2;
+    }
+
+    .stat-desc {
+        font-size: 0.85rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    /* Màu sắc riêng biệt */
+    .card-blue .stat-value, .card-blue .stat-desc, .card-blue .stat-icon-bg {
+        color: #4e73df;
+    }
+
+    .card-orange .stat-value, .card-orange .stat-desc, .card-orange .stat-icon-bg {
+        color: #f6c23e;
+    }
+
+    .card-purple .stat-value, .card-purple .stat-desc, .card-purple .stat-icon-bg {
+        color: #6f42c1;
+    }
+
+    .card-green .stat-value, .card-green .stat-desc, .card-green .stat-icon-bg {
+        color: #1cc88a;
+    }
+
+    /* --- CHARTS & LISTS --- */
+    .section-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 25px;
+        margin-bottom: 35px;
+    }
+
+    .content-card {
+        background: var(--card-bg);
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.03);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .card-header-custom {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+    }
+
+    .card-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--dark);
+        margin: 0;
+    }
+
+    /* Activity List Styles */
+    .activity-list {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        flex: 1; /* Đẩy nút xem tất cả xuống đáy */
+    }
+
+    .activity-item {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        border-radius: 15px;
+        transition: background 0.2s;
+        border: 1px solid transparent;
+    }
+
+        .activity-item:hover {
+            background: #f8f9fc;
+            border-color: #f1f3f9;
+        }
+
+    .item-image {
+        width: 55px;
+        height: 55px;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-right: 15px;
+        background: #eaecf4;
+        flex-shrink: 0;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .item-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+    .item-content {
+        flex: 1;
+        overflow: hidden;
+    }
+
+    .item-name {
+        font-weight: 700;
+        font-size: 0.95rem;
+        color: var(--dark);
+        margin-bottom: 3px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .item-info {
+        font-size: 0.8rem;
+        color: #8898aa;
+    }
+
+    .status-badge {
+        padding: 6px 12px;
+        border-radius: 30px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        white-space: nowrap;
+    }
+
+    .badge-pending {
+        background: rgba(246, 194, 62, 0.15);
+        color: #f6c23e;
+    }
+
+    .badge-confirmed {
+        background: rgba(28, 200, 138, 0.15);
+        color: #1cc88a;
+    }
+
+    .badge-high {
+        background: rgba(231, 74, 59, 0.15);
+        color: #e74a3b;
+    }
+
+    .btn-view-all {
+        margin-top: 20px;
+        padding: 12px;
+        text-align: center;
+        background: #f8f9fc;
+        color: var(--primary);
+        font-weight: 600;
+        border-radius: 12px;
+        text-decoration: none;
+        transition: background 0.2s;
+        border: 1px dashed #e3e6f0;
+        display: block;
+    }
+
+        .btn-view-all:hover {
+            background: #eaecf4;
+            text-decoration: none;
+            color: var(--dark);
+        }
+
+    /* Responsive */
+    @@media (max-width: 1200px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @@media (max-width: 992px) {
+        .section-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
 <div class="dashboard-container">
-    <!-- Header -->
     <div class="dashboard-header">
         <div>
-            <h1 class="page-title">Chào buổi sáng, @(Session["UserName"] ?? "Chủ Trọ")!</h1>
-            <p class="page-subtitle">Đây là những gì đang diễn ra với các phòng trọ của bạn hôm nay.</p>
+            <h1 class="page-title">Chào buổi sáng, @(Session["UserName"] ?? "Chủ Trọ")! 👋</h1>
+            <p class="page-subtitle">Dưới đây là tổng quan tình hình kinh doanh của bạn hôm nay.</p>
         </div>
         <select id="timeFilter" class="time-filter">
-            <option value="30days">30 ngày qua</option>
-            <option value="7days">7 ngày qua</option>
             <option value="today">Hôm nay</option>
+            <option value="7days">7 ngày qua</option>
+            <option value="30days" selected>30 ngày qua</option>
         </select>
     </div>
 
-    <!-- Stats Grid -->
     <div class="stats-grid">
         <div class="stat-card card-blue">
-            <div class="stat-content">
-                <div class="stat-label">TỔNG SỐ PHÒNG</div>
-                <div class="stat-value">@Model.TotalRooms</div>
-                <div class="stat-desc">Số lượng phòng bạn đang quản lý</div>
+            <i class="fas fa-home stat-icon-bg"></i>
+            <div class="stat-content-wrapper">
+                <div class="stat-label">Tổng số phòng</div>
+                <div class="stat-value">@Model.TongSoPhong</div>
+                <div class="stat-desc"><i class="fas fa-check-circle"></i> phòng đang quản lý</div>
             </div>
         </div>
+
         <div class="stat-card card-orange">
-            <div class="stat-content">
-                <div class="stat-label">LƯỢT XEM HÔM NAY</div>
-                <div class="stat-value">@Model.ViewsToday</div>
-                <div class="stat-desc">Tổng lượt xem các phòng của bạn</div>
+            <i class="fas fa-eye stat-icon-bg"></i>
+            <div class="stat-content-wrapper">
+                <div class="stat-label">Lượt xem hôm nay</div>
+                <div class="stat-value">@Model.LuotXemHomNay</div>
+                <div class="stat-desc"><i class="fas fa-chart-line"></i> lượt truy cập tin</div>
             </div>
         </div>
+
         <div class="stat-card card-purple">
-            <div class="stat-content">
-                <div class="stat-label">LỊCH HẸN SẮP TỚI</div>
-                <div class="stat-value">@Model.UpcomingSchedules</div>
-                <div class="stat-desc">Các lịch hẹn xem phòng chưa diễn ra</div>
+            <i class="fas fa-calendar-alt stat-icon-bg"></i>
+            <div class="stat-content-wrapper">
+                <div class="stat-label">Lịch hẹn sắp tới</div>
+                <div class="stat-value">@Model.LichHenSapToi</div>
+                <div class="stat-desc"><i class="fas fa-clock"></i> yêu cầu cần xử lý</div>
             </div>
         </div>
+
         <div class="stat-card card-green">
-            <div class="stat-content">
-                <div class="stat-label">DOANH THU THÁNG NÀY</div>
-                <div class="stat-value">@Model.RevenueThisMonth.ToString("N0")đ</div>
-                <div class="stat-desc">Tổng doanh thu dự kiến</div>
+            <i class="fas fa-dollar-sign stat-icon-bg"></i>
+            <div class="stat-content-wrapper">
+                <div class="stat-label">Doanh thu tháng này</div>
+                <div class="stat-value">@Model.DoanhThuThang.ToString("N0")<small style="font-size:0.5em; vertical-align: super; margin-left: 2px;">đ</small></div>
+                <div class="stat-desc"><i class="fas fa-arrow-up"></i> doanh thu ước tính</div>
             </div>
         </div>
     </div>
 
-    <!-- Charts Section -->
-    <div class="charts-section">
-        <div class="chart-card">
-            <div class="chart-header">
-                <div>
-                    <h3 class="chart-title">Báo cáo doanh thu</h3>
-                    <p class="chart-subtitle">Dữ liệu được cập nhật hàng ngày</p>
+    <div class="section-grid">
+        <div style="display: flex; flex-direction: column; gap: 25px;">
+
+            <div class="content-card">
+                <div class="card-header-custom">
+                    <div>
+                        <h3 class="card-title">Phòng chờ duyệt</h3>
+                        <p class="card-subtitle" style="font-size:0.8rem; color:#aaa; margin:0;">Cần admin phê duyệt</p>
+                    </div>
                 </div>
-                <div class="chart-filter">
-                    <button class="filter-btn active" data-filter="30days">Tháng</button>
-                    <button class="filter-btn" data-filter="7days">Tuần</button>
+                <div class="activity-list">
+                    @if (Model.DanhSachPhongCho != null && Model.DanhSachPhongCho.Any())
+                    {
+                        foreach (var room in Model.DanhSachPhongCho)
+                        {
+                            <div class="activity-item">
+                                <div class="item-image">
+                                    <img src="@(!string.IsNullOrEmpty(room.HinhAnh) ? room.HinhAnh : "/images/logo.png")"
+                                         onerror="this.src='https://via.placeholder.com/100x100?text=Room'" alt="Room">
+                                </div>
+                                <div class="item-content">
+                                    <div class="item-name">@room.TenPhong</div>
+                                    <div class="item-info"><i class="far fa-clock"></i> @room.NgayDang.ToString("dd/MM/yyyy")</div>
+                                </div>
+                                <span class="status-badge badge-pending">Chờ duyệt</span>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div style="text-align:center; padding: 30px; color: #999;">
+                            <i class="fas fa-check-circle fa-2x mb-3" style="opacity:0.3"></i>
+                            <p style="margin:0;">Tất cả phòng đã được duyệt</p>
+                        </div>
+                    }
                 </div>
+                <a href="@Url.Action("DanhSachPhong", "ChuTro")" class="btn-view-all">Xem tất cả phòng</a>
             </div>
-            <div class="chart-body">
-                <canvas id="revenueChart"></canvas>
+
+            <div class="content-card">
+                <div class="card-header-custom">
+                    <h3 class="card-title">Lịch xem phòng hôm nay</h3>
+                </div>
+                <div class="activity-list">
+                    @if (Model.LichHenHomNay != null && Model.LichHenHomNay.Any())
+                    {
+                        foreach (var schedule in Model.LichHenHomNay)
+                        {
+                            <div class="activity-item">
+                                <div class="item-image" style="background: #e1f5fe; color: #039be5; font-size: 1.2rem;">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="item-content">
+                                    <div class="item-name">@schedule.TenKhach</div>
+                                    <div class="item-info">Phòng: @schedule.TenPhong</div>
+                                </div>
+                                <div style="text-align: right; margin-right: 10px;">
+                                    <div style="font-weight: 700; font-size: 0.9rem; color:#4e73df;">@schedule.ThoiGianXem</div>
+                                </div>
+                                <span class="status-badge @(schedule.TrangThai == "Chờ xác nhận" ? "badge-pending" : "badge-confirmed")">
+                                    @schedule.TrangThai
+                                </span>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div style="text-align:center; padding: 30px; color: #999;">
+                            <i class="far fa-calendar-times fa-2x mb-3" style="opacity:0.3"></i>
+                            <p style="margin:0;">Hôm nay không có lịch hẹn nào</p>
+                        </div>
+                    }
+                </div>
+                <a href="@Url.Action("LichHen", "ChuTro")" class="btn-view-all">Quản lý lịch hẹn</a>
             </div>
         </div>
-        <div class="chart-card">
-            <div class="chart-header">
-                <div>
-                    <h3 class="chart-title">Lượt xem theo phòng</h3>
-                    <p class="chart-subtitle">Top 5 phòng được xem nhiều nhất</p>
+
+        <div style="display: flex; flex-direction: column; gap: 25px;">
+            <div class="content-card">
+                <div class="card-header-custom">
+                    <h3 class="card-title">Biểu đồ doanh thu</h3>
+                    <select style="border:none; color:#4e73df; font-weight:600; font-size:0.8rem; background:transparent; outline:none; cursor:pointer;">
+                        <option>6 tháng qua</option>
+                        <option>Năm nay</option>
+                    </select>
+                </div>
+                <div style="height: 250px; position: relative;">
+                    <canvas id="revenueChart"></canvas>
                 </div>
             </div>
-            <div class="chart-body">
-                <canvas id="viewsChart"></canvas>
-            </div>
-        </div>
-    </div>
 
-    <!-- Activities Section -->
-    <div class="activities-section">
-        <div class="activities-row">
-            <div class="activity-card">
-                <div class="activity-header">
-                    <h3 class="activity-title">Phòng chờ duyệt</h3>
-                    <p class="activity-subtitle">Các phòng bạn mới đăng hoặc cập nhật</p>
+            <div class="content-card" style="flex: 1;">
+                <div class="card-header-custom">
+                    <h3 class="card-title">Yêu cầu sửa chữa</h3>
                 </div>
                 <div class="activity-list">
-                    @foreach (var room in Model.PendingRooms)
+                    @if (Model.YeuCauSuaChua != null && Model.YeuCauSuaChua.Any())
                     {
-                        <div class="activity-item">
-                            <div class="item-image"><img src="@Url.Content(!string.IsNullOrEmpty(room.ImageUrl) ? room.ImageUrl : "/images/logo.png")" alt="Room"></div>
-                            <div class="item-content">
-                                <div class="item-name">@room.Name</div>
-                                <div class="item-info">Gửi lúc: @room.SubmitDate.ToString("HH:mm dd/MM/yyyy")</div>
+                        foreach (var req in Model.YeuCauSuaChua)
+                        {
+                            <div class="activity-item">
+                                <div class="item-image" style="background: #fce4ec; color: #e91e63;">
+                                    <i class="fas fa-tools"></i>
+                                </div>
+                                <div class="item-content">
+                                    <div class="item-name">@req.TieuDe</div>
+                                    <div class="item-info">@req.TenPhong • @req.NguoiBaoCao</div>
+                                </div>
+                                <span class="status-badge badge-high">@req.MucDoUuTien</span>
                             </div>
-                            <button class="btn-action">Xem</button>
+                        }
+                    }
+                    else
+                    {
+                        <div style="text-align:center; padding: 30px; color: #999;">
+                            <i class="fas fa-check-circle fa-2x mb-3" style="opacity:0.3"></i>
+                            <p style="margin:0;">Không có yêu cầu mới</p>
                         </div>
                     }
                 </div>
-                <button class="btn-view-all">Xem tất cả phòng chờ duyệt</button>
-            </div>
-
-            <div class="activity-card">
-                <div class="activity-header">
-                    <h3 class="activity-title">Lịch xem phòng hôm nay</h3>
-                    <p class="activity-subtitle">Các lịch hẹn đã được xác nhận cho hôm nay</p>
-                </div>
-                <div class="activity-list">
-                    @foreach (var schedule in Model.TodaySchedules)
-                    {
-                        <div class="activity-item">
-                            <div class="item-avatar"><span class="material-icons">person</span></div>
-                            <div class="item-content">
-                                <div class="item-name">@schedule.TenantName - @schedule.RoomName</div>
-                                <div class="item-info">Thời gian: @schedule.ViewTime</div>
-                            </div>
-                            <span class="status-badge @(schedule.Status == "Chờ xác nhận" ? "status-pending" : "status-confirmed")">@schedule.Status</span>
-                        </div>
-                    }
-                </div>
-                <button class="btn-view-all">Quản lý lịch xem phòng</button>
-            </div>
-        </div>
-
-        <div class="activities-row">
-            <div class="activity-card">
-                <div class="activity-header">
-                    <h3 class="activity-title">Tin nhắn gần đây</h3>
-                    <p class="activity-subtitle">Những tin nhắn mới nhất từ người thuê</p>
-                </div>
-                <div class="activity-list">
-                    @foreach (var message in Model.RecentMessages)
-                    {
-                        <div class="activity-item">
-                            <div class="item-avatar"><img src="@Url.Content(!string.IsNullOrEmpty(message.Avatar) ? message.Avatar : "/images/logo.png")" alt="Avatar"></div>
-                            <div class="item-content">
-                                <div class="item-name">@message.SenderName</div>
-                                <div class="item-message">@message.Content</div>
-                                <div class="item-time">@message.Time</div>
-                            </div>
-                            <button class="btn-action">Trả lời</button>
-                        </div>
-                    }
-                </div>
-                <button class="btn-view-all">Đi đến hộp thư</button>
-            </div>
-
-            <div class="activity-card">
-                <div class="activity-header">
-                    <h3 class="activity-title">Yêu cầu sửa chữa</h3>
-                    <p class="activity-subtitle">Các yêu cầu mới từ người thuê phòng</p>
-                </div>
-                <div class="activity-list">
-                    @foreach (var request in Model.MaintenanceRequests)
-                    {
-                        <div class="activity-item">
-                            <div class="item-avatar"><span class="material-icons">build</span></div>
-                            <div class="item-content">
-                                <div class="item-name">@request.Title - @request.RoomName</div>
-                                <div class="item-info">Báo cáo bởi: @request.ReporterName</div>
-                            </div>
-                            <span class="status-badge priority-@request.Priority.ToLower()">@request.Priority</span>
-                        </div>
-                    }
-                </div>
-                <button class="btn-view-all">Xem tất cả yêu cầu</button>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var ctx = document.getElementById("revenueChart");
+        if (ctx) {
+            var chartCtx = ctx.getContext('2d');
+            var gradient = chartCtx.createLinearGradient(0, 0, 0, 300);
+            gradient.addColorStop(0, 'rgba(78, 115, 223, 0.2)');
+            gradient.addColorStop(1, 'rgba(78, 115, 223, 0.0)');
+
+            new Chart(chartCtx, {
+                type: 'line',
+                data: {
+                    labels: ["Thg 7", "Thg 8", "Thg 9", "Thg 10", "Thg 11", "Thg 12"],
+                    datasets: [{
+                        label: "Doanh thu (VNĐ)",
+                        data: [15000000, 20000000, 18000000, 22000000, 25000000, 30000000],
+                        backgroundColor: gradient,
+                        borderColor: "#4e73df",
+                        pointBackgroundColor: "#4e73df",
+                        pointBorderColor: "#fff",
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: '#858796' } },
+                        y: {
+                            grid: { color: '#f1f3f9', borderDash: [5, 5] },
+                            ticks: { color: '#858796', callback: function (value) { return value / 1000000 + 'tr'; } }
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>

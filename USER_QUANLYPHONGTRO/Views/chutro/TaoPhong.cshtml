@@ -1,7 +1,84 @@
-﻿
+﻿@model USER_QUANLYPHONGTRO.Models.ViewModels.ChuTro.PhongTroEditViewModel
 @{
-    ViewBag.Title = "TaoPhong";
+    Layout = "~/Views/Shared/_ChutroLayout.cshtml";
+    ViewBag.Title = "Đăng tin phòng mới";
 }
 
-<h2>TaoPhong</h2>
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1 class="page-title">Đăng tin phòng mới</h1>
+    </div>
 
+    <div class="activity-card" style="padding: 30px;">
+        @using (Html.BeginForm("TaoPhong", "ChuTro", FormMethod.Post, new { enctype = "multipart/form-data" }))
+        {
+            @Html.AntiForgeryToken()
+
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px;">
+                <div>
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label style="font-weight: 600; display: block; margin-bottom: 8px; color: #444;">Tiêu đề bài đăng</label>
+                        @Html.TextBoxFor(m => m.TieuDe, new { @class = "form-control", @style = "width: 100%; padding: 12px; border: 1px solid #e0e0e0; border-radius: 8px; background: #f9f9f9;", placeholder = "Ví dụ: Phòng trọ cao cấp..." })
+                        @Html.ValidationMessageFor(m => m.TieuDe, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div class="form-group">
+                            <label style="font-weight: 600; display: block; margin-bottom: 8px; color: #444;">Giá thuê (VNĐ)</label>
+                            @Html.TextBoxFor(m => m.GiaTien, new { @type = "number", @class = "form-control", @style = "width: 100%; padding: 12px; border: 1px solid #e0e0e0; border-radius: 8px; background: #f9f9f9;" })
+                        </div>
+                        <div class="form-group">
+                            <label style="font-weight: 600; display: block; margin-bottom: 8px; color: #444;">Tiền cọc (VNĐ)</label>
+                            @Html.TextBoxFor(m => m.TienCoc, new { @type = "number", @class = "form-control", @style = "width: 100%; padding: 12px; border: 1px solid #e0e0e0; border-radius: 8px; background: #f9f9f9;" })
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 20px;">
+                        <label style="font-weight: 600; display: block; margin-bottom: 8px; color: #444;">Mô tả chi tiết & Địa chỉ</label>
+                        @Html.TextAreaFor(m => m.DiaChi, new { @class = "form-control", @style = "width: 100%; padding: 12px; border: 1px solid #e0e0e0; border-radius: 8px; background: #f9f9f9;", rows = "4" })
+                    </div>
+
+                    <div style="margin-top: 25px;">
+                        <label style="font-weight: 600; display: block; margin-bottom: 12px; color: #444;">Tiện ích có sẵn</label>
+                        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                            @if (Model.AvailableAmenities != null)
+                            {
+                                foreach (var item in Model.AvailableAmenities)
+                                {
+                                    <label style="display: flex; align-items: center; gap: 6px; background: #f0f2f5; padding: 8px 15px; border-radius: 20px; cursor: pointer;">
+                                        <input type="checkbox" name="SelectedAmenities" value="@item.Value" />
+                                        <span style="font-size: 0.9em;">@item.Text</span>
+                                    </label>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label style="font-weight: 600; display: block; margin-bottom: 8px; color: #444;">Diện tích (m²)</label>
+                        @Html.TextBoxFor(m => m.DienTich, new { @type = "number", @class = "form-control", @style = "width: 100%; padding: 12px; border: 1px solid #e0e0e0; border-radius: 8px; background: #f9f9f9;" })
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label style="font-weight: 600; display: block; margin-bottom: 8px; color: #444;">Số người tối đa</label>
+                        @Html.TextBoxFor(m => m.SoNguoiToiDa, new { @type = "number", @class = "form-control", @style = "width: 100%; padding: 12px; border: 1px solid #e0e0e0; border-radius: 8px; background: #f9f9f9;" })
+                    </div>
+
+                    <div class="form-group" style="margin-top: 20px; border: 2px dashed #ddd; padding: 20px; border-radius: 8px; text-align: center;">
+                        <span class="material-icons" style="font-size: 40px; color: #ccc;">cloud_upload</span>
+                        <label style="font-weight: 600; display: block; margin: 10px 0; color: #444;">Hình ảnh phòng</label>
+                        <input type="file" name="ImageFiles" multiple style="max-width: 100%;" />
+                        <p style="font-size: 0.8em; color: #888; margin-top: 5px;">Hỗ trợ JPG, PNG</p>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px; text-align: right;">
+                <a href="@Url.Action("DanhSachPhong")" class="btn-action" style="margin-right: 10px; text-decoration: none;">Hủy bỏ</a>
+                <button type="submit" class="btn-view-all" style="background-color: var(--primary-color, #4e73df); color: white; border: none; padding: 12px 30px; font-size: 16px; border-radius: 8px; cursor: pointer;">Đăng tin ngay</button>
+            </div>
+        }
+    </div>
+</div>
