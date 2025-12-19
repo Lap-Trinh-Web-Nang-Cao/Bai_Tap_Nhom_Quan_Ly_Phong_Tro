@@ -52,6 +52,46 @@ namespace ADMIN_QUANLYPHONGTRO.Models.ViewModels
         public string trangThaiXacThuc { get; set; }
     }
 
+    // ====== ROOM API RESPONSE DTOs ======
+    /// <summary>
+    /// DTO Response từ Backend API - Danh sách phòng chờ duyệt
+    /// </summary>
+    public class RoomPendingListResponse
+    {
+        public int Page { get; set; }
+        public int PageSize { get; set; }
+        public int TotalCount { get; set; }
+        public int TotalPages { get; set; }
+        public List<RoomPendingItemDto> Data { get; set; }
+    }
+
+    /// <summary>
+    /// DTO phòng từ Backend API
+    /// </summary>
+    public class RoomPendingItemDto
+    {
+        public Guid phongId { get; set; }
+        public Guid nhaTroId { get; set; }
+        public string tieuDe { get; set; }
+        public decimal? dienTich { get; set; }
+        public long giaTien { get; set; }
+        public long? tienCoc { get; set; }
+        public int? soNguoiToiDa { get; set; }
+        public string trangThai { get; set; }
+        public DateTime? createdAt { get; set; }
+        public DateTime? updatedAt { get; set; }
+        public double? diemTrungBinh { get; set; }
+        public int? soLuongDanhGia { get; set; }
+        public bool isDuyet { get; set; }
+        public Guid? nguoiDuyet { get; set; }
+        public DateTime? thoiGianDuyet { get; set; }
+        public bool isBiKhoa { get; set; }
+        
+        // Navigation properties (nếu API trả về)
+        public string nhaTroName { get; set; }
+        public string chuTroName { get; set; }
+    }
+
     // ====== VIEW MODELS ======
     /// <summary>
     /// ViewModel cho item trong danh sách chủ trọ chờ duyệt
@@ -92,6 +132,33 @@ namespace ADMIN_QUANLYPHONGTRO.Models.ViewModels
 
         // Trạng thái hiện tại
         public string TrangThaiXacThuc { get; set; }
+    }
+
+    /// <summary>
+    /// ViewModel cho item phòng trọ trong danh sách
+    /// </summary>
+    public class RoomPendingItemViewModel
+    {
+        public Guid PhongId { get; set; }
+        public Guid NhaTroId { get; set; }
+        public string TieuDe { get; set; }
+        public decimal? DienTich { get; set; }
+        public long GiaTien { get; set; }
+        public long? TienCoc { get; set; }
+        public int? SoNguoiToiDa { get; set; }
+        public string TrangThai { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
+        public double? DiemTrungBinh { get; set; }
+        public int SoLuongDanhGia { get; set; }
+        public bool IsDuyet { get; set; }
+        public bool IsBiKhoa { get; set; }
+        public DateTime? ThoiGianDuyet { get; set; }
+        
+        // Thông tin bổ sung
+        public string NhaTroName { get; set; }
+        public string ChuTroName { get; set; }
+        public string ImageUrl { get; set; }
     }
 
     /// <summary>

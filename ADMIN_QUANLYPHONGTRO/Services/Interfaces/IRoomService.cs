@@ -1,14 +1,24 @@
 ﻿using System.Threading.Tasks;
 using ADMIN_QUANLYPHONGTRO.Models.Common;
-using ADMIN_QUANLYPHONGTRO.Models.DTO;
+using ADMIN_QUANLYPHONGTRO.Models.ViewModels;
 
 namespace ADMIN_QUANLYPHONGTRO.Services.Interfaces
 {
     public interface IRoomService
     {
-        Task<PagedResult<PhongDto>> GetPendingRoomsAsync(int pageIndex, int pageSize);
-        Task<ApiResponse<bool>> ApproveRoomAsync(string phongId);
-        Task<ApiResponse<bool>> RejectRoomAsync(string phongId, string reason);
-        Task<ApiResponse<bool>> ToggleLockRoomAsync(string phongId);
+        // Lấy danh sách phòng chờ duyệt (với phân trang)
+        Task<PagedResult<RoomPendingItemViewModel>> GetPendingRoomsAsync(int pageIndex, int pageSize, string keyword = "");
+        
+        // Lấy chi tiết phòng để duyệt
+        Task<RoomPendingItemViewModel> GetRoomDetailAsync(string roomId);
+        
+        // Duyệt phòng
+        Task<bool> ApproveRoomAsync(string roomId);
+        
+        // Từ chối phòng
+        Task<bool> RejectRoomAsync(string roomId, string reason);
+        
+        // Khóa/Mở khóa phòng
+        Task<bool> ToggleLockRoomAsync(string roomId, bool isLocked = true);
     }
 }
