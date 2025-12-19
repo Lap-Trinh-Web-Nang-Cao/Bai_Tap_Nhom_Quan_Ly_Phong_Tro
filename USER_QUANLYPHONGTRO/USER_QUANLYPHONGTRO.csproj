@@ -153,13 +153,19 @@
     <Compile Include="Models\ViewModels\Auth\RegisterViewModel.cs" />
     <Compile Include="Models\ViewModels\Chat\ChatMessageViewModel.cs" />
     <Compile Include="Models\ViewModels\Chat\ChatRoomViewModel.cs" />
+    <Compile Include="Models\ViewModels\ChuTro\ChatViewModel.cs" />
     <Compile Include="Models\ViewModels\ChuTro\ChiTietHopDongViewModel.cs" />
+    <Compile Include="Models\ViewModels\ChuTro\DanhGiaViewModel.cs" />
+    <Compile Include="Models\ViewModels\ChuTro\DonDatPhongViewModelcs.cs" />
     <Compile Include="Models\ViewModels\ChuTro\LandlordDashboardViewModel.cs" />
     <Compile Include="Models\ViewModels\ChuTro\LandlordHoaDonViewModel.cs" />
     <Compile Include="Models\ViewModels\ChuTro\LandlordHopDongViewModel.cs" />
     <Compile Include="Models\ViewModels\ChuTro\LandlordProfileViewModel.cs" />
+    <Compile Include="Models\ViewModels\ChuTro\LandlordStatisticsViewModel.cs" />
     <Compile Include="Models\ViewModels\ChuTro\LichHenViewModel.cs" />
     <Compile Include="Models\ViewModels\ChuTro\PhongTroEditViewModel.cs" />
+    <Compile Include="Models\ViewModels\ChuTro\QuanLyPhongViewModel.cs" />
+    <Compile Include="Models\ViewModels\ChuTro\YeuCauHoTroViewModel.cs" />
     <Compile Include="Models\ViewModels\Home\HomeIndexViewModel.cs" />
     <Compile Include="Models\ViewModels\KhachThue\DatLichViewModel.cs" />
     <Compile Include="Models\ViewModels\KhachThue\LichDaDatViewModel.cs" />
@@ -243,7 +249,7 @@
     <Content Include="Views\auth\NguoiThue_Register.cshtml" />
     <Content Include="Views\chat\PhongChat.cshtml" />
     <Content Include="Views\ChuTro\ChiTietHopDong.cshtml" />
-    <Content Include="Views\ChuTro\DanhSachPhong.cshtml" />
+    <Content Include="Views\ChuTro\QuanLyPhong.cshtml" />
     <Content Include="Views\ChuTro\HoaDon.cshtml" />
     <Content Include="Views\ChuTro\HopDong.cshtml" />
     <Content Include="Views\ChuTro\LichHen.cshtml" />
@@ -270,6 +276,11 @@
     <Content Include="Views\ChuTro\Dashboard.cshtml" />
     <Content Include="Views\Shared\_ChutroLayout.cshtml" />
     <Content Include="Views\KhachThue\Dashboard.cshtml" />
+    <Content Include="Views\ChuTro\ThongKe.cshtml" />
+    <Content Include="Views\ChuTro\DonDatPhong.cshtml" />
+    <Content Include="Views\ChuTro\TinNhan.cshtml" />
+    <Content Include="Views\ChuTro\YeuCauHoTro.cshtml" />
+    <Content Include="Views\ChuTro\DanhGia.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
