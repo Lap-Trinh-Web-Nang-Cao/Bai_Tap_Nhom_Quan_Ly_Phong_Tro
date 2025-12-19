@@ -1,7 +1,125 @@
-﻿
-@{
-    ViewBag.Title = "List";
+﻿@{
+    ViewBag.Title = "Danh Sách Phòng";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
 }
 
-<h2>List</h2>
+<div class="container-fluid mt-5">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2>Danh Sách Tất Cả Phòng</h2>
+        </div>
+        <div class="col-md-4">
+            <input type="text" id="searchInput" class="form-control" placeholder="Tìm kiếm phòng...">
+        </div>
+    </div>
+
+    @if (ViewBag.Error != null)
+    {
+        <div class="alert alert-danger" role="alert">
+            <strong>Lỗi:</strong> @ViewBag.Error
+        </div>
+    }
+
+    <div class="card">
+        <div class="card-body">
+            <table id="roomsTable" class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>STT</th>
+                        <th>Tiêu Đề</th>
+                        <th>Diện Tích</th>
+                        <th>Giá Tiền</th>
+                        <th>Chủ Trọ</th>
+                        <th>Trạng Thái Duyệt</th>
+                        <th>Bị Khóa</th>
+                        <th>Hành Động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.24/js/dataTables.bootstrap4.min.js"></script>
+    
+    <script>
+        $(document).ready(function () {
+            // Khởi tạo DataTable
+            const table = $('#roomsTable').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: {
+                    url: '@Url.Action("GetPendingRooms", "Rooms")',
+                    type: 'POST',
+                    data: function (d) {
+                        d.search = $('#searchInput').val();
+                    }
+                },
+                columns: [
+                    {
+                        data: null,
+                        render: function (data, type, row, meta) {
+                            return meta.row + 1;
+                        },
+                        width: '5%'
+                    },
+                    { data: 'tieuDe', width: '20%' },
+                    {
+                        data: 'dienTich',
+                        render: function (data) {
+                            return (data || 0) + ' m²';
+                        },
+                        width: '10%'
+                    },
+                    {
+                        data: 'giaTien',
+                        render: function (data) {
+                            return new Intl.NumberFormat('vi-VN', {
+                                style: 'currency',
+                                currency: 'VND'
+                            }).format(data || 0);
+                        },
+                        width: '15%'
+                    },
+                    { data: 'chuTroName', width: '12%' },
+                    {
+                        data: 'isDuyet',
+                        render: function (data) {
+                            return data ? '<span class="badge badge-success">Đã Duyệt</span>' : '<span class="badge badge-warning">Chờ</span>';
+                        },
+                        width: '10%'
+                    },
+                    {
+                        data: 'isBiKhoa',
+                        render: function (data) {
+                            return data ? '<span class="badge badge-danger">Bị Khóa</span>' : '<span class="badge badge-secondary">OK</span>';
+                        },
+                        width: '8%'
+                    },
+                    {
+                        data: 'phongId',
+                        render: function (data) {
+                            return `<button class="btn btn-sm btn-primary">Chi Tiết</button>`;
+                        },
+                        width: '10%',
+                        orderable: false
+                    }
+                ],
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.10.24/i18n/Vietnamese.json'
+                },
+                pageLength: 10
+            });
+
+            // Tìm kiếm
+            $('#searchInput').on('keyup', function () {
+                table.draw();
+            });
+        });
+    </script>
+}
 

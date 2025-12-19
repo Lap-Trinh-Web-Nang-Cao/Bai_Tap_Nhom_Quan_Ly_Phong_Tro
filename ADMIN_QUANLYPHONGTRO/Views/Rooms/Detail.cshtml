@@ -1,7 +1,96 @@
-﻿
-@{
-    ViewBag.Title = "Detail";
+﻿@{
+    ViewBag.Title = "Chi Tiết Phòng";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
 }
 
-<h2>Detail</h2>
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8">
+            <h2>Chi Tiết Phòng</h2>
+            
+            @if (ViewBag.Error != null)
+            {
+                <div class="alert alert-danger">@ViewBag.Error</div>
+            }
+
+            @if (Model != null)
+            {
+                <div class="card mt-4">
+                    <div class="card-body">
+                        <h5>@Model.TieuDe</h5>
+                        
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <p><strong>Diện Tích:</strong> @Model.DienTich m²</p>
+                                <p><strong>Giá Tiền:</strong> @Model.GiaTien.ToString("N0") VND</p>
+                                <p><strong>Tiền Coc:</strong> @Model.TienCoc?.ToString("N0") VND</p>
+                                <p><strong>Số Người Tối Đa:</strong> @Model.SoNguoiToiDa</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Chủ Trọ:</strong> @Model.ChuTroName</p>
+                                <p><strong>Nhà Trọ:</strong> @Model.NhaTroName</p>
+                                <p><strong>Trạng Thái:</strong> @Model.TrangThai</p>
+                                <p><strong>Đã Duyệt:</strong> @(Model.IsDuyet ? "Có" : "Không")</p>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <a href="@Url.Action("Pending", "Rooms")" class="btn btn-secondary">Quay Lại</a>
+                            @if (!Model.IsDuyet)
+                            {
+                                <button class="btn btn-success" onclick="approveRoom('@Model.PhongId')">Duyệt Phòng</button>
+                                <button class="btn btn-danger" onclick="rejectRoom('@Model.PhongId')">Từ Chối</button>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-warning">Không tìm thấy phòng</div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function approveRoom(roomId) {
+            if (!confirm('Xác nhận duyệt phòng?')) return;
+            
+            $.ajax({
+                url: '@Url.Action("ApproveRoom", "Rooms")',
+                type: 'POST',
+                data: { id: roomId },
+                success: function (response) {
+                    if (response.success) {
+                        alert(response.message);
+                        location.href = '@Url.Action("Pending", "Rooms")';
+                    } else {
+                        alert('Lỗi: ' + response.message);
+                    }
+                }
+            });
+        }
+
+        function rejectRoom(roomId) {
+            const reason = prompt('Nhập lý do từ chối:');
+            if (!reason) return;
+
+            $.ajax({
+                url: '@Url.Action("RejectRoom", "Rooms")',
+                type: 'POST',
+                data: { id: roomId, reason: reason },
+                success: function (response) {
+                    if (response.success) {
+                        alert(response.message);
+                        location.href = '@Url.Action("Pending", "Rooms")';
+                    } else {
+                        alert('Lỗi: ' + response.message);
+                    }
+                }
+            });
+        }
+    </script>
+}
 
