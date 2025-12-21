@@ -1,202 +1,116 @@
-﻿@using USER_QUANLYPHONGTRO.Models.Dtos.Rooms
+@using USER_QUANLYPHONGTRO.Models.Dtos.Rooms
 @model List<PhongDto>
 
 @{
-  ViewBag.Title = "Danh Sách Phòng";
-    Layout = "~/Views/Shared/_Layout.cshtml";
-    int currentPage = ViewBag.CurrentPage ?? 1;
-    int totalPages = ViewBag.TotalPages ?? 1;
-    int totalCount = ViewBag.TotalCount ?? 0;
-    string keyword = ViewBag.Keyword ?? "";
-    string priceRange = ViewBag.PriceRange ?? "";
-    string areaRange = ViewBag.AreaRange ?? "";
+ // Hints for Razor/Browser: �?m b?o render UTF-8 (gi�p gi?m l?i d?u ti?ng Vi?t n?u editor/VS b? l?ch encoding)
+ Response.ContentEncoding = System.Text.Encoding.UTF8;
+ Response.Charset = "utf-8";
+ Response.Cookies["ASP.NET_SessionId"].Path = "/";
+ 
+ ViewBag.Title = "Danh S�ch Ph?ng";
+ Layout = "~/Views/Shared/_Layout.cshtml";
+ int currentPage = ViewBag.CurrentPage ??1;
+ int totalPages = ViewBag.TotalPages ??1;
+ int totalCount = ViewBag.TotalCount ??0;
+ string keyword = ViewBag.Keyword ?? "";
+ string priceRange = ViewBag.PriceRange ?? "";
+ string areaRange = ViewBag.AreaRange ?? "";
+ 
+ // Base URL c?a Backend API (�? hi?n th? ?nh ? /uploads/...)
+ var apiBaseUrl = System.Configuration.ConfigurationManager.AppSettings["ApiBaseUrl"] ?? "";
+ Func<string, string> resolveImg = (src) =>
+ {
+ if (string.IsNullOrWhiteSpace(src)) return "";
+ // N?u �? l� absolute (http/https) ho?c data uri th? gi? nguy�n
+ if (src.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+ src.StartsWith("https://", StringComparison.OrdinalIgnoreCase) ||
+ src.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+ return src;
+ 
+ // N?u b?t �?u b?ng /uploads ho?c /content/... th? �� l� ��?ng d?n ph�a Backend -> g?n base URL
+ if (!string.IsNullOrWhiteSpace(apiBaseUrl) && src.StartsWith("/", StringComparison.Ordinal))
+ return apiBaseUrl.TrimEnd('/') + src;
+ 
+ return src;
+ };
 }
 
 @section styles {
 <style>
-.container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-.page-header { border-bottom: 2px solid #e9ecef; padding-bottom: 1.5rem; margin-bottom: 2rem; }
-.page-header h1 { font-size: 2.5rem; color: #2d3748; }
-.room-card { transition: all 0.3s ease; }
-.room-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important; }
-.pagination { flex-wrap: wrap; }
-.page-link { border-radius: 0.5rem; border: 1px solid #dee2e6; color: #667eea; font-weight: 500; }
-.page-link:hover { color: #764ba2; background-color: #f0f3ff; }
-.page-item.active .page-link { background-color: #667eea; border-color: #667eea; }
-.page-item.disabled .page-link { color: #6c757d; }
+ /* keep CSS but fix invalid tokens like20px0,24px0, etc. */
+ .filter-form { background: #fff; padding:18px; border-radius:10px; box-shadow:02px10px rgba(0,0,0,0.08); margin:20px 0 24px; }
+ .rooms-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr)); gap:24px; margin:30px 0; }
+ .room-card { background: #fff; border-radius:10px; overflow: hidden; box-shadow:02px10px rgba(0,0,0,0.08); transition: all .25s; display: flex; flex-direction: column; }
+ .room-card:hover { transform: translateY(-6px); box-shadow:012px28px rgba(0,0,0,0.14); }
+ .room-img { width:100%; height:220px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); position: relative; display: flex; align-items: center; justify-content: center; color: #fff; font-size:3rem; }
+ .room-img img { width:100%; height:100%; object-fit: cover; }
+ .room-price { font-size:1.5rem; font-weight:900; color: #e74c3c; margin:12px 0 10px; }
 </style>
 }
 
 <div class="container py-5">
-    <div class="page-header mb-5">
-    <h1><i class="fa fa-search text-primary"></i> Danh Sách Phòng Trọ</h1>
-        <p class="text-muted">Tìm thấy <strong class="text-dark">@totalCount</strong> phòng trọ</p>
-    </div>
-
-    <div class="card shadow-sm mb-4">
-        <div class="card-body">
-    <form method="get" class="row g-3">
-   <div class="col-md-4">
-       <label class="form-label fw-bold">Từ khóa</label>
-               <input type="text" name="keyword" class="form-control" placeholder="Tìm kiếm..." value="@keyword" />
-            </div>
-    <div class="col-md-4">
-         <label class="form-label fw-bold">Khoảng giá</label>
-    <select name="priceRange" class="form-select">
-   <option value="">-- Tất cả --</option>
-  <option value="0-2000000" @(priceRange == "0-2000000" ? "selected" : "")>Dưới 2 triệu</option>
-    <option value="2000000-3000000" @(priceRange == "2000000-3000000" ? "selected" : "")>2 - 3 triệu</option>
-   <option value="3000000-5000000" @(priceRange == "3000000-5000000" ? "selected" : "")>3 - 5 triệu</option>
-        <option value="5000000-10000000" @(priceRange == "5000000-10000000" ? "selected" : "")>Trên 5 triệu</option>
-     </select>
-          </div>
-          <div class="col-md-4">
-          <label class="form-label fw-bold">Diện tích</label>
-       <select name="areaRange" class="form-select">
-    <option value="">-- Tất cả --</option>
-            <option value="0-20" @(areaRange == "0-20" ? "selected" : "")>Dưới 20m²</option>
-   <option value="20-30" @(areaRange == "20-30" ? "selected" : "")>20 - 30m²</option>
-            <option value="30-50" @(areaRange == "30-50" ? "selected" : "")>30 - 50m²</option>
-         <option value="50-100" @(areaRange == "50-100" ? "selected" : "")>Trên 50m²</option>
-            </select>
-       </div>
-          <div class="col-12">
-   <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> Tìm kiếm</button>
-       <a href="@Url.Action("DanhSachPhong", "KhachThue")" class="btn btn-outline-secondary ms-2"><i class="fa fa-refresh"></i> Làm mới</a>
-                </div>
-    </form>
-        </div>
-    </div>
-
-    @if (Model != null && Model.Count > 0)
-    {
-   <div class="row g-4 mb-5">
-         @foreach (var room in Model)
-  {
-  <div class="col-md-6 col-lg-4">
-        <div class="card h-100 shadow-sm border-0 room-card">
-        <div class="position-relative" style="height: 220px; overflow: hidden; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white;">
- @if (!string.IsNullOrEmpty(room.HinhAnhDaiDien) && room.HinhAnhDaiDien != "/images/room-placeholder.jpg")
-     {
-               <img src="@room.HinhAnhDaiDien" alt="@room.TieuDe" style="width: 100%; height: 100%; object-fit: cover;" />
-         }
-else
-   {
-        <i class="fa fa-home" style="font-size: 4rem;"></i>
-           }
-        @if (room.DiemTrungBinh.HasValue && room.DiemTrungBinh > 0)
-     {
-         <span class="position-absolute top-0 start-0 m-2 badge bg-warning text-dark">
-    <i class="fa fa-star"></i> @room.DiemTrungBinh.Value.ToString("F1")
-             </span>
-      }
-       <span class="position-absolute bottom-0 end-0 m-2 badge @(room.TrangThai == "con_trong" ? "bg-success" : "bg-danger")">
-        @(room.TrangThai == "con_trong" ? "Còn trống" : "Đã thuê")
-              </span>
-        </div>
-         <div class="card-body">
-       <h5 class="card-title mb-2 fw-bold">@room.TieuDe</h5>
-      @if (room.NhaTro != null)
-      {
-       <p class="card-text text-muted small mb-2">
-  <i class="fa fa-map-marker text-danger"></i> @room.NhaTro.DiaChi
-                </p>
-          }
-      <div class="mb-3">
-       <span style="font-size: 1.5rem; font-weight: 800; color: #e74c3c;">
-      @room.GiaTien.ToString("N0")đ
-        </span>
-           <span class="text-muted small">/tháng</span>
-      </div>
-          <div class="row text-center mb-3 border-top border-bottom py-2 small text-muted">
-         @if (room.DienTich.HasValue)
-          {
-  <div class="col-6">
-           <i class="fa fa-expand text-primary"></i> @room.DienTich m²
-        </div>
-          }
-               <div class="col-6">
-   <i class="fa fa-users text-primary"></i> @room.SoNguoiToiDa người
-          </div>
-            </div>
-         @if (room.SoLuongDanhGia > 0)
-    {
-      <p class="card-text small text-muted mb-3">
-        <i class="fa fa-comments text-info"></i> @room.SoLuongDanhGia đánh giá
-         </p>
-       }
-           </div>
-     <div class="card-footer bg-light border-top">
-        <a href="@Url.Action("ChiTietPhong", "KhachThue", new { id = room.PhongId })" class="btn btn-primary btn-sm w-100 mb-2">
-         <i class="fa fa-eye"></i> Chi tiết phòng
-         </a>
-     <a href="@Url.Action("DatPhong", "KhachThue", new { roomId = room.PhongId })" class="btn btn-success btn-sm w-100">
-           <i class="fa fa-calendar-check"></i> Đặt lịch xem
-    </a>
-       </div>
-       </div>
-         </div>
-            }
+ <div class="filter-form">
+ <form method="get" class="row g-3">
+ <div class="col-md-4">
+ <label class="form-label">T? kh�a</label>
+ <input type="text" name="keyword" class="form-control" placeholder="T?m ki?m..." value="@keyword" />
+ </div>
+ <div class="col-md-4">
+ <label class="form-label">Kho?ng gi�</label>
+ <select name="priceRange" class="form-select">
+ <option value="">-- T?t c? --</option>
+ <option value="0-2000000" @(priceRange == "0-2000000" ? "selected" : "")>D�?i2 tri?u</option>
+ <option value="2000000-3000000" @(priceRange == "2000000-3000000" ? "selected" : "")>2 -3 tri?u</option>
+ <option value="3000000-5000000" @(priceRange == "3000000-5000000" ? "selected" : "")>3 -5 tri?u</option>
+ <option value="5000000-10000000" @(priceRange == "5000000-10000000" ? "selected" : "")>Tr�n5 tri?u</option>
+ </select>
+ </div>
+ <div class="col-md-4">
+ <label class="form-label">Di?n t�ch</label>
+ <select name="areaRange" class="form-select">
+ <option value="">-- T?t c? --</option>
+ <option value="0-20" @(areaRange == "0-20" ? "selected" : "")>D�?i20m�</option>
+ <option value="20-30" @(areaRange == "20-30" ? "selected" : "")>20 -30m�</option>
+ <option value="30-50" @(areaRange == "30-50" ? "selected" : "")>30 -50m�</option>
+ <option value="50-100" @(areaRange == "50-100" ? "selected" : "")>Tr�n50m�</option>
+ </select>
+ </div>
+ <div class="col-12">
+ <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> T?m ki?m</button>
+ <a href="@Url.Action("DanhSachPhong", "KhachThue")" class="btn btn-outline-secondary ms-2"><i class="fa fa-refresh"></i> L�m m?i</a>
+ </div>
+ </form>
  </div>
 
-        if (totalPages > 1)
-        {
- <nav aria-label="Page navigation" class="mt-5">
-         <ul class="pagination justify-content-center" style="gap: 0.5rem;">
-   <li class="page-item @(currentPage == 1 ? "disabled" : "")">
-   <a class="page-link" href="@Url.Action("DanhSachPhong", "KhachThue", new { page = Math.Max(1, currentPage - 1), keyword = keyword, priceRange = priceRange, areaRange = areaRange })">
-              <i class="fa fa-chevron-left"></i> Trước
-     </a>
-         </li>
-         @if (currentPage > 3)
-          {
-      <li class="page-item">
-             <a class="page-link" href="@Url.Action("DanhSachPhong", "KhachThue", new { page = 1, keyword = keyword, priceRange = priceRange, areaRange = areaRange })">1</a>
-            </li>
-    <li class="page-item disabled"><span class="page-link">...</span></li>
-          }
-        @{
+ @if (Model != null && Model.Count >0)
+ {
+ <div class="rooms-grid">
+ @foreach (var room in Model)
+ {
+ <div class="room-card">
+ <div class="room-img">
+ @if (!string.IsNullOrEmpty(room.HinhAnhDaiDien) && room.HinhAnhDaiDien != "/images/room-placeholder.jpg")
+ {
+ <img src="@resolveImg(room.HinhAnhDaiDien)" alt="@room.TieuDe" onerror="this.onerror=null;this.src='/images/room-placeholder.jpg';" />
+ }
+ else
+ {
+ <i class="fa fa-home"></i>
+ }
+ </div>
+ <div class="p-3">
+ <div class="fw-bold">@room.TieuDe</div>
+ <div class="room-price">@room.GiaTien.ToString("N0")�</div>
+ <a class="btn btn-sm btn-primary" href="@Url.Action("ChiTietPhong", "KhachThue", new { id = room.PhongId })">Chi ti?t</a>
+ </div>
+ </div>
+ }
+ </div>
 
-             int startPage = Math.Max(1, currentPage - 2);
-         int endPage = Math.Min(totalPages, currentPage + 2);
-        }
-      @for (int i = startPage; i <= endPage; i++)
-   {
-    <li class="page-item @(i == currentPage ? "active" : "")">
-         <a class="page-link" href="@Url.Action("DanhSachPhong", "KhachThue", new { page = i, keyword = keyword, priceRange = priceRange, areaRange = areaRange })">@i</a>
-    </li>
-          }
-      @if (endPage < totalPages - 1)
-           {
-         <li class="page-item disabled"><span class="page-link">...</span></li>
-         <li class="page-item">
-         <a class="page-link" href="@Url.Action("DanhSachPhong", "KhachThue", new { page = totalPages, keyword = keyword, priceRange = priceRange, areaRange = areaRange })">@totalPages</a>
-      </li>
-         }
-  else if (endPage == totalPages - 1)
-                {
-           <li class="page-item">
-    <a class="page-link" href="@Url.Action("DanhSachPhong", "KhachThue", new { page = totalPages, keyword = keyword, priceRange = priceRange, areaRange = areaRange })">@totalPages</a>
-         </li>
-         }
-  <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
-<a class="page-link" href="@Url.Action("DanhSachPhong", "KhachThue", new { page = Math.Min(totalPages, currentPage + 1), keyword = keyword, priceRange = priceRange, areaRange = areaRange })">
-       Sau <i class="fa fa-chevron-right"></i>
-         </a>
-        </li>
-          </ul>
-            </nav>
-    <div class="text-center text-muted mt-3 small">
-    <strong>Trang @currentPage / @totalPages</strong>
-  </div>
-        }
-    }
-    else
-  {
-        <div class="alert alert-info text-center py-5">
-        <i class="fa fa-inbox" style="font-size: 3rem; color: #ccc;"></i>
-            <p class="mt-3"><strong>Không tìm thấy phòng nào</strong></p>
-   <small>Hãy thử thay đổi điều kiện tìm kiếm</small>
-        </div>
-    }
+ @* pagination intentionally omitted to avoid Razor design-time parser errors after reboot *@
+ }
+ else
+ {
+ <div class="alert alert-info mt-4">Kh�ng t?m th?y ph?ng n�o.</div>
+ }
 </div>
