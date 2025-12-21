@@ -1,77 +1,108 @@
-﻿@model USER_QUANLYPHONGTRO.Models.ViewModels.ChuTro.QuanLyPhongViewModel
+﻿@model List<USER_QUANLYPHONGTRO.Models.ViewModels.ChuTro.QuanLyPhongViewModel>
 
 @{
+    ViewBag.Title = "Quản lý phòng trọ";
     Layout = "~/Views/Shared/_ChutroLayout.cshtml";
-    ViewBag.Title = "Quản lý phòng";
 }
 
-<div class="dashboard-container">
-    <div class="dashboard-header">
-        <div>
-            <h1 class="page-title">Hệ thống quản lý phòng</h1>
-            <p class="page-subtitle">Xem danh sách, cập nhật trạng thái và quản lý tin đăng.</p>
-        </div>
-        @* Nút dẫn đến trang tạo mới *@
-        <a href="@Url.Action("TaoPhong", "ChuTro")" class="btn-action" style="padding: 12px 24px; text-decoration: none; display: flex; align-items: center; gap: 8px;">
-            <span class="material-icons-round">add</span> Thêm phòng mới
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Danh sách phòng trọ</h1>
+        <a href="@Url.Action("TaoPhong", "ChuTro")" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+            <i class="fas fa-plus fa-sm text-white-50"></i> Thêm phòng mới
         </a>
     </div>
 
-    <div class="activities-section">
-        <div class="activity-card" style="margin-bottom: 25px; border-left: 5px solid var(--warning);">
-            <div class="activity-header">
-                <h3 class="activity-title">Tin đăng chờ phê duyệt (@(Model.DanhSachPhongChoDuyet?.Count ?? 0))</h3>
-            </div>
-            <div class="activity-list">
-                @if (Model.DanhSachPhongChoDuyet != null && Model.DanhSachPhongChoDuyet.Any())
-                {
-                    foreach (var item in Model.DanhSachPhongChoDuyet)
-                    {
-                        <div class="activity-item">
-                            <div class="item-image">
-                                <img src="@Url.Content(!string.IsNullOrEmpty(item.HinhAnh) ? item.HinhAnh : "~/Content/images/logo.png")">
-                            </div>
-                            <div class="item-content">
-                                <div class="item-name">@item.TenPhong</div>
-                                <div class="item-info">Ngày gửi: @item.NgayDang.ToString("dd/MM/yyyy")</div>
-                            </div>
-                            <span class="status-badge status-pending">Đang đợi duyệt</span>
-                        </div>
-                    }
-                }
-                else
-                {
-                    <div class="empty-state"><p>Không có tin đăng nào đang chờ duyệt.</p></div>
-                }
-            </div>
-        </div>
+    @if (ViewBag.Error != null)
+    {
+        <div class="alert alert-danger">@ViewBag.Error</div>
+    }
 
-        <div class="activity-card">
-            <div class="activity-header">
-                <h3 class="activity-title">Danh sách phòng đang hoạt động</h3>
-            </div>
-            <div class="activity-list" style="max-height: none;">
-                @if (Model.DanhSachTatCaPhong != null && Model.DanhSachTatCaPhong.Any())
-                {
-                    foreach (var p in Model.DanhSachTatCaPhong)
-                    {
-                        <div class="activity-item" style="padding: 15px;">
-                            <div class="item-image" style="width: 70px; height: 70px;">
-                                <img src="@Url.Content(!string.IsNullOrEmpty(p.HinhAnh) ? p.HinhAnh : "~/Content/images/logo.png")">
-                            </div>
-                            <div class="item-content">
-                                <div class="item-name" style="font-size: 16px;">@p.TieuDe</div>
-                                <div class="item-info">Giá: <strong style="color: var(--primary);">@p.GiaTien.ToString("N0")đ</strong></div>
-                                <div class="item-info"><span class="material-icons-round" style="font-size: 14px;">location_on</span> @p.DiaChi</div>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <span class="status-badge @(p.TrangThai == "Đã thuê" ? "status-confirmed" : "status-pending")">@p.TrangThai</span>
-                                <a href="@Url.Action("SuaPhong", "ChuTro", new { id = p.PhongId })" class="btn-action" style="background: var(--gray-100); color: var(--gray-700);"><span class="material-icons-round">edit</span></a>
-                            </div>
-                        </div>
-                    }
-                }
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Dữ liệu phòng của bạn</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Ảnh</th>
+                            <th>Tên phòng</th>
+                            <th>Khu trọ</th>
+                            <th>Giá (VNĐ)</th>
+                            <th>Trạng thái</th>
+                            <th>Kiểm duyệt</th>
+                            <th style="width: 120px;">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="text-center">
+                                        <img src="@item.AnhDaiDien" alt="Room" style="width: 60px; height: 60px; object-fit: cover; border-radius: 5px;"
+                                             onerror="this.onerror=null; this.src='/images/logo.png';" />
+                                    </td>
+                                    <td class="font-weight-bold text-primary">@item.TenPhong</td>
+                                    <td>@item.TenNhaTro</td>
+                                    <td class="text-danger font-weight-bold">@item.GiaTien.ToString("N0")</td>
+                                    <td>
+                                        @if (item.TrangThai == "Đã thuê")
+                                        {
+                                            <span class="badge badge-secondary">Đã thuê</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-success">Còn trống</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (item.IsDuyet)
+                                        {
+                                            <span class="text-success small"><i class="fa fa-check-circle"></i> Đã duyệt</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-warning small"><i class="fa fa-clock"></i> Chờ duyệt</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <a href="@Url.Action("SuaPhong", "ChuTro", new { id = item.PhongId })" class="btn btn-info btn-circle btn-sm" title="Sửa">
+                                            <i class="fas fa-pen"></i>
+                                        </a>
+                                        <a href="#" class="btn btn-danger btn-circle btn-sm" title="Xóa" onclick="confirmDelete('@item.PhongId')">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center py-4">
+                                    <img src="https://cdn-icons-png.flaticon.com/512/4076/4076432.png" width="64" class="mb-3 opacity-50" />
+                                    <p class="text-muted">Bạn chưa đăng phòng trọ nào.</p>
+                                    <a href="@Url.Action("TaoPhong", "ChuTro")" class="btn btn-primary btn-sm">Đăng ngay</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    function confirmDelete(id) {
+        if(confirm('Bạn có chắc chắn muốn xóa phòng này không?')) {
+            // Gọi API xóa hoặc Action xóa
+            // window.location.href = '/ChuTro/XoaPhong/' + id;
+            alert('Chức năng xóa sẽ được cập nhật sau.');
+        }
+    }
+</script>

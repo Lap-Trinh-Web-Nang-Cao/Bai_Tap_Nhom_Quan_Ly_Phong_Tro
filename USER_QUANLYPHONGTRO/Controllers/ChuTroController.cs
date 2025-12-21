@@ -78,27 +78,31 @@ namespace USER_QUANLYPHONGTRO.Controllers
         // ============================================================
         // 2. QUẢN LÝ PHÒNG (DANH SÁCH + CHỜ DUYỆT + NÚT THÊM)
         // ============================================================
-        public ActionResult QuanLyPhong()
+        public async Task<ActionResult> QuanLyPhong()
         {
-            // Trang này tổng hợp cả danh sách phòng đang chạy và phòng đang chờ duyệt
-            var model = new QuanLyPhongViewModel
-            {
-                // Danh sách phòng đang hoạt động
-                DanhSachTatCaPhong = new List<PhongTroHienThiItem>
-                {
-                    new PhongTroHienThiItem { 
-                        PhongId = Guid.NewGuid(), 
-                        TieuDe = "Phòng Studio cao cấp Q.1", 
-                        GiaTien = 5500000, 
-                        DiaChi = "123 Nguyễn Trãi, P. Bến Thành", 
-                        TrangThai = "Còn trống" 
-                    }
-                },
-                // Danh sách phòng chờ duyệt
-                DanhSachPhongChoDuyet = new List<PhongChoDuyetItem>()
-            };
+            // 1. Kiểm tra đăng nhập
+            if (Session["UserId"] == null) return RedirectToAction("Login", "Auth");
 
-            return View(model);
+            // Parse an toàn hơn
+            if (!Guid.TryParse(Session["UserId"].ToString(), out Guid userId))
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            try
+            {
+                // 2. Gọi API và Deserialize thẳng sang ViewModel
+                // Cách này tự động khớp "phongId" (API) vào "PhongId" (C#) -> Không bị lỗi null
+                var listPhong = await _apiClient.GetAsync<List<QuanLyPhongViewModel>>($"api/phong/landlord/{userId}");
+
+                // Nếu API trả về null hoặc rỗng thì khởi tạo list mới
+                return View(listPhong ?? new List<QuanLyPhongViewModel>());
+            }
+            catch (Exception ex)
+            {
+                ViewBag.Error = "Lỗi tải dữ liệu: " + ex.Message;
+                return View(new List<QuanLyPhongViewModel>());
+            }
         }
 
         public ActionResult TinNhan()
