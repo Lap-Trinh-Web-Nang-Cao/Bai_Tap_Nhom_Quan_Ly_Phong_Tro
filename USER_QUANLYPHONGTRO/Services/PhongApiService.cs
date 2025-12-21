@@ -261,50 +261,76 @@ namespace USER_QUANLYPHONGTRO.Services
                 }
 
                 var jsonContent = await response.Content.ReadAsStringAsync();
-                dynamic jsonResponse = Newtonsoft.Json.JsonConvert.DeserializeObject(jsonContent);
+                var root = JObject.Parse(jsonContent);
+
+                // Backend trả dạng wrapper: { Success, Data, Message }
+                var dataToken = root["data"] ?? root["Data"];
+                if (dataToken == null || dataToken.Type == JTokenType.Null)
+                {
+                    System.Diagnostics.Debug.WriteLine("❌ GetRoomDetailAsync: missing Data in response");
+                    return null;
+                }
+
+                var room = (JObject)dataToken;
+
+                var phongIdStr = room.Value<string>("phongId") ?? room.Value<string>("PhongId");
+                var nhaTroIdStr = room.Value<string>("nhaTroId") ?? room.Value<string>("NhaTroId");
+                if (string.IsNullOrWhiteSpace(phongIdStr) || string.IsNullOrWhiteSpace(nhaTroIdStr))
+                {
+                    System.Diagnostics.Debug.WriteLine("❌ GetRoomDetailAsync: invalid ids in response");
+                    return null;
+                }
 
                 var phongDto = new PhongDto
                 {
-                    // API trả về camelCase
-                    PhongId = Guid.Parse(jsonResponse.phongId?.ToString() ?? jsonResponse.PhongId?.ToString()),
-                    NhaTroId = Guid.Parse(jsonResponse.nhaTroId?.ToString() ?? jsonResponse.NhaTroId?.ToString()),
-                    TieuDe = jsonResponse.tieuDe?.ToString() ?? jsonResponse.TieuDe?.ToString() ?? "",
-                    DienTich = jsonResponse.dienTich ?? jsonResponse.DienTich,
-                    GiaTien = jsonResponse.giaTien ?? jsonResponse.GiaTien,
-                    TienCoc = jsonResponse.tienCoc ?? jsonResponse.TienCoc,
-                    SoNguoiToiDa = jsonResponse.soNguoiToiDa ?? jsonResponse.SoNguoiToiDa,
-                    TrangThai = jsonResponse.trangThai?.ToString() ?? jsonResponse.TrangThai?.ToString() ?? "",
-                    DiemTrungBinh = jsonResponse.diemTrungBinh ?? jsonResponse.DiemTrungBinh,
-                    SoLuongDanhGia = jsonResponse.soLuongDanhGia ?? jsonResponse.SoLuongDanhGia,
-                    HinhAnhDaiDien = jsonResponse.hinhAnhDaiDien?.ToString() ?? jsonResponse.HinhAnhDaiDien?.ToString() ?? "/images/room-placeholder.jpg",
-                    IsDuyet = jsonResponse.isDuyet ?? jsonResponse.IsDuyet ?? false,
-                    IsBiKhoa = jsonResponse.isBiKhoa ?? jsonResponse.IsBiKhoa ?? false,
-                    IsDeleted = jsonResponse.isDeleted ?? jsonResponse.IsDeleted ?? false,
-                    CreatedAt = jsonResponse.createdAt ?? jsonResponse.CreatedAt,
-                    UpdatedAt = jsonResponse.updatedAt ?? jsonResponse.UpdatedAt
+                    PhongId = Guid.Parse(phongIdStr),
+                    NhaTroId = Guid.Parse(nhaTroIdStr),
+                    TieuDe = room.Value<string>("tieuDe") ?? room.Value<string>("TieuDe") ?? "",
+                    DienTich = room["dienTich"]?.Value<decimal?>() ?? room["DienTich"]?.Value<decimal?>(),
+                    GiaTien = room["giaTien"]?.Value<long>() ?? room["GiaTien"]?.Value<long>() ??0,
+                    TienCoc = room["tienCoc"]?.Value<long?>() ?? room["TienCoc"]?.Value<long?>(),
+                    SoNguoiToiDa = room["soNguoiToiDa"]?.Value<int?>() ?? room["SoNguoiToiDa"]?.Value<int?>(),
+                    TrangThai = room.Value<string>("trangThai") ?? room.Value<string>("TrangThai") ?? "",
+                    DiemTrungBinh = room["diemTrungBinh"]?.Value<double?>() ?? room["DiemTrungBinh"]?.Value<double?>(),
+                    SoLuongDanhGia = room["soLuongDanhGia"]?.Value<int?>() ?? room["SoLuongDanhGia"]?.Value<int?>(),
+                    HinhAnhDaiDien = room.Value<string>("hinhAnhDaiDien") ?? room.Value<string>("HinhAnhDaiDien") ?? "/images/room-placeholder.jpg",
+                    IsDuyet = room["isDuyet"]?.Value<bool?>() ?? room["IsDuyet"]?.Value<bool?>() ?? false,
+                    IsBiKhoa = room["isBiKhoa"]?.Value<bool?>() ?? room["IsBiKhoa"]?.Value<bool?>() ?? false,
+                    IsDeleted = room["isDeleted"]?.Value<bool?>() ?? room["IsDeleted"]?.Value<bool?>() ?? false,
+                    CreatedAt = ReadDateTimeOffset(room, "createdAt", "CreatedAt"),
+                    UpdatedAt = ReadDateTimeOffset(room, "updatedAt", "UpdatedAt")
                 };
 
-                // Lấy thông tin nhà trọ
-                if (jsonResponse.nhaTro != null || jsonResponse.NhaTro != null)
+                // Lấy thông tin nhà trọ (nếu API có trả)
+                var nhaTroObj = room["nhaTro"] as JObject ?? room["NhaTro"] as JObject;
+                if (nhaTroObj != null)
                 {
-                    var nhaTro = jsonResponse.nhaTro ?? jsonResponse.NhaTro;
-                    phongDto.NhaTro = new NhaTroDto
+                    var nhaTroObjId = nhaTroObj.Value<string>("nhaTroId") ?? nhaTroObj.Value<string>("NhaTroId");
+                    if (!string.IsNullOrWhiteSpace(nhaTroObjId))
                     {
-                        NhaTroId = Guid.Parse(nhaTro.nhaTroId?.ToString() ?? nhaTro.NhaTroId?.ToString()),
-                        TieuDe = nhaTro.tieuDe?.ToString() ?? nhaTro.TieuDe?.ToString() ?? "",
-                        DiaChi = nhaTro.diaChi?.ToString() ?? nhaTro.DiaChi?.ToString() ?? ""
-                    };
+                        phongDto.NhaTro = new NhaTroDto
+                        {
+                            NhaTroId = Guid.Parse(nhaTroObjId),
+                            TieuDe = nhaTroObj.Value<string>("tieuDe") ?? nhaTroObj.Value<string>("TieuDe") ?? "",
+                            DiaChi = nhaTroObj.Value<string>("diaChi") ?? nhaTroObj.Value<string>("DiaChi") ?? ""
+                        };
+                    }
                 }
 
-                // Lấy danh sách tiện ích
-                if (jsonResponse.phongTienIchs != null || jsonResponse.PhongTienIchs != null)
+                // Lấy danh sách tiện ích (nếu API detail có trả)
+                var phongTienIchArr = room["phongTienIchs"] as JArray ?? room["PhongTienIchs"] as JArray;
+                if (phongTienIchArr != null)
                 {
-                    foreach (var ti in jsonResponse.phongTienIchs ?? jsonResponse.PhongTienIchs)
+                    foreach (var tiToken in phongTienIchArr)
                     {
+                        var tiObj = tiToken as JObject;
+                        if (tiObj == null) continue;
+
+                        var tienIchObj = tiObj["tienIch"] as JObject ?? tiObj["TienIch"] as JObject;
                         phongDto.TienIchs.Add(new TienIchDto
                         {
-                            TienIchId = ti.TienIchId,
-                            Ten = ti.TienIch?.Ten?.ToString() ?? ""
+                            TienIchId = tiObj["tienIchId"]?.Value<int>() ?? tiObj["TienIchId"]?.Value<int>() ??0,
+                            Ten = tienIchObj?.Value<string>("ten") ?? tienIchObj?.Value<string>("Ten") ?? ""
                         });
                     }
                 }

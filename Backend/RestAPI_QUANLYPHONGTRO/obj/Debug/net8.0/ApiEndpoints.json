@@ -611,39 +611,13 @@
   {
     "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.HoaDonController",
     "Method": "GetByTenantId",
-    "RelativePath": "api/HoaDon/nguoithue/{userId}",
+    "RelativePath": "api/HoaDon/nguoithue/{nguoiThueId}",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "userId",
-        "Type": "System.Guid",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.HopDongController",
-    "Method": "GetAll",
-    "RelativePath": "api/HopDong",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.HopDongController",
-    "Method": "GetById",
-    "RelativePath": "api/HopDong/{id}",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "id",
+        "Name": "nguoiThueId",
         "Type": "System.Guid",
         "IsRequired": true
       }
@@ -653,13 +627,13 @@
   {
     "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.HopDongController",
     "Method": "GetActiveContractByTenantId",
-    "RelativePath": "api/HopDong/nguoithue/{userId}/hieuluc",
+    "RelativePath": "api/HopDong/nguoithue/{nguoiThueId}/hieuluc",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "userId",
+        "Name": "nguoiThueId",
         "Type": "System.Guid",
         "IsRequired": true
       }

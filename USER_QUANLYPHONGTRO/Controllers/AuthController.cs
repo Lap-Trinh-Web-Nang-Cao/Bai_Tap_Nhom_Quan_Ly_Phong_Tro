@@ -45,6 +45,8 @@ namespace USER_QUANLYPHONGTRO.Controllers
                     Session["IsVerified"] = true;
                     Session["NotificationCount"] = 2;
                     Session["MessageCount"] = 1;
+                    // DB new uses GUID NguoiThueId; set to tenant GUID from DB for testing
+                    Session["UserId"] = Guid.Parse("11111111-1111-1111-1111-111111111111");
 
                     // REDIRECT VỀ TRANG CHỦ NGƯỜI THUÊ
                     return RedirectToAction("Index", "KhachThue");

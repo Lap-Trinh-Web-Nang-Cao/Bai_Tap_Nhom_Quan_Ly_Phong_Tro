@@ -6,17 +6,22 @@ using System.Web.Mvc;
 using System.Threading.Tasks;
 using USER_QUANLYPHONGTRO.Models.Dtos.Rooms;
 using USER_QUANLYPHONGTRO.Services;
+using USER_QUANLYPHONGTRO.Services;
 
 namespace USER_QUANLYPHONGTRO.Controllers
 {
     public class KhachThueController : Controller
     {
         private readonly IPhongApiService _phongApiService;
+        private readonly IContractsApiService _contractsApiService;
+        private readonly IInvoicesApiService _invoicesApiService;
 
         public KhachThueController()
         {
             // Khởi tạo service (có thể dùng Dependency Injection container nếu có)
             _phongApiService = new PhongApiService();
+            _contractsApiService = new ContractsApiService();
+            _invoicesApiService = new InvoicesApiService();
         }
 
         // GET: KhachThue
@@ -157,6 +162,72 @@ namespace USER_QUANLYPHONGTRO.Controllers
             {
                 ViewBag.ErrorMessage = "Có lỗi: " + ex.Message;
                 return View();
+            }
+        }
+
+        /// <summary>
+        /// Hợp đồng của tôi (người thuê)
+        /// Backend hiện expose: GET /api/hopdong/nguoithue/{userId}/hieuluc
+        /// </summary>
+        public async Task<ActionResult> HopDong()
+        {
+            try
+            {
+                // TODO: khi có auth thật, lấy userId từ token/session. Tạm thời ưu tiên Session["UserId"] nếu có.
+                var userIdObj = Session["UserId"];
+                if (userIdObj == null || !Guid.TryParse(userIdObj.ToString(), out var userId))
+                {
+                    // Chưa có userId -> hiển thị empty state
+                    return View(model: null);
+                }
+
+                var bearer = Session["AccessToken"]?.ToString();
+                var apiRes = await _contractsApiService.GetActiveContractByTenantAsync(userId, bearer);
+
+                if (apiRes == null || !apiRes.Success)
+                {
+                    ViewBag.ErrorMessage = apiRes?.Message ?? "Không thể tải hợp đồng";
+                    return View(model: null);
+                }
+
+                return View(apiRes.Data);
+            }
+            catch (Exception ex)
+            {
+                ViewBag.ErrorMessage = "Có lỗi khi tải hợp đồng: " + ex.Message;
+                return View(model: null);
+            }
+        }
+
+        /// <summary>
+        /// Hóa đơn của tôi (người thuê)
+        /// Backend hiện expose: GET /api/hoadon/nguoithue/{userId}
+        /// </summary>
+        public async Task<ActionResult> HoaDon()
+        {
+            try
+            {
+                var userIdObj = Session["UserId"];
+                if (userIdObj == null || !Guid.TryParse(userIdObj.ToString(), out var userId))
+                {
+                    return View(new List<Models.ViewModels.KhachThue.TenantInvoiceViewModel>());
+                }
+
+                var bearer = Session["AccessToken"]?.ToString();
+                var apiRes = await _invoicesApiService.GetInvoicesByTenantAsync(userId, bearer);
+
+                if (apiRes == null || !apiRes.Success)
+                {
+                    ViewBag.ErrorMessage = apiRes?.Message ?? "Không thể tải hóa đơn";
+                    return View(new List<Models.ViewModels.KhachThue.TenantInvoiceViewModel>());
+                }
+
+                return View(apiRes.Data ?? new List<Models.ViewModels.KhachThue.TenantInvoiceViewModel>());
+            }
+            catch (Exception ex)
+            {
+                ViewBag.ErrorMessage = "Có lỗi khi tải hóa đơn: " + ex.Message;
+                return View(new List<Models.ViewModels.KhachThue.TenantInvoiceViewModel>());
             }
         }
     }

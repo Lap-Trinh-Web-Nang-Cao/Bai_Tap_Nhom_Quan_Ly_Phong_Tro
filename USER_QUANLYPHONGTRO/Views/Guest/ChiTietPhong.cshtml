@@ -124,10 +124,10 @@
                         </div>
 
                         <h3 class="section-h3" style="margin-top: 40px;">Ti&#7879;n &#237;ch ph&#242;ng tr&#7885;</h3>
-                        @if (Model.TienIchList != null && Model.TienIchList.Any())
+                        @if (Model.TienIchs != null && Model.TienIchs.Any())
                         {
                             <ul class="utility-list">
-                                @foreach (var item in Model.TienIchList)
+                                @foreach (var item in Model.TienIchs)
                                 {
                                     <li class="utility-item">
                                         <i class="fa fa-check-circle"></i> @item.Ten
@@ -139,17 +139,7 @@
                         {
                             <p style="color: #a0aec0; font-style: italic;">Ch&#432;a c&#243; th&#244;ng tin ti&#7879;n &#237;ch cho ph&#242;ng n&#224;y.</p>
                         }
-                        <h3 class="section-h3" style="margin-top: 40px;">M&#244; t&#7843; chi ti&#7871;t</h3>
-                        <div style="background: #fff; padding: 25px; border-radius: 12px; border: 1px solid #edf2f7; line-height: 1.8; color: #4a5568; margin-bottom: 20px;">
-                            @if (!string.IsNullOrEmpty(Model.MoTa))
-                            {
-                                @Html.Raw(Model.MoTa.Replace("\n", "<br/>"))
-                            }
-                            else
-                            {
-                                <p style="color: #a0aec0; font-style: italic;">Ch&#432;a c&#243; m&#244; t&#7843; chi ti&#7871;t cho ph&#242;ng n&#224;y.</p>
-                            }
-                        </div>
+                        @* PhongDto hiện không có trường mô tả. Khi backend bổ sung, có thể render lại đoạn mô tả ở đây. *@
                     </div>
                 </div>
             </div>

@@ -13,6 +13,13 @@ namespace USER_QUANLYPHONGTRO
         {
             routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
 
+            // Route chi tiết phòng (Khách thuê)
+            routes.MapRoute(
+                name: "KhachThue_ChiTietPhong",
+                url: "KhachThue/ChiTietPhong/{id}",
+                defaults: new { controller = "KhachThue", action = "ChiTietPhong", id = UrlParameter.Optional }
+            );
+
             routes.MapRoute(
                 name: "Default",
                 url: "{controller}/{action}/{id}",
