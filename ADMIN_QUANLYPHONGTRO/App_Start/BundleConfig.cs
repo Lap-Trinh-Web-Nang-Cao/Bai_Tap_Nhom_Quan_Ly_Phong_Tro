@@ -5,26 +5,36 @@ namespace ADMIN_QUANLYPHONGTRO
 {
     public class BundleConfig
     {
-        // For more information on bundling, visit https://go.microsoft.com/fwlink/?LinkId=301862
         public static void RegisterBundles(BundleCollection bundles)
         {
+            // ====== JQUERY BUNDLES ======
             bundles.Add(new ScriptBundle("~/bundles/jquery").Include(
-                        "~/Scripts/jquery-{version}.js"));
+                "~/Scripts/core/jquery.3.2.1.min.js"));
 
             bundles.Add(new ScriptBundle("~/bundles/jqueryval").Include(
-                        "~/Scripts/jquery.validate*"));
+                "~/Scripts/jquery.validate*"));
 
-            // Use the development version of Modernizr to develop with and learn from. Then, when you're
-            // ready for production, use the build tool at https://modernizr.com to pick only the tests you need.
-            bundles.Add(new ScriptBundle("~/bundles/modernizr").Include(
-                        "~/Scripts/modernizr-*"));
+            // ====== BOOTSTRAP BUNDLES ======
+            bundles.Add(new ScriptBundle("~/bundles/bootstrap").Include(
+                "~/Scripts/core/popper.min.js",
+                "~/Scripts/core/bootstrap.min.js"));
 
-            bundles.Add(new Bundle("~/bundles/bootstrap").Include(
-                      "~/Scripts/bootstrap.js"));
+            // ====== ATLANTIS ADMIN TEMPLATE ======
+            bundles.Add(new ScriptBundle("~/bundles/atlantis").Include(
+                "~/Scripts/atlantis.min.js"));
 
+            // ====== CUSTOM ADMIN SCRIPTS ======
+            bundles.Add(new ScriptBundle("~/bundles/customadmin").Include(
+                "~/Scripts/custom-admin.js"));
+
+            // ====== CSS BUNDLES ======
             bundles.Add(new StyleBundle("~/Content/css").Include(
-                      "~/Content/bootstrap.css",
-                      "~/Content/site.css"));
+                "~/Content/css/bootstrap.min.css",
+                "~/Content/css/atlantis.min.css",
+                "~/Content/css/custom-admin.css"));
+
+            // Disable optimization để dễ debug
+            BundleTable.EnableOptimizations = false;
         }
     }
 }

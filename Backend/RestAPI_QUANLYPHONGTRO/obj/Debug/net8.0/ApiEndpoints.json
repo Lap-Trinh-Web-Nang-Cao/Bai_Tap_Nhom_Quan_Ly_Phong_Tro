@@ -6,7 +6,33 @@
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
-    "Parameters": [],
+    "Parameters": [
+      {
+        "Name": "pageIndex",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "trangThai",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "loaiThucThe",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "keyword",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
     "ReturnTypes": []
   },
   {
@@ -76,6 +102,74 @@
         "IsRequired": true
       }
     ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.BaoCaoViPhamController",
+    "Method": "MarkAsProcessing",
+    "RelativePath": "api/BaoCaoViPham/{id}/processing",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.BaoCaoViPhamController",
+    "Method": "Reject",
+    "RelativePath": "api/BaoCaoViPham/{id}/reject",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "request",
+        "Type": "RestAPI_QUANLYPHONGTRO.Controllers.XuLyBaoCaoRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.BaoCaoViPhamController",
+    "Method": "Resolve",
+    "RelativePath": "api/BaoCaoViPham/{id}/resolve",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "request",
+        "Type": "RestAPI_QUANLYPHONGTRO.Controllers.XuLyBaoCaoRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.BaoCaoViPhamController",
+    "Method": "GetStatistics",
+    "RelativePath": "api/BaoCaoViPham/statistics",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
     "ReturnTypes": []
   },
   {
@@ -274,6 +368,100 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.DashboardController",
+    "Method": "GetRecentActivities",
+    "RelativePath": "api/Dashboard/activities/recent",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "top",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.DashboardController",
+    "Method": "GetRecentReports",
+    "RelativePath": "api/Dashboard/reports/recent",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "top",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.DashboardController",
+    "Method": "GetMonthlyRoomStats",
+    "RelativePath": "api/Dashboard/rooms/monthly",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "months",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.DashboardController",
+    "Method": "GetPendingRooms",
+    "RelativePath": "api/Dashboard/rooms/pending",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "top",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.DashboardController",
+    "Method": "GetRoomStatusDistribution",
+    "RelativePath": "api/Dashboard/rooms/status-distribution",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.DashboardController",
+    "Method": "GetStats",
+    "RelativePath": "api/Dashboard/stats",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.DashboardController",
+    "Method": "GetNewUsersThisMonth",
+    "RelativePath": "api/Dashboard/users/new-this-month",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.DatPhongController",
     "Method": "Create",
     "RelativePath": "api/DatPhong",
@@ -307,6 +495,22 @@
     "IsController": true,
     "Order": 0,
     "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.DatPhongController",
+    "Method": "GetByTenantId",
+    "RelativePath": "api/DatPhong/nguoithue/{userId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
     "ReturnTypes": []
   },
   {
@@ -363,6 +567,106 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.HoaDonController",
+    "Method": "GetAll",
+    "RelativePath": "api/HoaDon",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.HoaDonController",
+    "Method": "GetById",
+    "RelativePath": "api/HoaDon/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.HoaDonController",
+    "Method": "PayInvoice",
+    "RelativePath": "api/HoaDon/{id}/thanhtoan",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.HoaDonController",
+    "Method": "GetByTenantId",
+    "RelativePath": "api/HoaDon/nguoithue/{userId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.HopDongController",
+    "Method": "GetAll",
+    "RelativePath": "api/HopDong",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.HopDongController",
+    "Method": "GetById",
+    "RelativePath": "api/HopDong/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.HopDongController",
+    "Method": "GetActiveContractByTenantId",
+    "RelativePath": "api/HopDong/nguoithue/{userId}/hieuluc",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.HoSoNguoiDungController",
     "Method": "UpdateProfile",
     "RelativePath": "api/HoSoNguoiDung",
@@ -382,6 +686,100 @@
     "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.HoSoNguoiDungController",
     "Method": "GetMyProfile",
     "RelativePath": "api/HoSoNguoiDung/me",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.HostsController",
+    "Method": "ApproveHost",
+    "RelativePath": "api/Hosts/{id}/approve",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.HostsController",
+    "Method": "GetHostDetail",
+    "RelativePath": "api/Hosts/{id}/detail",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.HostsController",
+    "Method": "RejectHost",
+    "RelativePath": "api/Hosts/{id}/reject",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.String",
+        "IsRequired": true
+      },
+      {
+        "Name": "request",
+        "Type": "RestAPI_QUANLYPHONGTRO.ViewModels.RejectHostRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.HostsController",
+    "Method": "GetPendingHosts",
+    "RelativePath": "api/Hosts/pending",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "pageIndex",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "keyword",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "status",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.HostsController",
+    "Method": "GetHostStats",
+    "RelativePath": "api/Hosts/stats",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
@@ -412,6 +810,27 @@
     "IsController": true,
     "Order": 0,
     "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.LichSuController",
+    "Method": "GetByTenantId",
+    "RelativePath": "api/LichSu/nguoithue/{userId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "limit",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
     "ReturnTypes": []
   },
   {
@@ -495,6 +914,106 @@
   },
   {
     "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.NguoiDungController",
+    "Method": "GetUsers",
+    "RelativePath": "api/NguoiDung",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "pageIndex",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "keyword",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "vaiTroId",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "isKhoa",
+        "Type": "System.Nullable\u00601[[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.NguoiDungController",
+    "Method": "GetUserDetail",
+    "RelativePath": "api/NguoiDung/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.NguoiDungController",
+    "Method": "LockUser",
+    "RelativePath": "api/NguoiDung/{id}/lock",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.NguoiDungController",
+    "Method": "UnlockUser",
+    "RelativePath": "api/NguoiDung/{id}/unlock",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.NguoiDungController",
+    "Method": "AdminCreateUser",
+    "RelativePath": "api/NguoiDung/admin-create",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "RestAPI_QUANLYPHONGTRO.ViewModels.AdminCreateUserRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.NguoiDungController",
     "Method": "ChangePassword",
     "RelativePath": "api/NguoiDung/change-password",
     "HttpMethod": "PUT",
@@ -565,6 +1084,16 @@
         "IsRequired": true
       }
     ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.NguoiDungController",
+    "Method": "GetStatistics",
+    "RelativePath": "api/NguoiDung/statistics",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
     "ReturnTypes": []
   },
   {
@@ -680,6 +1209,11 @@
         "IsRequired": false
       },
       {
+        "Name": "includeUnapproved",
+        "Type": "System.Boolean",
+        "IsRequired": false
+      },
+      {
         "Name": "page",
         "Type": "System.Int32",
         "IsRequired": false
@@ -777,6 +1311,32 @@
       {
         "Name": "isLocked",
         "Type": "System.Boolean",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.PhongController",
+    "Method": "GetPending",
+    "RelativePath": "api/Phong/pending",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "pageIndex",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "keyword",
+        "Type": "System.String",
         "IsRequired": false
       }
     ],
@@ -1037,6 +1597,64 @@
         "Name": "File",
         "Type": "Microsoft.AspNetCore.Http.IFormFile",
         "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.ThongBaoController",
+    "Method": "GetAll",
+    "RelativePath": "api/ThongBao",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.ThongBaoController",
+    "Method": "GetById",
+    "RelativePath": "api/ThongBao/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.ThongBaoController",
+    "Method": "MarkAsRead",
+    "RelativePath": "api/ThongBao/{id}/daodoc",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.ThongBaoController",
+    "Method": "GetByTenantId",
+    "RelativePath": "api/ThongBao/nguoithue/{userId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.Guid",
+        "IsRequired": true
       }
     ],
     "ReturnTypes": []
@@ -1476,6 +2094,53 @@
   },
   {
     "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.YeuCauHoTroController",
+    "Method": "GetById",
+    "RelativePath": "api/YeuCauHoTro/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.YeuCauHoTroController",
+    "Method": "AdminUpdateStatus",
+    "RelativePath": "api/YeuCauHoTro/admin-status/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "status",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.YeuCauHoTroController",
+    "Method": "GetAll",
+    "RelativePath": "api/YeuCauHoTro/all",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.YeuCauHoTroController",
     "Method": "GetLandlordInbox",
     "RelativePath": "api/YeuCauHoTro/landlord-inbox",
     "HttpMethod": "GET",
@@ -1488,6 +2153,16 @@
     "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.YeuCauHoTroController",
     "Method": "GetMyRequests",
     "RelativePath": "api/YeuCauHoTro/my-requests",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.YeuCauHoTroController",
+    "Method": "GetStatistics",
+    "RelativePath": "api/YeuCauHoTro/statistics",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
@@ -1511,6 +2186,80 @@
         "Name": "status",
         "Type": "System.String",
         "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.YeuThichController",
+    "Method": "GetAll",
+    "RelativePath": "api/YeuThich",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.YeuThichController",
+    "Method": "AddFavorite",
+    "RelativePath": "api/YeuThich",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "RestAPI_QUANLYPHONGTRO.Controllers.AddFavoriteRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.YeuThichController",
+    "Method": "RemoveFavorite",
+    "RelativePath": "api/YeuThich/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.YeuThichController",
+    "Method": "GetByTenantId",
+    "RelativePath": "api/YeuThich/nguoithue/{userId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.YeuThichController",
+    "Method": "ToggleFavorite",
+    "RelativePath": "api/YeuThich/toggle",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "RestAPI_QUANLYPHONGTRO.Controllers.ToggleFavoriteRequest",
+        "IsRequired": true
       }
     ],
     "ReturnTypes": []

@@ -21,50 +21,89 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
         private Guid GetUserId()
         {
             var id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(id)) throw new UnauthorizedAccessException();
             return Guid.Parse(id);
         }
 
-        // 1. Người thuê: Đặt phòng
+        //1. Người thuê: Đặt phòng
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateDatPhongRequest request)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            if (!ModelState.IsValid)
+                return BadRequest(new { Success = false, Errors = ModelState, Message = "Dữ liệu không hợp lệ" });
+
             try
             {
                 var result = await _service.CreateBookingAsync(request, GetUserId());
-                return Ok(result);
+                return Ok(new { Success = true, Data = result, Message = "Đặt lịch xem phòng thành công" });
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message); // Ví dụ lỗi trùng phòng
+                return BadRequest(new { Success = false, Message = ex.Message });
             }
         }
 
-        // 2. Người thuê: Xem lịch sử đặt của mình
+        //2. Người thuê: Xem lịch sử đặt của mình
         [HttpGet("my-bookings")]
         public async Task<IActionResult> GetMyBookings()
         {
-            var result = await _service.GetMyBookingsAsync(GetUserId());
-            return Ok(result);
+            try
+            {
+                var result = await _service.GetMyBookingsAsync(GetUserId());
+                return Ok(new { Success = true, Data = result, Message = "Lấy danh sách lịch hẹn thành công" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Success = false, Message = ex.Message });
+            }
         }
 
-        // 3. Chủ trọ: Xem danh sách người khác đặt phòng mình
+        //2.1 Người thuê: Xem lịch sử đặt của một người thuê cụ thể
+        [HttpGet("nguoithue/{userId}")]
+        public async Task<IActionResult> GetByTenantId(Guid userId)
+        {
+            try
+            {
+                var result = await _service.GetMyBookingsAsync(userId);
+                return Ok(new { Success = true, Data = result, Message = "Lấy danh sách lịch hẹn thành công" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Success = false, Message = ex.Message });
+            }
+        }
+
+        //3. Chủ trọ: Xem danh sách người khác đặt phòng mình
         [HttpGet("landlord-requests")]
         public async Task<IActionResult> GetLandlordRequests()
         {
-            // API này trả về các đơn mà User hiện tại ĐÓNG VAI TRÒ LÀ CHỦ TRỌ
-            var result = await _service.GetRequestsForLandlordAsync(GetUserId());
-            return Ok(result);
+            try
+            {
+                var result = await _service.GetRequestsForLandlordAsync(GetUserId());
+                return Ok(new { Success = true, Data = result, Message = "Lấy danh sách yêu cầu đặt phòng thành công" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Success = false, Message = ex.Message });
+            }
         }
 
-        // 4. Chủ trọ: Duyệt đơn (status = 2) hoặc Từ chối (status = 3)
+        //4. Chủ trọ: Duyệt đơn (status =2) hoặc Từ chối (status =3)
         [HttpPut("status/{id}")]
         public async Task<IActionResult> UpdateStatus(Guid id, [FromQuery] int status)
         {
-            var success = await _service.UpdateStatusAsync(id, status, GetUserId());
-            if (!success) return BadRequest("Không tìm thấy đơn hoặc bạn không phải chủ trọ.");
+            try
+            {
+                var success = await _service.UpdateStatusAsync(id, status, GetUserId());
+                if (!success)
+                    return BadRequest(new { Success = false, Message = "Không tìm thấy đơn hoặc bạn không phải chủ trọ." });
 
-            return Ok(new { message = "Cập nhật trạng thái thành công" });
+                return Ok(new { Success = true, Message = "Cập nhật trạng thái thành công" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Success = false, Message = ex.Message });
+            }
         }
     }
 }

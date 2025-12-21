@@ -1,0 +1,351 @@
+﻿@model List<USER_QUANLYPHONGTRO.Models.ViewModels.KhachThue.TenantNotificationViewModel>
+
+@{
+    ViewBag.Title = "Thông Báo";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    // Tính toán số lượng
+    int totalCount = Model != null ? Model.Count : 0;
+    int unreadCount = Model != null ? Model.Count(x => !x.DaDoc) : 0;
+}
+
+@functions {
+    string GetNotificationIconClass(string loai)
+    {
+        if (string.IsNullOrEmpty(loai)) return "he-thong";
+        switch (loai.ToLower())
+        {
+            case "lichhen": return "lich-hen";
+            case "hoadon": return "hoa-don";
+            case "hopdong": return "hop-dong";
+            default: return "he-thong";
+        }
+    }
+
+    string GetNotificationIcon(string loai)
+    {
+        if (string.IsNullOrEmpty(loai)) return "fa-info-circle";
+        switch (loai.ToLower())
+        {
+            case "lichhen": return "fa-calendar-check";
+            case "hoadon": return "fa-file-invoice-dollar";
+            case "hopdong": return "fa-file-contract";
+            default: return "fa-info-circle";
+        }
+    }
+
+    string GetTimeAgo(DateTime time)
+    {
+        var span = DateTime.Now - time;
+
+        if (span.TotalMinutes < 1)
+            return "Vừa xong";
+        if (span.TotalMinutes < 60)
+            return string.Format("{0} phút trước", (int)span.TotalMinutes);
+        if (span.TotalHours < 24)
+            return string.Format("{0} giờ trước", (int)span.TotalHours);
+        if (span.TotalDays < 7)
+            return string.Format("{0} ngày trước", (int)span.TotalDays);
+
+        return time.ToString("dd/MM/yyyy");
+    }
+
+    string GetDataType(string loai)
+    {
+        if (string.IsNullOrEmpty(loai)) return "";
+        return loai.ToLower();
+    }
+}
+
+@section styles {
+    <style>
+        .notification-page {
+            padding: 30px 0;
+            background: #f5f7fa;
+            min-height: 100vh;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+            .page-header h1 {
+                font-size: 32px;
+                font-weight: 700;
+                margin-bottom: 0;
+            }
+
+        .btn-mark-all {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 2px solid rgba(255,255,255,0.3);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+            .btn-mark-all:hover {
+                background: white;
+                color: #667eea;
+            }
+
+        .notification-list {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .notification-item {
+            padding: 20px 25px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            gap: 15px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+            .notification-item:last-child {
+                border-bottom: none;
+            }
+
+            .notification-item:hover {
+                background: #f7fafc;
+            }
+
+            .notification-item.unread {
+                background: #ebf8ff;
+                border-left: 4px solid #667eea;
+            }
+
+        .notification-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+            .notification-icon.lich-hen {
+                background: rgba(72, 187, 120, 0.15);
+                color: #48bb78;
+            }
+
+            .notification-icon.hoa-don {
+                background: rgba(246, 173, 85, 0.15);
+                color: #f6ad55;
+            }
+
+            .notification-icon.hop-dong {
+                background: rgba(56, 178, 172, 0.15);
+                color: #38b2ac;
+            }
+
+            .notification-icon.he-thong {
+                background: rgba(102, 126, 234, 0.15);
+                color: #667eea;
+            }
+
+        .notification-content {
+            flex: 1;
+        }
+
+        .notification-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 5px;
+        }
+
+        .notification-desc {
+            color: #718096;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 8px;
+        }
+
+        .notification-time {
+            font-size: 12px;
+            color: #a0aec0;
+        }
+
+        .notification-actions {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+        }
+
+        .unread-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #667eea;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+            .empty-state i {
+                font-size: 80px;
+                color: #e2e8f0;
+                margin-bottom: 20px;
+            }
+
+            .empty-state h3 {
+                color: #718096;
+                margin-bottom: 15px;
+            }
+
+        .filter-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-tab {
+            padding: 10px 20px;
+            border-radius: 25px;
+            background: white;
+            color: #718096;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+            border: 2px solid #e2e8f0;
+        }
+
+            .filter-tab:hover,
+            .filter-tab.active {
+                background: #667eea;
+                color: white;
+                border-color: #667eea;
+                text-decoration: none;
+            }
+    </style>
+}
+
+<div class="notification-page">
+    <div class="container">
+        <div class="page-header">
+            <div>
+                <h1><i class="fa fa-bell"></i> Thông Báo</h1>
+                <p style="margin-top: 10px; opacity: 0.9;">Quản lý thông báo của bạn</p>
+            </div>
+            @if (unreadCount > 0)
+            {
+                <button class="btn-mark-all" onclick="markAllAsRead()">
+                    <i class="fa fa-check-double"></i> Đánh dấu tất cả đã đọc
+                </button>
+            }
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="filter-tabs">
+            <a href="#" class="filter-tab active" data-filter="all">Tất cả (@totalCount)</a>
+            <a href="#" class="filter-tab" data-filter="unread">Chưa đọc (@unreadCount)</a>
+            <a href="#" class="filter-tab" data-filter="lich-hen">Lịch hẹn</a>
+            <a href="#" class="filter-tab" data-filter="hoa-don">Hóa đơn</a>
+            <a href="#" class="filter-tab" data-filter="hop-dong">Hợp đồng</a>
+        </div>
+
+        <div class="notification-list">
+            @if (Model != null && Model.Any())
+            {
+                foreach (var item in Model.OrderByDescending(x => x.ThoiGian))
+                {
+                    var iconClass = GetNotificationIconClass(item.LoaiThongBao);
+                    var icon = GetNotificationIcon(item.LoaiThongBao);
+                    var dataType = GetDataType(item.LoaiThongBao);
+                    var itemUrl = item.Url != null ? item.Url : "";
+
+                    <div class="notification-item @(item.DaDoc ? "" : "unread")"
+                         data-type="@dataType"
+                         data-id="@item.Id"
+                         onclick="openNotification('@item.Id', '@itemUrl')">
+                        <div class="notification-icon @iconClass">
+                            <i class="fa @icon"></i>
+                        </div>
+                        <div class="notification-content">
+                            <div class="notification-title">@item.TieuDe</div>
+                            <div class="notification-desc">@item.NoiDung</div>
+                            <div class="notification-time">
+                                <i class="fa fa-clock"></i>
+                                @GetTimeAgo(item.ThoiGian)
+                            </div>
+                        </div>
+                        <div class="notification-actions">
+                            @if (!item.DaDoc)
+                            {
+                                <span class="unread-dot"></span>
+                            }
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="empty-state">
+                    <i class="fa fa-bell-slash"></i>
+                    <h3>Không có thông báo nào</h3>
+                    <p style="color: #718096;">
+                        Các thông báo mới sẽ xuất hiện tại đây
+                    </p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        $(document).ready(function() {
+   $('.filter-tab').click(function(e) {
+                e.preventDefault();
+         var filter = $(this).data('filter');
+
+  $('.filter-tab').removeClass('active');
+   $(this).addClass('active');
+
+     if (filter === 'all') {
+        $('.notification-item').show();
+   } else if (filter === 'unread') {
+           $('.notification-item').hide();
+  $('.notification-item.unread').show();
+        } else {
+      $('.notification-item').hide();
+     $('.notification-item[data-type="' + filter.replace('-', '') + '"]').show();
+         }
+  });
+        });
+
+    function openNotification(id, url) {
+  $.post('@Url.Action("DanhDauDaDoc", "KhachThue")', { id: id });
+
+ if (url && url !== '') {
+       window.location.href = url;
+      }
+        }
+        function markAllAsRead() {
+ $.post('@Url.Action("DanhDauTatCaDaDoc", "KhachThue")', function() {
+   location.reload();
+ });
+        }
+    </script>
+}

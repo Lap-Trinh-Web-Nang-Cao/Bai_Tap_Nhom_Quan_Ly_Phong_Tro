@@ -1,9 +1,7 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-	<Import Project="..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props"
-        Condition="Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" />
-
-	<Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <Import Project="..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props" Condition="Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" />
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -68,7 +66,7 @@
     <Reference Include="System.EnterpriseServices" />
     <Reference Include="Microsoft.Web.Infrastructure, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <Private>True</Private>
-      <HintPath>..\Bai_Tap_Nhom_Quan_Ly_Phong_Tro\packages\Microsoft.Web.Infrastructure.2.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
+      <HintPath>..\packages\Microsoft.Web.Infrastructure.2.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
     </Reference>
     <Reference Include="System.Net.Http">
     </Reference>
@@ -76,91 +74,187 @@
     </Reference>
     <Reference Include="System.Web.Helpers, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <Private>True</Private>
-      <HintPath>..\Bai_Tap_Nhom_Quan_Ly_Phong_Tro\packages\Microsoft.AspNet.WebPages.3.2.9\lib\net45\System.Web.Helpers.dll</HintPath>
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.9\lib\net45\System.Web.Helpers.dll</HintPath>
     </Reference>
     <Reference Include="System.Web.Mvc, Version=5.2.9.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <Private>True</Private>
-      <HintPath>..\Bai_Tap_Nhom_Quan_Ly_Phong_Tro\packages\Microsoft.AspNet.Mvc.5.2.9\lib\net45\System.Web.Mvc.dll</HintPath>
+      <HintPath>..\packages\Microsoft.AspNet.Mvc.5.2.9\lib\net45\System.Web.Mvc.dll</HintPath>
     </Reference>
     <Reference Include="System.Web.Optimization">
-      <HintPath>..\Bai_Tap_Nhom_Quan_Ly_Phong_Tro\packages\Microsoft.AspNet.Web.Optimization.1.1.3\lib\net40\System.Web.Optimization.dll</HintPath>
+      <HintPath>..\packages\Microsoft.AspNet.Web.Optimization.1.1.3\lib\net40\System.Web.Optimization.dll</HintPath>
     </Reference>
     <Reference Include="System.Web.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <Private>True</Private>
-      <HintPath>..\Bai_Tap_Nhom_Quan_Ly_Phong_Tro\packages\Microsoft.AspNet.Razor.3.2.9\lib\net45\System.Web.Razor.dll</HintPath>
+      <HintPath>..\packages\Microsoft.AspNet.Razor.3.2.9\lib\net45\System.Web.Razor.dll</HintPath>
     </Reference>
     <Reference Include="System.Web.WebPages, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <Private>True</Private>
-      <HintPath>..\Bai_Tap_Nhom_Quan_Ly_Phong_Tro\packages\Microsoft.AspNet.WebPages.3.2.9\lib\net45\System.Web.WebPages.dll</HintPath>
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.9\lib\net45\System.Web.WebPages.dll</HintPath>
     </Reference>
     <Reference Include="System.Web.WebPages.Deployment, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <Private>True</Private>
-      <HintPath>..\Bai_Tap_Nhom_Quan_Ly_Phong_Tro\packages\Microsoft.AspNet.WebPages.3.2.9\lib\net45\System.Web.WebPages.Deployment.dll</HintPath>
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.9\lib\net45\System.Web.WebPages.Deployment.dll</HintPath>
     </Reference>
     <Reference Include="System.Web.WebPages.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <Private>True</Private>
-      <HintPath>..\Bai_Tap_Nhom_Quan_Ly_Phong_Tro\packages\Microsoft.AspNet.WebPages.3.2.9\lib\net45\System.Web.WebPages.Razor.dll</HintPath>
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.9\lib\net45\System.Web.WebPages.Razor.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json">
-      <HintPath>..\Bai_Tap_Nhom_Quan_Ly_Phong_Tro\packages\Newtonsoft.Json.13.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.13.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="WebGrease">
       <Private>True</Private>
-      <HintPath>..\Bai_Tap_Nhom_Quan_Ly_Phong_Tro\packages\WebGrease.1.6.0\lib\WebGrease.dll</HintPath>
+      <HintPath>..\packages\WebGrease.1.6.0\lib\WebGrease.dll</HintPath>
     </Reference>
     <Reference Include="Antlr3.Runtime">
       <Private>True</Private>
-      <HintPath>..\Bai_Tap_Nhom_Quan_Ly_Phong_Tro\packages\Antlr.3.5.0.2\lib\Antlr3.Runtime.dll</HintPath>
+      <HintPath>..\packages\Antlr.3.5.0.2\lib\Antlr3.Runtime.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform">
-      <HintPath>..\Bai_Tap_Nhom_Quan_Ly_Phong_Tro\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
+      <HintPath>..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ApiClients\BaseApiClient.cs" />
+    <Compile Include="ApiClients\DashboardApiClient.cs" />
+    <Compile Include="ApiClients\HostApiClient.cs" />
+    <Compile Include="ApiClients\ReportApiClient.cs" />
+    <Compile Include="ApiClients\RoomApiClient.cs" />
+    <Compile Include="ApiClients\SupportApiClient.cs" />
+    <Compile Include="ApiClients\TransactionApiClient.cs" />
+    <Compile Include="ApiClients\UserApiClient.cs" />
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
-    <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\DashboardController.cs" />
+    <Compile Include="Controllers\HostsController.cs" />
+    <Compile Include="Controllers\ReportsController.cs" />
+    <Compile Include="Controllers\RoomsController.cs" />
+    <Compile Include="Controllers\SettingsController.cs" />
+    <Compile Include="Controllers\SupportController.cs" />
+    <Compile Include="Controllers\TransactionsController.cs" />
+    <Compile Include="Controllers\UsersController.cs" />
+    <Compile Include="Global.asax.cs">
+      <DependentUpon>Global.asax</DependentUpon>
+    </Compile>
+    <Compile Include="Models\Common\ApiResponse.cs" />
+    <Compile Include="Models\Common\AppSettings.cs" />
+    <Compile Include="Models\Common\ErrorResponse.cs" />
+    <Compile Include="Models\Common\PagedResult.cs" />
+    <Compile Include="Models\Common\PagingRequest.cs" />
+    <Compile Include="Models\DTO\BaoCaoViPhamDto.cs" />
+    <Compile Include="Models\DTO\BienLaiDto.cs" />
+    <Compile Include="Models\DTO\DashboardDto.cs" />
+    <Compile Include="Models\DTO\DatPhongDto.cs" />
+    <Compile Include="Models\DTO\HoSoNguoiDungDto.cs" />
+    <Compile Include="Models\DTO\NguoiDungDto.cs" />
+    <Compile Include="Models\DTO\PhongDto.cs" />
+    <Compile Include="Models\DTO\TinNhanDto.cs" />
+    <Compile Include="Models\DTO\TokenThongBaoDto.cs" />
+    <Compile Include="Models\DTO\VaiTroDto.cs" />
+    <Compile Include="Models\DTO\YeuCauHoTroDto.cs" />
+    <Compile Include="Models\ViewModels\AdminViewModels.cs" />
+    <Compile Include="Models\ViewModels\DashboardViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\Implementations\DashboardService.cs" />
+    <Compile Include="Services\Implementations\HostService.cs" />
+    <Compile Include="Services\Interfaces\IDashboardService.cs" />
+    <Compile Include="Services\Interfaces\IHostService.cs" />
+    <Compile Include="Services\Interfaces\IReportService.cs" />
+    <Compile Include="Services\Interfaces\IRoomService.cs" />
+    <Compile Include="Services\Interfaces\ISupportService.cs" />
+    <Compile Include="Services\Interfaces\ITransactionService.cs" />
+    <Compile Include="Services\Interfaces\IUserService.cs" />
+    <Compile Include="Services\Implementations\ReportService.cs" />
+    <Compile Include="Services\Implementations\RoomService.cs" />
+    <Compile Include="Services\Implementations\SupportService.cs" />
+    <Compile Include="Services\Implementations\TransactionService.cs" />
+    <Compile Include="Services\Implementations\UserService.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Content\bootstrap-grid.css" />
-    <Content Include="Content\bootstrap-grid.min.css" />
-    <Content Include="Content\bootstrap-grid.rtl.css" />
-    <Content Include="Content\bootstrap-grid.rtl.min.css" />
-    <Content Include="Content\bootstrap-reboot.css" />
-    <Content Include="Content\bootstrap-reboot.min.css" />
-    <Content Include="Content\bootstrap-reboot.rtl.css" />
-    <Content Include="Content\bootstrap-reboot.rtl.min.css" />
-    <Content Include="Content\bootstrap-utilities.css" />
-    <Content Include="Content\bootstrap-utilities.min.css" />
-    <Content Include="Content\bootstrap-utilities.rtl.css" />
-    <Content Include="Content\bootstrap-utilities.rtl.min.css" />
-    <Content Include="Content\bootstrap.css" />
-    <Content Include="Content\bootstrap.min.css" />
-    <Content Include="Content\bootstrap.rtl.css" />
-    <Content Include="Content\bootstrap.rtl.min.css" />
+    <Content Include="Content\css\atlantis.css" />
+    <Content Include="Content\css\atlantis.min.css" />
+    <Content Include="Content\css\bootstrap.min.css" />
+    <Content Include="Content\css\custom-admin.css" />
+    <Content Include="Content\css\demo.css" />
+    <Content Include="Content\css\fonts.css" />
+    <Content Include="Content\css\fonts.min.css" />
+    <Content Include="Content\css\pages\hosts.css" />
+    <Content Include="Content\css\pages\rooms.css" />
+    <Content Include="Content\css\pages\users.css" />
+    <Content Include="Content\css\pages\reports.css" />
+    <Content Include="Content\css\pages\support.css" />
+    <Content Include="Content\fonts\flaticon\flaticon.css" />
+    <Content Include="Content\fonts\flaticon\flaticon.html" />
+    <Content Include="Content\fonts\flaticon\Flaticon.svg" />
+    <Content Include="Content\fonts\fontawesome\fa-brands-400.svg" />
+    <Content Include="Content\fonts\fontawesome\fa-regular-400.svg" />
+    <Content Include="Content\fonts\fontawesome\fa-solid-900.svg" />
+    <Content Include="Content\fonts\simple-line-icons\Simple-Line-Icons.svg" />
+    <Content Include="Content\img\avatar-admin.png" />
+    <Content Include="Content\img\avatar-default.png" />
+    <Content Include="Content\img\logo.ico" />
+    <Content Include="Content\img\logo.png" />
+    <Content Include="Content\img\logo.svg" />
     <Content Include="favicon.ico" />
-    <Content Include="Content\Site.css" />
-    <Content Include="Scripts\bootstrap.bundle.js" />
-    <Content Include="Scripts\bootstrap.bundle.min.js" />
-    <Content Include="Scripts\bootstrap.esm.js" />
-    <Content Include="Scripts\bootstrap.esm.min.js" />
-    <Content Include="Scripts\bootstrap.js" />
-    <Content Include="Scripts\bootstrap.min.js" />
-    <None Include="Scripts\jquery-3.7.0.intellisense.js" />
-    <Content Include="Scripts\jquery-3.7.0.js" />
-    <Content Include="Scripts\jquery-3.7.0.min.js" />
-    <Content Include="Scripts\jquery-3.7.0.slim.js" />
-    <Content Include="Scripts\jquery-3.7.0.slim.min.js" />
-    <None Include="Scripts\jquery.validate-vsdoc.js" />
-    <Content Include="Scripts\jquery.validate.js" />
-    <Content Include="Scripts\jquery.validate.min.js" />
-    <Content Include="Scripts\jquery.validate.unobtrusive.js" />
-    <Content Include="Scripts\jquery.validate.unobtrusive.min.js" />
-    <Content Include="Scripts\modernizr-2.8.3.js" />
+    <Content Include="Global.asax" />
+    <Content Include="Scripts\atlantis.js" />
+    <Content Include="Scripts\atlantis.min.js" />
+    <Content Include="Scripts\atlantis2.js" />
+    <Content Include="Scripts\core\bootstrap.min.js" />
+    <Content Include="Scripts\core\jquery.3.2.1.min.js" />
+    <Content Include="Scripts\core\popper.min.js" />
+    <Content Include="Scripts\custom-admin.js" />
+    <Content Include="Scripts\demo.js" />
+    <Content Include="Scripts\pages\hosts.js" />
+    <Content Include="Scripts\pages\reports.js" />
+    <Content Include="Scripts\pages\rooms.js" />
+    <Content Include="Scripts\pages\support.js" />
+    <Content Include="Scripts\pages\users.js" />
+    <Content Include="Scripts\plugin\bootstrap-notify\bootstrap-notify.min.js" />
+    <Content Include="Scripts\plugin\chart-circle\circles.min.js" />
+    <Content Include="Scripts\plugin\chart.js\chart.min.js" />
+    <Content Include="Scripts\plugin\datatables\datatables.min.js" />
+    <Content Include="Scripts\plugin\jquery-scrollbar\jquery.scrollbar.min.js" />
+    <Content Include="Scripts\plugin\jquery-ui-1.12.1.custom\jquery-ui.min.js" />
+    <Content Include="Scripts\plugin\jquery-ui-touch-punch\jquery.ui.touch-punch.min.js" />
+    <Content Include="Scripts\plugin\jquery.sparkline\jquery.sparkline.min.js" />
+    <Content Include="Scripts\plugin\jqvmap\jquery.vmap.min.js" />
+    <Content Include="Scripts\plugin\jqvmap\maps\continents\jquery.vmap.africa.js" />
+    <Content Include="Scripts\plugin\jqvmap\maps\continents\jquery.vmap.asia.js" />
+    <Content Include="Scripts\plugin\jqvmap\maps\continents\jquery.vmap.australia.js" />
+    <Content Include="Scripts\plugin\jqvmap\maps\continents\jquery.vmap.europe.js" />
+    <Content Include="Scripts\plugin\jqvmap\maps\continents\jquery.vmap.north-america.js" />
+    <Content Include="Scripts\plugin\jqvmap\maps\continents\jquery.vmap.south-america.js" />
+    <Content Include="Scripts\plugin\jqvmap\maps\jquery.vmap.algeria.js" />
+    <Content Include="Scripts\plugin\jqvmap\maps\jquery.vmap.argentina.js" />
+    <Content Include="Scripts\plugin\jqvmap\maps\jquery.vmap.brazil.js" />
+    <Content Include="Scripts\plugin\jqvmap\maps\jquery.vmap.canada.js" />
+    <Content Include="Scripts\plugin\jqvmap\maps\jquery.vmap.croatia.js" />
+    <Content Include="Scripts\plugin\jqvmap\maps\jquery.vmap.europe.js" />
+    <Content Include="Scripts\plugin\jqvmap\maps\jquery.vmap.france.js" />
+    <Content Include="Scripts\plugin\jqvmap\maps\jquery.vmap.germany.js" />
+    <Content Include="Scripts\plugin\jqvmap\maps\jquery.vmap.greece.js" />
+    <Content Include="Scripts\plugin\jqvmap\maps\jquery.vmap.indonesia.js" />
+    <Content Include="Scripts\plugin\jqvmap\maps\jquery.vmap.iran.js" />
+    <Content Include="Scripts\plugin\jqvmap\maps\jquery.vmap.iraq.js" />
+    <Content Include="Scripts\plugin\jqvmap\maps\jquery.vmap.new_regions_france.js" />
+    <Content Include="Scripts\plugin\jqvmap\maps\jquery.vmap.russia.js" />
+    <Content Include="Scripts\plugin\jqvmap\maps\jquery.vmap.serbia.js" />
+    <Content Include="Scripts\plugin\jqvmap\maps\jquery.vmap.tunisia.js" />
+    <Content Include="Scripts\plugin\jqvmap\maps\jquery.vmap.turkey.js" />
+    <Content Include="Scripts\plugin\jqvmap\maps\jquery.vmap.ukraine.js" />
+    <Content Include="Scripts\plugin\jqvmap\maps\jquery.vmap.usa.counties.js" />
+    <Content Include="Scripts\plugin\jqvmap\maps\jquery.vmap.usa.districts.js" />
+    <Content Include="Scripts\plugin\jqvmap\maps\jquery.vmap.usa.js" />
+    <Content Include="Scripts\plugin\jqvmap\maps\jquery.vmap.world.js" />
+    <Content Include="Scripts\plugin\sweetalert\sweetalert.min.js" />
+    <Content Include="Scripts\plugin\webfont\webfont.min.js" />
+    <Content Include="Scripts\setting-demo.js" />
+    <Content Include="Scripts\setting-demo2.js" />
+    <Content Include="Scripts\sidebar-statistics.js" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
@@ -170,42 +264,59 @@
     </Content>
     <Content Include="Views\Web.config" />
     <Content Include="Views\_ViewStart.cshtml" />
-    <Content Include="Views\Shared\Error.cshtml" />
-    <Content Include="Views\Shared\_Layout.cshtml" />
-    <Content Include="Views\Home\About.cshtml" />
-    <Content Include="Views\Home\Contact.cshtml" />
-    <Content Include="Views\Home\Index.cshtml" />
+    <Content Include="Views\Shared\_LayoutAdmin.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="App_Data\" />
-    <Folder Include="Models\" />
+    <Folder Include="Content\vendor\" />
+    <Folder Include="Models\Enums\" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Content\bootstrap.rtl.min.css.map" />
-    <Content Include="Content\bootstrap.rtl.css.map" />
-    <Content Include="Content\bootstrap.min.css.map" />
-    <Content Include="Content\bootstrap.css.map" />
-    <Content Include="Content\bootstrap-utilities.rtl.min.css.map" />
-    <Content Include="Content\bootstrap-utilities.rtl.css.map" />
-    <Content Include="Content\bootstrap-utilities.min.css.map" />
-    <Content Include="Content\bootstrap-utilities.css.map" />
-    <Content Include="Content\bootstrap-reboot.rtl.min.css.map" />
-    <Content Include="Content\bootstrap-reboot.rtl.css.map" />
-    <Content Include="Content\bootstrap-reboot.min.css.map" />
-    <Content Include="Content\bootstrap-reboot.css.map" />
-    <Content Include="Content\bootstrap-grid.rtl.min.css.map" />
-    <Content Include="Content\bootstrap-grid.rtl.css.map" />
-    <Content Include="Content\bootstrap-grid.min.css.map" />
-    <Content Include="Content\bootstrap-grid.css.map" />
+    <Content Include="Note\CauTruc.md" />
+    <Content Include="Content\css\atlantis.css.map" />
+    <Content Include="Content\fonts\flaticon\Flaticon.eot" />
+    <Content Include="Content\fonts\flaticon\Flaticon.ttf" />
+    <Content Include="Content\fonts\flaticon\Flaticon.woff" />
+    <Content Include="Content\fonts\flaticon\_flaticon.scss" />
+    <Content Include="Content\fonts\fontawesome\fa-brands-400.eot" />
+    <Content Include="Content\fonts\fontawesome\fa-brands-400.ttf" />
+    <Content Include="Content\fonts\fontawesome\fa-brands-400.woff" />
+    <Content Include="Content\fonts\fontawesome\fa-brands-400.woff2" />
+    <Content Include="Content\fonts\fontawesome\fa-regular-400.eot" />
+    <Content Include="Content\fonts\fontawesome\fa-regular-400.ttf" />
+    <Content Include="Content\fonts\fontawesome\fa-regular-400.woff" />
+    <Content Include="Content\fonts\fontawesome\fa-regular-400.woff2" />
+    <Content Include="Content\fonts\fontawesome\fa-solid-900.eot" />
+    <Content Include="Content\fonts\fontawesome\fa-solid-900.ttf" />
+    <Content Include="Content\fonts\fontawesome\fa-solid-900.woff" />
+    <Content Include="Content\fonts\fontawesome\fa-solid-900.woff2" />
+    <Content Include="Content\fonts\simple-line-icons\Simple-Line-Icons.eot" />
+    <Content Include="Content\fonts\simple-line-icons\Simple-Line-Icons.ttf" />
+    <Content Include="Content\fonts\simple-line-icons\Simple-Line-Icons.woff" />
+    <Content Include="Content\fonts\simple-line-icons\Simple-Line-Icons.woff2" />
+    <Content Include="Content\fonts\summernote\summernote.eot" />
+    <Content Include="Content\fonts\summernote\summernote.ttf" />
+    <Content Include="Content\fonts\summernote\summernote.woff" />
     <None Include="packages.config" />
-    <Content Include="Scripts\bootstrap.min.js.map" />
-    <Content Include="Scripts\bootstrap.js.map" />
-    <Content Include="Scripts\bootstrap.esm.min.js.map" />
-    <Content Include="Scripts\bootstrap.esm.js.map" />
-    <Content Include="Scripts\bootstrap.bundle.min.js.map" />
-    <Content Include="Scripts\bootstrap.bundle.js.map" />
-    <Content Include="Scripts\jquery-3.7.0.slim.min.map" />
-    <Content Include="Scripts\jquery-3.7.0.min.map" />
+    <Content Include="Views\Shared\_Sidebar.cshtml" />
+    <Content Include="Views\Shared\_Scripts.cshtml" />
+    <Content Include="Views\Dashboard\Index.cshtml" />
+    <Content Include="Views\Users\Index.cshtml" />
+    <Content Include="Views\Hosts\Pending.cshtml" />
+    <Content Include="Views\Hosts\Detail.cshtml" />
+    <Content Include="Views\Rooms\Pending.cshtml" />
+    <Content Include="Views\Rooms\List.cshtml" />
+    <Content Include="Views\Rooms\Detail.cshtml" />
+    <Content Include="Views\Reports\Index.cshtml" />
+    <Content Include="Views\Reports\Detail.cshtml" />
+    <Content Include="Views\Support\Detail.cshtml" />
+    <Content Include="Views\Support\Index.cshtml" />
+    <Content Include="Views\Transactions\Detail.cshtml" />
+    <Content Include="Views\Transactions\Index.cshtml" />
+    <Content Include="Views\Settings\Index.cshtml" />
+    <Content Include="Views\Shared\_ThemeSettings.cshtml" />
+    <Content Include="Views\Shared\_Navbar.cshtml" />
+    <Content Include="Views\Shared\_SettingsPanel.cshtml" />
+    <Content Include="Views\Users\Detail.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
@@ -239,7 +350,7 @@
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\Bai_Tap_Nhom_Quan_Ly_Phong_Tro\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" Text="$([System.String]::Format('$(ErrorText)', '..\Bai_Tap_Nhom_Quan_Ly_Phong_Tro\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props'))" />
   </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.

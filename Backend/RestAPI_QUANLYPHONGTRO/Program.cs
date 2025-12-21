@@ -12,17 +12,23 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Cấu hình JSON Reference Loop: Các bảng của bạn có quan hệ vòng tròn (VD: NhaTro->ChuTro->NhaTro). Khi API trả về dữ liệu sẽ bị lỗi "Cycle detected".
+// Cấu hình JSON Reference Loop
 builder.Services.AddControllers().AddJsonOptions(x =>
-{
-    x.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
-    x.JsonSerializerOptions.PropertyNamingPolicy = null; // Dùng PascalCase thay vì camelCase
-});
+    x.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles);
 
+// ===== BẬT CORS =====
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAdminClient", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
 
 // 1. Đăng ký DbContext
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -32,11 +38,13 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddScoped<IBaoCaoViPhamService, BaoCaoViPhamService>();
 builder.Services.AddScoped<IBienLaiService, BienLaiService>();
 builder.Services.AddScoped<IChuTroThongTinPhapLyService, ChuTroThongTinPhapLyService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<INguoiDungService, NguoiDungService>();
 builder.Services.AddScoped<IDanhGiaPhongService, DanhGiaPhongService>();
 builder.Services.AddScoped<IDatPhongService, DatPhongService>();
 builder.Services.AddScoped<IHanhDongAdminService, HanhDongAdminService>();
 builder.Services.AddScoped<IHoSoNguoiDungService, HoSoNguoiDungService>();
+builder.Services.AddScoped<IHostService, HostService>();
 builder.Services.AddScoped<ILichSuService, LichSuService>();
 builder.Services.AddScoped<ILoaiHoTroService, LoaiHoTroService>();
 builder.Services.AddScoped<IVaiTroService, VaiTroService>();
@@ -73,26 +81,31 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-
 var app = builder.Build();
 
-// 4. Bật 2 middleware này theo ĐÚNG THỨ TỰ (trước MapControllers)
-app.UseAuthentication(); // Xác định danh tính (Bạn là ai?)
-app.UseAuthorization();  // Xác định quyền hạn (Bạn được làm gì?)
+// Middleware order matters!
+app.UseAuthentication();
+app.UseAuthorization();
+app.UseCors("AllowAdminClient");
 
-// Configure the HTTP request pipeline.
+// Development only
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    // ⚠️ In development, we'll skip HTTPS redirect to avoid SSL issues
+    System.Diagnostics.Debug.WriteLine("🔧 Running in Development mode - HTTPS redirect disabled");
+}
+else
+{
+    // Production: enable HTTPS redirect
+    app.UseHttpsRedirection();
 }
 
 app.UseStaticFiles();
-
-app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
 app.MapControllers();
+
+System.Diagnostics.Debug.WriteLine("✅ API Server started successfully");
+System.Diagnostics.Debug.WriteLine($"🌐 Environment: {app.Environment.EnvironmentName}");
 
 app.Run();

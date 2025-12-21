@@ -1,25 +1,25 @@
-@{
+﻿@{
     ViewBag.Title = "Đặt Lịch Xem Phòng";
     Layout = "~/Views/Shared/_Layout.cshtml";
     var roomId = ViewBag.RoomId;
 }
 
 @section styles {
-    <style>
-        .booking-page {
-            padding: 30px 0;
-            background: #f5f7fa;
-            min-height: 100vh;
-        }
+<style>
+    .booking-page {
+        padding: 30px 0;
+        background: #f5f7fa;
+        min-height: 100vh;
+    }
 
-        .page-header {
-            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
-            color: white;
-            padding: 50px 30px;
-            border-radius: 15px;
-            margin-bottom: 40px;
-            text-align: center;
-        }
+    .page-header {
+        background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+        color: white;
+        padding: 50px 30px;
+        border-radius: 15px;
+        margin-bottom: 40px;
+        text-align: center;
+    }
 
         .page-header h1 {
             font-size: 36px;
@@ -27,18 +27,18 @@
             margin-bottom: 15px;
         }
 
-        .booking-form-container {
-            background: white;
-            border-radius: 15px;
-            padding: 40px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
-            max-width: 700px;
-            margin: 0 auto;
-        }
+    .booking-form-container {
+        background: white;
+        border-radius: 15px;
+        padding: 40px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        max-width: 700px;
+        margin: 0 auto;
+    }
 
-        .form-group {
-            margin-bottom: 25px;
-        }
+    .form-group {
+        margin-bottom: 25px;
+    }
 
         .form-group label {
             display: block;
@@ -48,10 +48,10 @@
             font-size: 15px;
         }
 
-        .form-group label i {
-            color: #48bb78;
-            margin-right: 8px;
-        }
+            .form-group label i {
+                color: #48bb78;
+                margin-right: 8px;
+            }
 
         .form-group input,
         .form-group textarea,
@@ -64,32 +64,32 @@
             transition: all 0.3s;
         }
 
-        .form-group input:focus,
-        .form-group textarea:focus,
-        .form-group select:focus {
-            border-color: #48bb78;
-            outline: none;
-            box-shadow: 0 0 0 4px rgba(72, 187, 120, 0.1);
-        }
+            .form-group input:focus,
+            .form-group textarea:focus,
+            .form-group select:focus {
+                border-color: #48bb78;
+                outline: none;
+                box-shadow: 0 0 0 4px rgba(72, 187, 120, 0.1);
+            }
 
         .form-group textarea {
             min-height: 100px;
             resize: vertical;
         }
 
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
 
-        .info-box {
-            background: #e6fffa;
-            border-left: 5px solid #48bb78;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-        }
+    .info-box {
+        background: #e6fffa;
+        border-left: 5px solid #48bb78;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+    }
 
         .info-box h4 {
             color: #2d3748;
@@ -108,49 +108,49 @@
             color: #2d3748;
         }
 
-        .info-box li i {
-            color: #48bb78;
-            margin-right: 10px;
-        }
+            .info-box li i {
+                color: #48bb78;
+                margin-right: 10px;
+            }
 
-        .btn-submit {
-            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
-            color: white;
-            padding: 16px 40px;
-            border: none;
-            border-radius: 10px;
-            font-size: 18px;
-            font-weight: 700;
-            cursor: pointer;
-            width: 100%;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
+    .btn-submit {
+        background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+        color: white;
+        padding: 16px 40px;
+        border: none;
+        border-radius: 10px;
+        font-size: 18px;
+        font-weight: 700;
+        cursor: pointer;
+        width: 100%;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
 
         .btn-submit:hover {
             transform: translateY(-3px);
             box-shadow: 0 10px 25px rgba(72, 187, 120, 0.3);
         }
 
-        .btn-cancel {
-            background: white;
-            color: #718096;
-            padding: 16px 40px;
-            border: 2px solid #e2e8f0;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 15px;
-            transition: all 0.3s;
-            text-decoration: none;
-            display: block;
-            text-align: center;
-        }
+    .btn-cancel {
+        background: white;
+        color: #718096;
+        padding: 16px 40px;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        width: 100%;
+        margin-top: 15px;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: block;
+        text-align: center;
+    }
 
         .btn-cancel:hover {
             border-color: #cbd5e0;
@@ -158,11 +158,11 @@
             text-decoration: none;
         }
 
-        .required {
-            color: #e74c3c;
-            margin-left: 3px;
-        }
-    </style>
+    .required {
+        color: #e74c3c;
+        margin-left: 3px;
+    }
+</style>
 }
 
 <div class="booking-page">
@@ -184,7 +184,7 @@
                 </ul>
             </div>
 
-            <form method="post" action="@Url.Action("DatPhong", "KhachThue")">
+            <form method="post" action="@Url.Action(" DatPhong", "KhachThue" )">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="roomId" value="@roomId" />
 
@@ -220,7 +220,7 @@
                             <i class="fa fa-calendar-alt"></i>
                             Ngày xem phòng <span class="required">*</span>
                         </label>
-                        <input type="date" name="ngayXem" required min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                        <input type="date" name="ngayXem" required min="@DateTime.Now.ToString(" yyyy-MM-dd")" />
                     </div>
 
                     <div class="form-group">
@@ -255,7 +255,7 @@
                     Xác Nhận Đặt Lịch
                 </button>
 
-                <a href="@Url.Action("DanhSachPhong", "KhachThue")" class="btn-cancel">
+                <a href="@Url.Action(" DanhSachPhong", "KhachThue" )" class="btn-cancel">
                     <i class="fa fa-times"></i> Hủy
                 </a>
             </form>
@@ -264,11 +264,11 @@
 </div>
 
 @section scripts {
-    <script>
-        // Auto fill user info if available
-        document.addEventListener('DOMContentLoaded', function() {
-            // You can pre-fill form with user data from session here
-            console.log('Booking form ready');
-        });
-    </script>
+<script>
+    // Auto fill user info if available
+    document.addEventListener('DOMContentLoaded', function () {
+        // You can pre-fill form with user data from session here
+        console.log('Booking form ready');
+    });
+</script>
 }

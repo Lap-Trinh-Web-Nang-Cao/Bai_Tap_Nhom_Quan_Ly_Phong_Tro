@@ -14,4 +14,13 @@ namespace USER_QUANLYPHONGTRO.Models.ViewModels.KhachThue
         public string DiaChiPhong { get; set; }
         public string TenChuTro { get; set; }
     }
+    public class TenantScheduleViewModel
+    {
+        public string TieuDePhong { get; set; }
+        public string DiaChi { get; set; }
+        public string TrangThai { get; set; }
+        public DateTime ThoiGianHen { get; set; }
+        public string SdtChuTro { get; set; }
+        public string GhiChu { get; set; }
+    }
 }

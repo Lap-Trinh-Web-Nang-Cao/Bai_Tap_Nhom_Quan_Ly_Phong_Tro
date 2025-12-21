@@ -25,7 +25,7 @@ namespace USER_QUANLYPHONGTRO.Services
             // Fallback to default if not configured
             if (string.IsNullOrWhiteSpace(_baseUrl))
             {
-                _baseUrl = "http://localhost:5101"; // Default backend API URL
+                _baseUrl = "https://localhost:7039"; // Backend API URL (sửa từ 5101)
             }
         }
 

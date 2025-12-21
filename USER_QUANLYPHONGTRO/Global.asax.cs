@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Text;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.Optimization;
@@ -16,6 +15,14 @@ namespace USER_QUANLYPHONGTRO
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
+        }
+
+        protected void Application_BeginRequest(object sender, EventArgs e)
+        {
+            // Force UTF-8 for every response
+            Response.ContentEncoding = Encoding.UTF8;
+            Response.HeaderEncoding = Encoding.UTF8;
+            Response.Charset = "utf-8";
         }
     }
 }

@@ -1,0 +1,341 @@
+﻿@{
+    ViewBag.Title = "Tin Nh?n";
+  Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section styles {
+<style>
+    .message-page {
+        padding: 30px 0;
+        background: #f5f7fa;
+        min-height: 100vh;
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 40px 30px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+    }
+
+        .page-header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+    .message-container {
+        display: flex;
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        height: 600px;
+    }
+
+    .conversation-list {
+        width: 350px;
+        border-right: 1px solid #e2e8f0;
+        overflow-y: auto;
+    }
+
+    .conversation-header {
+        padding: 20px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+        .conversation-header h3 {
+            font-size: 18px;
+            color: #2d3748;
+            margin: 0;
+        }
+
+    .conversation-item {
+        padding: 15px 20px;
+        border-bottom: 1px solid #f0f0f0;
+        display: flex;
+        gap: 15px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+        .conversation-item:hover,
+        .conversation-item.active {
+            background: #f7fafc;
+        }
+
+        .conversation-item.unread {
+            background: #ebf8ff;
+        }
+
+    .conversation-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        object-fit: cover;
+        flex-shrink: 0;
+    }
+
+    .conversation-info {
+        flex: 1;
+        overflow: hidden;
+    }
+
+    .conversation-name {
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 5px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .conversation-preview {
+        font-size: 13px;
+        color: #718096;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .conversation-time {
+        font-size: 11px;
+        color: #a0aec0;
+        white-space: nowrap;
+    }
+
+    .chat-area {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .chat-header {
+        padding: 20px;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+        .chat-header img {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+        }
+
+    .chat-header-info h4 {
+        margin: 0;
+        color: #2d3748;
+    }
+
+    .chat-header-info span {
+        font-size: 13px;
+        color: #48bb78;
+    }
+
+    .chat-messages {
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .message {
+        max-width: 70%;
+        padding: 12px 18px;
+        border-radius: 18px;
+        word-wrap: break-word;
+    }
+
+        .message.received {
+            align-self: flex-start;
+            background: #f0f0f0;
+            color: #2d3748;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message.sent {
+            align-self: flex-end;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+    .message-time {
+        font-size: 11px;
+        opacity: 0.7;
+        margin-top: 5px;
+    }
+
+    .chat-input {
+        padding: 20px;
+        border-top: 1px solid #e2e8f0;
+        display: flex;
+        gap: 15px;
+    }
+
+        .chat-input input {
+            flex: 1;
+            padding: 12px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 25px;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+            .chat-input input:focus {
+                border-color: #667eea;
+            }
+
+    .btn-send {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        font-size: 18px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+        .btn-send:hover {
+            transform: scale(1.05);
+        }
+
+    .empty-chat {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: #a0aec0;
+    }
+
+        .empty-chat i {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+
+    .no-conversation {
+        text-align: center;
+        padding: 50px 20px;
+        color: #a0aec0;
+    }
+
+        .no-conversation i {
+            font-size: 60px;
+            margin-bottom: 15px;
+        }
+</style>
+}
+
+<div class="message-page">
+    <div class="container">
+        <div class="page-header">
+            <h1><i class="fa fa-comments"></i> Tin Nh?n</h1>
+            <p>Liên h? v?i ch? tr?</p>
+        </div>
+
+        <div class="message-container">
+            <!-- Danh sách cu?c tr? chuy?n -->
+            <div class="conversation-list">
+                <div class="conversation-header">
+                    <h3>Cu?c tr? chuy?n</h3>
+                </div>
+
+                <div class="no-conversation">
+                    <i class="fa fa-inbox"></i>
+                    <p>Chưa có tin nh?n nào</p>
+                    <p style="font-size: 13px;">Khi b?n liên h? v?i ch? tr?, cu?c tr? chuy?n s? xu?t hi?n ? đây</p>
+                </div>
+
+                <!-- Ví d? conversation item (s? đư?c load t? API) -->
+                <!--
+                 <div class="conversation-item unread active">
+                   <img src="/images/default-avatar.png" class="conversation-avatar" alt="Avatar" />
+                         <div class="conversation-info">
+                 <div class="conversation-name">Nguy?n Văn A</div>
+                <div class="conversation-preview">Xin chào, ph?ng c?n không ??</div>
+                    </div>
+                     <div class="conversation-time">10:30</div>
+                    </div>
+                 -->
+            </div>
+
+            <!-- Khu v?c chat -->
+            <div class="chat-area">
+                <div class="empty-chat">
+                    <i class="fa fa-comments"></i>
+                    <h3>Ch?n m?t cu?c tr? chuy?n</h3>
+                    <p>Ho?c b?t đ?u cu?c tr? chuy?n m?i t? trang chi ti?t ph?ng</p>
+                </div>
+
+                <!-- Chat content (?n khi chưa ch?n conversation) -->
+                <!--
+                <div class="chat-header">
+                  <img src="/images/default-avatar.png" alt="Avatar" />
+                     <div class="chat-header-info">
+                  <h4>Nguy?n Văn A</h4>
+                   <span>Đang ho?t đ?ng</span>
+                        </div>
+                         </div>
+
+                 <div class="chat-messages">
+                     <div class="message received">
+                        Xin chào, ph?ng c?n không ??
+                 <div class="message-time">10:30</div>
+                   </div>
+                        <div class="message sent">
+                     Chào b?n, ph?ng v?n c?n nhé!
+                     <div class="message-time">10:32</div>
+                      </div>
+                       </div>
+
+                 <div class="chat-input">
+                    <input type="text" placeholder="Nh?p tin nh?n..." />
+                        <button class="btn-send">
+                   <i class="fa fa-paper-plane"></i>
+                 </button>
+                       </div>
+                    -->
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+<script>
+    // TODO: Implement real-time chat with SignalR
+    $(document).ready(function () {
+        // Click conversation item
+        $('.conversation-item').click(function () {
+            $('.conversation-item').removeClass('active');
+            $(this).addClass('active');
+            // Load messages for this conversation
+        });
+
+        // Send message
+        $('.btn-send').click(function () {
+            var input = $('.chat-input input');
+            var message = input.val().trim();
+            if (message) {
+                // TODO: Send message via API/SignalR
+                input.val('');
+            }
+        });
+
+        // Enter to send
+        $('.chat-input input').keypress(function (e) {
+            if (e.which === 13) {
+                $('.btn-send').click();
+            }
+        });
+    });
+</script>
+}

@@ -13,6 +13,12 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Interfaces
             int pageIndex,
             int pageSize);
 
+        // Admin: Lấy danh sách phòng chờ duyệt (phân trang)
+        Task<(IEnumerable<Phong> Data, int TotalCount)> GetPendingRoomsAsync(
+            int pageIndex,
+            int pageSize,
+            string keyword = "");
+
         // Public: Xem chi tiết
         Task<Phong?> GetByIdAsync(Guid id);
 

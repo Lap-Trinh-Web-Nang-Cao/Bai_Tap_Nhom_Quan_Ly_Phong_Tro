@@ -1,0 +1,435 @@
+﻿@model List<ADMIN_QUANLYPHONGTRO.Models.DTO.BaoCaoViPhamDto>
+@{
+    ViewBag.Title = "Báo cáo vi phạm";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    var statistics = ViewBag.Statistics as ADMIN_QUANLYPHONGTRO.Services.Interfaces.ReportStatistics ?? new ADMIN_QUANLYPHONGTRO.Services.Interfaces.ReportStatistics();
+    var violationTypes = ViewBag.ViolationTypes as List<ADMIN_QUANLYPHONGTRO.Models.DTO.ViPhamDto> ?? new List<ADMIN_QUANLYPHONGTRO.Models.DTO.ViPhamDto>();
+}
+
+@section styles {
+    <link rel="stylesheet" href="~/Content/css/pages/reports.css?v=@DateTime.Now.Ticks" />
+}
+
+<!-- Page Header -->
+<div class="page-header">
+    <h4 class="page-title">Báo cáo vi phạm</h4>
+    <ul class="breadcrumbs">
+        <li class="nav-home">
+            <a href="@Url.Action("Index", "Dashboard")">
+                <i class="flaticon-home"></i>
+            </a>
+        </li>
+        <li class="separator">
+            <i class="flaticon-right-arrow"></i>
+        </li>
+        <li class="nav-item">
+            <a href="#">Hỗ trợ & Báo cáo</a>
+        </li>
+        <li class="separator">
+            <i class="flaticon-right-arrow"></i>
+        </li>
+        <li class="nav-item">
+            <a href="#">Báo cáo vi phạm</a>
+        </li>
+    </ul>
+</div>
+
+@if (!string.IsNullOrEmpty(ViewBag.Error as string))
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong><i class="fas fa-exclamation-triangle"></i> Lỗi!</strong> @ViewBag.Error
+        @if (!string.IsNullOrEmpty(ViewBag.ErrorDetails as string))
+        {
+            <br /><small>Chi tiết: @ViewBag.ErrorDetails</small>
+        }
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+}
+
+<!-- Stats Cards -->
+<div class="row">
+    <div class="col-sm-6 col-md-3">
+        <div class="card card-stats card-round">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-icon">
+                        <div class="icon-big text-center icon-primary bubble-shadow-small">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                    </div>
+                    <div class="col col-stats ml-3 ml-sm-0">
+                        <div class="numbers">
+                            <p class="card-category">Tổng báo cáo</p>
+                            <h4 class="card-title">@(Model != null ? Model.Count : 0)</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-md-3">
+        <div class="card card-stats card-round">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-icon">
+                        <div class="icon-big text-center icon-warning bubble-shadow-small">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                    </div>
+                    <div class="col col-stats ml-3 ml-sm-0">
+                        <div class="numbers">
+                            <p class="card-category">Chờ xử lý</p>
+                            <h4 class="card-title">@(Model != null ? Model.Count(r => r.TrangThai == "CHO_XU_LY") : 0)</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-md-3">
+        <div class="card card-stats card-round">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-icon">
+                        <div class="icon-big text-center icon-success bubble-shadow-small">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                    <div class="col col-stats ml-3 ml-sm-0">
+                        <div class="numbers">
+                            <p class="card-category">Đã xử lý</p>
+                            <h4 class="card-title">@(Model != null ? Model.Count(r => r.TrangThai == "DA_XU_LY") : 0)</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-md-3">
+        <div class="card card-stats card-round">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-icon">
+                        <div class="icon-big text-center icon-danger bubble-shadow-small">
+                            <i class="fas fa-times-circle"></i>
+                        </div>
+                    </div>
+                    <div class="col col-stats ml-3 ml-sm-0">
+                        <div class="numbers">
+                            <p class="card-category">Từ chối</p>
+                            <h4 class="card-title">@(Model != null ? Model.Count(r => r.TrangThai == "TU_CHOI") : 0)</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-head-row">
+                    <div class="card-title">Danh sách báo cáo vi phạm</div>
+                    <div class="card-tools">
+                        <button class="btn btn-info btn-border btn-round btn-sm mr-2" onclick="exportReports()">
+                            <span class="btn-label">
+                                <i class="fa fa-download"></i>
+                            </span>
+                            Export
+                        </button>
+                        <button class="btn btn-primary btn-border btn-round btn-sm" onclick="refreshTable()">
+                            <span class="btn-label">
+                                <i class="fa fa-sync-alt"></i>
+                            </span>
+                            Làm mới
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- Filters -->
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Lọc theo trạng thái</label>
+                            <select class="form-control" id="statusFilter">
+                                <option value="">Tất cả trạng thái</option>
+                                <option value="CHO_XU_LY">Chờ xử lý</option>
+                                <option value="DANG_XU_LY">Đang xử lý</option>
+                                <option value="DA_XU_LY">Đã xử lý</option>
+                                <option value="TU_CHOI">Từ chối</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Lọc theo loại đối tượng</label>
+                            <select class="form-control" id="typeFilter">
+                                <option value="">Tất cả loại</option>
+                                <option value="PHONG">Phòng</option>
+                                <option value="NGUOIDUNG">Người dùng</option>
+                                <option value="DANHGIA">Đánh giá</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button class="btn btn-secondary btn-block" onclick="clearFilters()">
+                            <i class="fa fa-times"></i> Xóa bộ lọc
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Data Table -->
+                <div class="table-responsive">
+                    <table id="reportsTable" class="display table table-striped table-hover"
+                           data-report-detail-url="@Url.Action("GetReportDetail", "Reports")"
+                           data-report-resolve-url="@Url.Action("Resolve", "Reports")"
+                           data-report-reject-url="@Url.Action("Reject", "Reports")"
+                           data-report-delete-url="@Url.Action("Delete", "Reports")"
+                           data-report-index-url="@Url.Action("Index", "Reports")">
+                        <thead>
+                            <tr>
+                                <th style="width: 5%">#</th>
+                                <th style="width: 10%">Loại</th>
+                                <th style="width: 25%">Tiêu đề</th>
+                                <th style="width: 15%">Thời gian</th>
+                                <th style="width: 12%">Trạng thái</th>
+                                <th style="width: 15%">Kết quả</th>
+                                <th style="width: 18%">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model != null && Model.Any())
+                            {
+                                var index = 1;
+                                foreach (var report in Model.OrderByDescending(r => r.ThoiGianBaoCao))
+                                {
+                                    var statusClass = "";
+                                    var statusText = "";
+                                    switch (report.TrangThai)
+                                    {
+                                        case "CHO_XU_LY":
+                                            statusClass = "badge-warning";
+                                            statusText = "Chờ xử lý";
+                                            break;
+                                        case "DANG_XU_LY":
+                                            statusClass = "badge-info";
+                                            statusText = "Đang xử lý";
+                                            break;
+                                        case "DA_XU_LY":
+                                            statusClass = "badge-success";
+                                            statusText = "Đã xử lý";
+                                            break;
+                                        case "TU_CHOI":
+                                            statusClass = "badge-danger";
+                                            statusText = "Từ chối";
+                                            break;
+                                        default:
+                                            statusClass = "badge-secondary";
+                                            statusText = report.TrangThai ?? "N/A";
+                                            break;
+                                    }
+
+                                    var typeIcon = "";
+                                    var typeText = "";
+                                    switch (report.LoaiThucThe)
+                                    {
+                                        case "PHONG":
+                                            typeIcon = "fas fa-building";
+                                            typeText = "Phòng";
+                                            break;
+                                        case "NGUOIDUNG":
+                                            typeIcon = "fas fa-user";
+                                            typeText = "Người dùng";
+                                            break;
+                                        case "DANHGIA":
+                                            typeIcon = "fas fa-star";
+                                            typeText = "Đánh giá";
+                                            break;
+                                        default:
+                                            typeIcon = "fas fa-question";
+                                            typeText = report.LoaiThucThe ?? "N/A";
+                                            break;
+                                    }
+                                    <tr data-id="@report.BaoCaoId" data-status="@report.TrangThai" data-type="@report.LoaiThucThe">
+                                        <td>@index</td>
+                                        <td>
+                                            <span class="badge badge-primary" title="@typeText">
+                                                <i class="@typeIcon"></i> @typeText
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <strong>@(report.TieuDe ?? "Không có tiêu đề")</strong>
+                                            @if (!string.IsNullOrEmpty(report.MoTa))
+                                            {
+                                                <br /><small class="text-muted">@(report.MoTa.Length > 50 ? report.MoTa.Substring(0, 50) + "..." : report.MoTa)</small>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (report.ThoiGianBaoCao.HasValue)
+                                            {
+                                                <span>@report.ThoiGianBaoCao.Value.ToString("dd/MM/yyyy")</span>
+                                                <br /><small class="text-muted">@report.ThoiGianBaoCao.Value.ToString("HH:mm")</small>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">N/A</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <span class="badge @statusClass">@statusText</span>
+                                        </td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(report.KetQua))
+                                            {
+                                                <span title="@report.KetQua">@(report.KetQua.Length > 30 ? report.KetQua.Substring(0, 30) + "..." : report.KetQua)</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">-</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <button type="button" class="btn btn-sm btn-info" onclick="viewReportDetails('@report.BaoCaoId')" title="Xem chi tiết">
+                                                    <i class="fa fa-eye"></i>
+                                                </button>
+                                                @if (report.TrangThai == "CHO_XU_LY" || report.TrangThai == "DANG_XU_LY")
+                                                {
+                                                    <button type="button" class="btn btn-sm btn-success" onclick="resolveReport('@report.BaoCaoId')" title="Xử lý">
+                                                        <i class="fa fa-check"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-sm btn-warning" onclick="rejectReport('@report.BaoCaoId')" title="Từ chối">
+                                                        <i class="fa fa-ban"></i>
+                                                    </button>
+                                                }
+                                                <button type="button" class="btn btn-sm btn-danger" onclick="deleteReport('@report.BaoCaoId')" title="Xóa">
+                                                    <i class="fa fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    index++;
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Report Detail Modal -->
+<div class="modal fade" id="reportDetailModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle text-warning"></i>
+                    <span class="fw-mediumbold">Chi tiết</span>
+                    <span class="fw-light">báo cáo vi phạm</span>
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="reportDetailContent">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="sr-only">Đang tải...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-success" id="modalResolveBtn" style="display:none;">
+                    <i class="fa fa-check"></i> Xử lý
+                </button>
+                <button type="button" class="btn btn-warning" id="modalRejectBtn" style="display:none;">
+                    <i class="fa fa-ban"></i> Từ chối
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Resolve Modal -->
+<div class="modal fade" id="resolveModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-check-circle"></i> Xử lý báo cáo
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="resolveReportId">
+                <div class="form-group">
+                    <label for="resolveResult">Kết quả xử lý <span class="text-danger">*</span></label>
+                    <textarea class="form-control" id="resolveResult" rows="4" 
+                              placeholder="Nhập kết quả xử lý vi phạm...">Đã xử lý vi phạm theo quy định.</textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-success" onclick="submitResolve()">
+                    <i class="fa fa-check"></i> Xác nhận xử lý
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reject Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title">
+                    <i class="fas fa-ban"></i> Từ chối báo cáo
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="rejectReportId">
+                <div class="form-group">
+                    <label for="rejectReason">Lý do từ chối <span class="text-danger">*</span></label>
+                    <textarea class="form-control" id="rejectReason" rows="4" 
+                              placeholder="Nhập lý do từ chối báo cáo..." required></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-warning" onclick="submitReject()">
+                    <i class="fa fa-ban"></i> Xác nhận từ chối
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script src="~/Scripts/pages/reports.js?v=@DateTime.Now.Ticks"></script>
+    <script>
+        $(function () {
+            if (window.ReportsPage && typeof window.ReportsPage.initIndex === 'function') {
+                window.ReportsPage.initIndex();
+            }
+        });
+    </script>
+}
+

@@ -39,7 +39,7 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
             }
 
             // Mặc định chưa xác nhận khi mới tạo
-            if (!bienLai.DaXacNhan)
+            if (!bienLai.DaXacNhan.HasValue || !bienLai.DaXacNhan.Value)
             {
                 bienLai.DaXacNhan = false;
             }

@@ -15,8 +15,6 @@ namespace RestAPI_QUANLYPHONGTRO.Models
         [MaxLength(250)]
         public string? TieuDe { get; set; } // Ví dụ: Phòng 101, Phòng VIP...
 
-        public string? MoTa { get; set; } // Mô tả chi tiết phòng
-
         [Column(TypeName = "decimal(8,2)")] // Định dạng số thập phân trong SQL
         public decimal? DienTich { get; set; }
 

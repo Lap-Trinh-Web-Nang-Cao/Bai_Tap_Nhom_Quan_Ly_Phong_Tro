@@ -74,5 +74,43 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
             await _context.SaveChangesAsync();
             return true;
         }
+        
+        // === ADMIN METHODS ===
+        
+        public async Task<IEnumerable<YeuCauHoTro>> GetAllAsync()
+        {
+            return await _context.YeuCauHoTros
+                .OrderByDescending(x => x.ThoiGianTao)
+                .ToListAsync();
+        }
+        
+        public async Task<YeuCauHoTro?> GetByIdAsync(Guid hoTroId)
+        {
+            return await _context.YeuCauHoTros.FindAsync(hoTroId);
+        }
+        
+        public async Task<bool> AdminUpdateStatusAsync(Guid hoTroId, string trangThaiMoi)
+        {
+            var yeuCau = await _context.YeuCauHoTros.FindAsync(hoTroId);
+            if (yeuCau == null) return false;
+            
+            yeuCau.TrangThai = trangThaiMoi;
+            await _context.SaveChangesAsync();
+            return true;
+        }
+        
+        public async Task<SupportStatisticsDto> GetStatisticsAsync()
+        {
+            var allRequests = await _context.YeuCauHoTros.ToListAsync();
+            
+            return new SupportStatisticsDto
+            {
+                TotalRequests = allRequests.Count,
+                NewRequests = allRequests.Count(x => x.TrangThai == "Moi"),
+                ProcessingRequests = allRequests.Count(x => x.TrangThai == "DangXuLy"),
+                CompletedRequests = allRequests.Count(x => x.TrangThai == "HoanThanh"),
+                RejectedRequests = allRequests.Count(x => x.TrangThai == "TuChoi")
+            };
+        }
     }
 }

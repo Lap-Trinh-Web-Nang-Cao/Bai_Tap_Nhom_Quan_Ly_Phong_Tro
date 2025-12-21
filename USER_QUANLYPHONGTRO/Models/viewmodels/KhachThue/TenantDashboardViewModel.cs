@@ -8,6 +8,7 @@ namespace USER_QUANLYPHONGTRO.Models.ViewModels.KhachThue
         // Thông tin chào mừng
         public string TenNguoiThue { get; set; }
         public string Email { get; set; }
+        public string AvatarUrl { get; set; }
 
         // Thống kê nhanh
         public int SoPhongDaXem { get; set; }
@@ -31,8 +32,10 @@ namespace USER_QUANLYPHONGTRO.Models.ViewModels.KhachThue
         public string TieuDePhong { get; set; }
         public string DiaChi { get; set; }
         public string TenChuTro { get; set; }
+        public string SdtChuTro { get; set; }
         public DateTime ThoiGianHen { get; set; }
         public string TrangThai { get; set; } // Chờ xác nhận / Đã xác nhận / Đã hủy
+        public string GhiChu { get; set; }
     }
 
     public class TenantContractItem
@@ -50,6 +53,10 @@ namespace USER_QUANLYPHONGTRO.Models.ViewModels.KhachThue
     {
         public Guid HoaDonId { get; set; }
         public string ThangNam { get; set; } // "12/2025"
+        public long TienThue { get; set; }
+        public long TienDien { get; set; }
+        public long TienNuoc { get; set; }
+        public long PhiKhac { get; set; }
         public long TongTien { get; set; }
         public string TrangThai { get; set; } // Đã thanh toán / Chưa thanh toán
         public DateTime? NgayThanhToan { get; set; }

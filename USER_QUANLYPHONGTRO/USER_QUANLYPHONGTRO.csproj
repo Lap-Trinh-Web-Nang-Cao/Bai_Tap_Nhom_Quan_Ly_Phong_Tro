@@ -169,6 +169,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\ApiClient.cs" />
     <Compile Include="Services\Interfaces\IApiClient.cs" />
+    <Compile Include="Services\PhongApiService.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\auth.css" />
@@ -270,6 +271,11 @@
     <Content Include="Views\Guest\ChiTietPhong.cshtml" />
     <Content Include="Views\Guest\Index.cshtml" />
     <Content Include="Views\Guest\Danhsachphong.cshtml" />
+    <Content Include="Views\KhachThue\Thongbao.cshtml" />
+    <Content Include="Views\KhachThue\DatPhong.cshtml" />
+    <Content Include="Views\KhachThue\TinNhan.cshtml" />
+    <Content Include="Views\KhachThue\YeuThich.cshtml" />
+    <Content Include="Views\KhachThue\DanhSachPhong_Fixed.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

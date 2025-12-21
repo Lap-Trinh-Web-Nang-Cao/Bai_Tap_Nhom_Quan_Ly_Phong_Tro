@@ -1,0 +1,335 @@
+﻿@model List<USER_QUANLYPHONGTRO.Models.Dtos.Rooms.PhongDto>
+
+    @{
+    ViewBag.Title = "Ph?ng Yêu Thích";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+
+    @section styles {
+    <style>
+        .favorite-page {
+            padding: 30px 0;
+            background: #f5f7fa;
+            min-height: 100vh;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            padding: 40px 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+            .page-header h1 {
+                font-size: 32px;
+                font-weight: 700;
+                margin-bottom: 10px;
+            }
+
+        .favorite-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .room-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            transition: all 0.3s;
+        }
+
+            .room-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            }
+
+        .room-image {
+            position: relative;
+            height: 200px;
+            overflow: hidden;
+        }
+
+            .room-image img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+
+        .btn-remove-favorite {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: white;
+            border: none;
+            color: #e74c3c;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+            .btn-remove-favorite:hover {
+                background: #e74c3c;
+                color: white;
+                transform: scale(1.1);
+            }
+
+        .room-info {
+            padding: 20px;
+        }
+
+        .room-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 10px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .room-address {
+            color: #718096;
+            font-size: 14px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .room-meta {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 13px;
+            color: #718096;
+        }
+
+            .meta-item i {
+                color: #667eea;
+            }
+
+        .room-price {
+            font-size: 22px;
+            font-weight: 800;
+            color: #e74c3c;
+        }
+
+            .room-price span {
+                font-size: 14px;
+                font-weight: 400;
+                color: #718096;
+            }
+
+        .room-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn-view {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+            .btn-view:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+                text-decoration: none;
+                color: white;
+            }
+
+        .btn-book {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+        }
+
+            .btn-book:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(72, 187, 120, 0.3);
+                text-decoration: none;
+                color: white;
+            }
+
+        .empty-state {
+            text-align: center;
+            padding: 100px 20px;
+            background: white;
+            border-radius: 15px;
+        }
+
+            .empty-state i {
+                font-size: 100px;
+                color: #e2e8f0;
+                margin-bottom: 30px;
+            }
+
+            .empty-state h3 {
+                color: #718096;
+                margin-bottom: 15px;
+                font-size: 24px;
+            }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 14px 30px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+
+            .btn-primary:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+                text-decoration: none;
+                color: white;
+            }
+    </style>
+    }
+
+    @helper GetImageUrl(USER_QUANLYPHONGTRO.Models.Dtos.Rooms.PhongDto room) {
+    @(room.HinhAnhDaiDien != null ? room.HinhAnhDaiDien : "/images/room-placeholder.jpg")
+    }
+
+    @helper GetAddress(USER_QUANLYPHONGTRO.Models.Dtos.Rooms.PhongDto room) {
+    @(room.NhaTro != null && room.NhaTro.DiaChi != null ? room.NhaTro.DiaChi : "Chưa c?p nh?t")
+    }
+
+    @helper GetDienTich(USER_QUANLYPHONGTRO.Models.Dtos.Rooms.PhongDto room) {
+    @(room.DienTich.HasValue ? room.DienTich.Value.ToString("0.#") : "N/A")
+    }
+
+    <div class="favorite-page">
+        <div class="container">
+            <div class="page-header">
+                <h1><i class="fa fa-heart"></i> Ph?ng Yêu Thích</h1>
+                <p>Danh sách các ph?ng tr? b?n đ? lưu</p>
+            </div>
+
+            @if (Model != null && Model.Any())
+            {
+            <div class="favorite-grid">
+                @foreach (var room in Model)
+                {
+                var imageUrl = room.HinhAnhDaiDien != null ? room.HinhAnhDaiDien : "/images/room-placeholder.jpg";
+                var address = (room.NhaTro != null && room.NhaTro.DiaChi != null) ? room.NhaTro.DiaChi : "Chưa c?p nh?t";
+                var dienTich = room.DienTich.HasValue ? room.DienTich.Value.ToString("0.#") : "N/A";
+
+                <div class="room-card" id="room-@room.PhongId">
+                    <div class="room-image">
+                        <img src="@imageUrl" alt="@room.TieuDe" />
+                        <button class="btn-remove-favorite" onclick="removeFromFavorite('@room.PhongId')" title="B? yêu thích">
+                            <i class="fa fa-heart"></i>
+                        </button>
+                    </div>
+                    <div class="room-info">
+                        <h3 class="room-title">@room.TieuDe</h3>
+                        <div class="room-address">
+                            <i class="fa fa-map-marker-alt"></i>
+                            <span>@address</span>
+                        </div>
+                        <div class="room-meta">
+                            <div class="meta-item">
+                                <i class="fa fa-expand"></i>
+                                <span>@dienTich m²</span>
+                            </div>
+                            <div class="meta-item">
+                                <i class="fa fa-users"></i>
+                                <span>T?i đa @room.SoNguoiToiDa ngư?i</span>
+                            </div>
+                        </div>
+                        <div class="room-price">
+                            @room.GiaTien.ToString("N0")đ <span>/tháng</span>
+                        </div>
+                        <div class="room-actions">
+                            <a href="@Url.Action(" ChiTietPhong", "KhachThue" , new { id=room.PhongId })" class="btn-view">
+                                <i class="fa fa-eye"></i> Xem
+                            </a>
+                            <a href="@Url.Action(" DatPhong", "KhachThue" , new { roomId=room.PhongId })" class="btn-book">
+                                <i class="fa fa-calendar"></i> Đ?t l?ch
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                }
+            </div>
+            }
+            else
+            {
+            <div class="empty-state">
+                <i class="fa fa-heart-broken"></i>
+                <h3>Chưa có ph?ng yêu thích nào</h3>
+                <p style="color: #718096; margin-bottom: 30px;">
+                    H?y t?m và lưu các ph?ng tr? b?n quan tâm!
+                </p>
+                <a href="@Url.Action(" DanhSachPhong", "Guest" )" class="btn-primary">
+                    <i class="fa fa-search"></i> T?m Ph?ng Ngay
+                </a>
+            </div>
+            }
+        </div>
+    </div>
+
+    @section scripts {
+    <script>
+        function removeFromFavorite(phongId) {
+            if (!confirm('B?n có ch?c mu?n b? ph?ng này kh?i danh sách yêu thích?')) {
+                return;
+            }
+
+            $.ajax({
+                url: '@Url.Action("ToggleYeuThich", "KhachThue")',
+                type: 'POST',
+                data: { phongId: phongId },
+                success: function (response) {
+                    if (response.success) {
+                        $('#room-' + phongId).fadeOut(300, function () {
+                            $(this).remove();
+                            if ($('.room-card').length === 0) {
+                                location.reload();
+                            }
+                        });
+                    } else {
+                        alert(response.message || 'Có l?i x?y ra');
+                    }
+                },
+                error: function () {
+                    alert('Có l?i x?y ra. Vui l?ng th? l?i.');
+                }
+            });
+        }
+    </script>
+    }

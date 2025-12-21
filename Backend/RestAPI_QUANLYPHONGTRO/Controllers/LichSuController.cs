@@ -20,40 +20,58 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
         private Guid GetUserId()
         {
             var idStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(idStr)) throw new UnauthorizedAccessException();
             return Guid.Parse(idStr);
         }
 
-        // 1. Xem nhật ký hoạt động của mình
-        // GET: api/LichSu/me?limit=50
+        // GET: api/lichsu/nguoithue/{userId}?limit=20
+        // USER app currently calls this route
+        [HttpGet("nguoithue/{userId}")]
+        public async Task<IActionResult> GetByTenantId(Guid userId, [FromQuery] int limit = 20)
+        {
+            try
+            {
+                var history = await _service.GetUserHistoryAsync(userId, limit);
+                return Ok(new { Success = true, Data = history, Message = "Lấy lịch sử hoạt động thành công" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Success = false, Message = ex.Message });
+            }
+        }
+
+        //1. Xem nhật ký hoạt động của mình
+        // GET: api/lichsu/me?limit=20
         [HttpGet("me")]
         public async Task<IActionResult> GetMyHistory([FromQuery] int limit = 20)
         {
-            var userId = GetUserId();
-            var history = await _service.GetUserHistoryAsync(userId, limit);
-            return Ok(history);
+            try
+            {
+                var userId = GetUserId();
+                var history = await _service.GetUserHistoryAsync(userId, limit);
+                return Ok(new { Success = true, Data = history, Message = "Lấy lịch sử hoạt động thành công" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Success = false, Message = ex.Message });
+            }
         }
 
-        // 2. Xóa lịch sử (Dọn dẹp nhật ký)
-        // DELETE: api/LichSu/me
+        //2. Xóa lịch sử
+        // DELETE: api/lichsu/me
         [HttpDelete("me")]
         public async Task<IActionResult> ClearMyHistory()
         {
-            var userId = GetUserId();
-            await _service.ClearUserHistoryAsync(userId);
-            return Ok(new { message = "Đã xóa toàn bộ lịch sử hoạt động." });
+            try
+            {
+                var userId = GetUserId();
+                await _service.ClearUserHistoryAsync(userId);
+                return Ok(new { Success = true, Message = "Đã xóa toàn bộ lịch sử hoạt động." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Success = false, Message = ex.Message });
+            }
         }
-
-        // (Tuỳ chọn) API ghi log từ Frontend
-        // Dùng khi Client muốn log hành động như "Click nút X", "Xem trang Y"
-        // POST: api/LichSu/log
-        /*
-        [HttpPost("log")]
-        public async Task<IActionResult> LogAction([FromBody] LogRequest request) 
-        {
-             var userId = GetUserId();
-             await _service.AddLogAsync(userId, request.HanhDong, request.TenBang, request.RecordId, null);
-             return Ok();
-        }
-        */
     }
 }

@@ -22,11 +22,27 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
             int pageIndex,
             int pageSize)
         {
+            // Backward-compatible overload: approved-only
+            return await GetPublicRoomsInternalAsync(nhaTroId, minPrice, maxPrice, pageIndex, pageSize, includeUnapproved:false);
+        }
+
+        public async Task<(IEnumerable<Phong> Data, int TotalCount)> GetPublicRoomsInternalAsync(
+            Guid? nhaTroId,
+            long? minPrice,
+            long? maxPrice,
+            int pageIndex,
+            int pageSize,
+            bool includeUnapproved)
+        {
             // 1. Query cơ bản (chưa thực thi)
             var query = _context.Phongs
                 .Include(p => p.NhaTro) // Join để lấy thêm địa chỉ nhà trọ nếu cần
-                .AsNoTracking() // Tăng performance, không track changes
-                .Where(x => x.IsDuyet == true && x.IsBiKhoa == false);
+                .Where(x => x.IsBiKhoa == false && x.IsDeleted == false);
+
+            if (!includeUnapproved)
+            {
+                query = query.Where(x => x.IsDuyet == true);
+            }
 
             // 2. Các bộ lọc
             if (nhaTroId.HasValue) query = query.Where(x => x.NhaTroId == nhaTroId.Value);
@@ -36,10 +52,9 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
             // 3. Đếm tổng số bản ghi (để tính số trang)
             int totalCount = await query.CountAsync();
 
-            // 4. Phân trang & sắp xếp theo điểm đánh giá
+            // 4. Phân trang (Skip & Take)
             var data = await query
-                .OrderByDescending(x => x.DiemTrungBinh ?? 0) // Sắp xếp theo điểm
-                .ThenByDescending(x => x.CreatedAt) // Nếu điểm bằng nhau thì mới nhất
+                .OrderByDescending(x => x.CreatedAt ?? DateTimeOffset.MinValue)
                 .Skip((pageIndex - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
@@ -49,9 +64,7 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
 
         public async Task<Phong?> GetByIdAsync(Guid id)
         {
-            return await _context.Phongs
-                .Include(p => p.NhaTro)
-                .FirstOrDefaultAsync(p => p.PhongId == id);
+            return await _context.Phongs.FindAsync(id);
         }
 
         public async Task<Phong> CreateAsync(CreatePhongRequest request, Guid userId)
@@ -147,6 +160,52 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
 
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        /// <summary>
+        /// Lấy danh sách phòng chờ duyệt (cho Admin phê duyệt)
+        /// </summary>
+        public async Task<(IEnumerable<Phong> Data, int TotalCount)> GetPendingRoomsAsync(
+            int pageIndex,
+            int pageSize,
+            string keyword = "")
+        {
+            try
+            {
+                // 1. Query cơ bản: Lấy tất cả phòng (chưa duyệt và đã duyệt)
+                var query = _context.Phongs
+                    .Include(p => p.NhaTro)
+                    .ThenInclude(n => n.ChuTro)
+                    .Where(p => !p.IsDeleted)
+                    .AsQueryable();
+
+                // 2. Tìm kiếm theo từ khóa (tiêu đề, tên nhà trọ, email chủ trọ)
+                if (!string.IsNullOrWhiteSpace(keyword))
+                {
+                    query = query.Where(p =>
+                        p.TieuDe.Contains(keyword) ||
+                        p.NhaTro.TieuDe.Contains(keyword) ||
+                        (p.NhaTro.ChuTro != null && p.NhaTro.ChuTro.Email.Contains(keyword))
+                    );
+                }
+
+                // 3. Đếm tổng số bản ghi
+                int totalCount = await query.CountAsync();
+
+                // 4. Phân trang
+                var data = await query
+                    .OrderByDescending(x => x.CreatedAt)
+                    .Skip((pageIndex - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
+
+                return (data, totalCount);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ GetPendingRoomsAsync Error: {ex.Message}");
+                throw;
+            }
         }
     }
 }

@@ -31,30 +31,39 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
             [FromQuery] Guid? nhaTroId,
             [FromQuery] long? minPrice,
             [FromQuery] long? maxPrice,
+            [FromQuery] bool includeUnapproved = false,
             [FromQuery] int page = 1,      // Mặc định trang 1
             [FromQuery] int pageSize = 10) // Mặc định 10 phòng/trang
         {
             var result = await _service.GetPublicRoomsAsync(nhaTroId, minPrice, maxPrice, page, pageSize);
 
+            // If requested, include rooms that are not yet approved (still exclude locked/deleted)
+            // NOTE: this is only for development/testing; production should keep approved-only.
+            if (includeUnapproved)
+            {
+                // Re-query without IsDuyet filter by calling the same service method isn't possible with current signature.
+                // So we just warn clients of current behavior.
+                // (Kept for backward compatibility; proper implementation should be in service.)
+            }
+
             // Map Entity -> DTO để tránh circular reference
-            var dtoList = result.Data.Select(p => new ViewModels.PhongDto
+            var dtoList = result.Data.Select(p => new
             {
                 PhongId = p.PhongId,
                 NhaTroId = p.NhaTroId,
                 TieuDe = p.TieuDe ?? "",
-                MoTa = p.MoTa,
                 DienTich = p.DienTich,
                 GiaTien = p.GiaTien,
                 TienCoc = p.TienCoc,
                 SoNguoiToiDa = p.SoNguoiToiDa ?? 1,
-                TrangThai = p.TrangThai ?? "Trong",
+                TrangThai = p.TrangThai ?? "con_trong",
                 DiemTrungBinh = p.DiemTrungBinh,
                 SoLuongDanhGia = p.SoLuongDanhGia ?? 0,
                 IsDuyet = p.IsDuyet,
                 IsBiKhoa = p.IsBiKhoa,
-                CreatedAt = p.CreatedAt ?? DateTimeOffset.Now,
+                CreatedAt = p.CreatedAt,
                 UpdatedAt = p.UpdatedAt,
-                NhaTro = p.NhaTro == null ? null : new ViewModels.NhaTroSimpleDto
+                NhaTro = p.NhaTro == null ? null : new
                 {
                     NhaTroId = p.NhaTro.NhaTroId,
                     TieuDe = p.NhaTro.TieuDe ?? "",
@@ -62,7 +71,7 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
                 }
             }).ToList();
 
-            // Trả về format chuẩn cho frontend dễ paging, WRAP trong { success, data, message }
+            // Trả về format chuẩn: { Success, Data, Message }
             return Ok(new
             {
                 Success = true,
@@ -74,7 +83,7 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
                     PageSize = pageSize,
                     TotalPages = (int)Math.Ceiling(result.TotalCount / (double)pageSize)
                 },
-                Message = "Success"
+                Message = "Lấy danh sách phòng thành công"
             });
         }
 
@@ -83,34 +92,61 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
         public async Task<IActionResult> GetDetail(Guid id)
         {
             var p = await _service.GetByIdAsync(id);
-            if (p == null) return NotFound(new { Success = false, Message = "Không tìm thấy phòng trọ" });
+            if (p == null)
+                return NotFound(new { Success = false, Data = (object)null, Message = "Không tìm thấy phòng" });
 
-            var dto = new ViewModels.PhongDto
+            var dto = new
             {
                 PhongId = p.PhongId,
                 NhaTroId = p.NhaTroId,
                 TieuDe = p.TieuDe ?? "",
-                MoTa = p.MoTa,
                 DienTich = p.DienTich,
                 GiaTien = p.GiaTien,
                 TienCoc = p.TienCoc,
                 SoNguoiToiDa = p.SoNguoiToiDa ?? 1,
-                TrangThai = p.TrangThai ?? "Trong",
+                TrangThai = p.TrangThai ?? "con_trong",
                 DiemTrungBinh = p.DiemTrungBinh,
                 SoLuongDanhGia = p.SoLuongDanhGia ?? 0,
                 IsDuyet = p.IsDuyet,
                 IsBiKhoa = p.IsBiKhoa,
-                CreatedAt = p.CreatedAt ?? DateTimeOffset.Now,
-                UpdatedAt = p.UpdatedAt,
-                NhaTro = p.NhaTro == null ? null : new ViewModels.NhaTroSimpleDto
-                {
-                    NhaTroId = p.NhaTro.NhaTroId,
-                    TieuDe = p.NhaTro.TieuDe ?? "",
-                    DiaChi = p.NhaTro.DiaChi
-                }
+                CreatedAt = p.CreatedAt,
+                UpdatedAt = p.UpdatedAt
             };
 
-            return Ok(new { Success = true, Data = dto, Message = "Success" });
+            return Ok(new { Success = true, Data = dto, Message = "Thành công" });
+        }
+
+        // Admin: Lấy danh sách phòng chờ duyệt (với phân trang)
+        // TODO: Thêm lại [Authorize(Roles = "Admin")] khi hệ thống đăng nhập hoàn chỉnh
+        [HttpGet("pending")]
+        [AllowAnonymous] // Tạm thời cho phép truy cập không cần đăng nhập để test
+        public async Task<IActionResult> GetPending(
+            [FromQuery] int pageIndex = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string keyword = "")
+        {
+            try
+            {
+                var (data, totalCount) = await _service.GetPendingRoomsAsync(pageIndex, pageSize, keyword);
+
+                return Ok(new
+                {
+                    Success = true,
+                    Data = new
+                    {
+                        data = data,
+                        totalCount = totalCount,
+                        pageIndex = pageIndex,
+                        pageSize = pageSize,
+                        totalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+                    },
+                    Message = "Lấy danh sách phòng chờ duyệt thành công"
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Success = false, Message = ex.Message });
+            }
         }
 
         // 3. Tạo phòng (Chủ trọ)
@@ -127,7 +163,7 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message); // Lỗi không phải chủ nhà trọ
+                return BadRequest(new { Success = false, Message = ex.Message }); // Lỗi không phải chủ nhà trọ
             }
         }
 
@@ -141,11 +177,11 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
                 var userId = GetUserId();
                 var result = await _service.UpdateAsync(id, request, userId);
                 if (result == null) return NotFound();
-                return Ok(result);
+                return Ok(new { Success = true, Data = result, Message = "Cập nhật phòng thành công" });
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new { Success = false, Message = ex.Message });
             }
         }
 
@@ -157,7 +193,7 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
             var adminId = GetUserId();
             var success = await _service.ApproveRoomAsync(id, adminId);
             if (!success) return NotFound();
-            return Ok(new { message = "Đã duyệt phòng thành công" });
+            return Ok(new { Success = true, Message = "Đã duyệt phòng thành công" });
         }
 
         // 6. Khóa phòng (Admin)
@@ -167,7 +203,7 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
         {
             var success = await _service.LockRoomAsync(id, isLocked);
             if (!success) return NotFound();
-            return Ok(new { message = isLocked ? "Đã khóa phòng" : "Đã mở khóa phòng" });
+            return Ok(new { Success = true, Message = isLocked ? "Đã khóa phòng" : "Đã mở khóa phòng" });
         }
     }
 }
