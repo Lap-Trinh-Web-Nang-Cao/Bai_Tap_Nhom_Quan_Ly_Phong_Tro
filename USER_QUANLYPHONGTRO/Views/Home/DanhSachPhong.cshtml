@@ -1,0 +1,230 @@
+﻿@model USER_QUANLYPHONGTRO.Models.ViewModels.Home.PhongSearchViewModel
+
+@{
+    ViewBag.Title = "Danh sách phòng";
+}
+
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h2 class="font-weight-bold text-primary display-5">KHÁM PHÁ PHÒNG TRỌ</h2>
+        <p class="text-muted">Tìm kiếm không gian sống lý tưởng của bạn</p>
+    </div>
+
+    <div class="row justify-content-center mb-5">
+        <div class="col-md-6 col-lg-4">
+            <form action="@Url.Action("DanhSachPhong", "Home")" method="get" id="filterForm">
+                <div class="filter-box shadow-sm">
+                    <span class="filter-icon"><i class="fa fa-filter"></i></span>
+                    <select name="nhaTroId" class="form-control custom-select" onchange="this.form.submit()">
+                        <option value="">Tất cả khu trọ</option>
+                        @if (Model.DanhSachNhaTro != null)
+                        {
+                            foreach (var nt in Model.DanhSachNhaTro)
+                            {
+                                // Giữ trạng thái selected khi reload
+                                bool isSelected = Model.SelectedNhaTroId == nt.NhaTroId;
+                                <option value="@nt.NhaTroId" @(isSelected ? "selected" : "")>@nt.TieuDe</option>
+                            }
+                        }
+                    </select>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row">
+        @if (Model.DanhSachPhong != null && Model.DanhSachPhong.Any())
+        {
+            foreach (var item in Model.DanhSachPhong)
+            {
+                <div class="col-6 col-md-4 col-lg-3 mb-4 px-2">
+                    <div class="card h-100 room-card border-0">
+                        <div class="card-img-wrapper">
+                            <img src="@item.AnhDaiDien"
+                                 class="card-img-top"
+                                 alt="@item.TieuDe"
+                                 style="height: 220px; object-fit: cover;"
+                                 onerror="this.onerror=null; this.src='/images/logo.png';"> <div class="price-badge">
+                                @if (item.GiaTien >= 1000000)
+                                {
+                                    <span>@(item.GiaTien / 1000000M) tr/tháng</span>
+                                }
+                                else
+                                {
+                                    <span>@item.GiaTien.ToString("N0") đ/tháng</span>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="card-body p-3">
+                            <div class="mb-2">
+                                <span class="badge badge-light text-secondary border mr-1"><i class="fa fa-expand"></i> @item.DienTich m²</span>
+                                <span class="badge badge-light text-secondary border"><i class="fa fa-star text-warning"></i> @item.DiemTrungBinh</span>
+                            </div>
+
+                            <h6 class="card-title font-weight-bold text-dark text-truncate mb-1" title="@item.TieuDe">
+                                <a href="@Url.Action("ChiTietPhong", "KhachThue", new { id = item.PhongId })" class="text-inherit">
+                                    @item.TieuDe
+                                </a>
+                            </h6>
+
+                            <p class="card-text text-muted small text-truncate mb-2">
+                                <i class="fa fa-map-marker-alt text-danger mr-1"></i> @item.TenNhaTro
+                            </p>
+
+                            <p class="card-text text-muted x-small text-truncate" title="@item.DiaChi">
+                                @item.DiaChi
+                            </p>
+                        </div>
+
+                        <div class="card-footer bg-white border-top-0 pt-0 pb-3">
+                            <a href="@Url.Action("ChiTietPhong", "KhachThue", new { id = item.PhongId })" class="btn btn-outline-primary btn-block btn-sm rounded-pill font-weight-bold">
+                                Xem Chi Tiết
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12 text-center py-5">
+                <img src="https://cdni.iconscout.com/illustration/premium/thumb/empty-state-2130362-1800926.png" style="width: 200px; opacity: 0.8;" alt="Empty">
+                <h5 class="text-muted mt-3">Không tìm thấy phòng nào.</h5>
+                <a href="@Url.Action("DanhSachPhong", "Home")" class="btn btn-link">Xóa bộ lọc</a>
+            </div>
+        }
+    </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <div class="row mt-5">
+            <div class="col-12 d-flex justify-content-center">
+                <nav>
+                    <ul class="pagination pagination-circle">
+                        @for (int i = 1; i <= Model.TotalPages; i++)
+                        {
+                            <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                                <a class="page-link" href="@Url.Action("DanhSachPhong", new { page = i, nhaTroId = Model.SelectedNhaTroId })">@i</a>
+                            </li>
+                        }
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    }
+</div>
+
+    <style>
+        /* CSS TÙY CHỈNH CHO TRANG DANH SÁCH */
+
+        /* 1. Combobox đẹp */
+        .filter-box {
+            position: relative;
+            border-radius: 50px;
+            background: #fff;
+            padding: 5px 20px;
+            display: flex;
+            align-items: center;
+            border: 1px solid #e0e0e0;
+        }
+
+        .filter-icon {
+            color: #007bff;
+            margin-right: 10px;
+        }
+
+        .custom-select {
+            border: none;
+            box-shadow: none;
+            background: transparent;
+            font-weight: 500;
+            color: #333;
+            cursor: pointer;
+        }
+
+            .custom-select:focus {
+                box-shadow: none;
+            }
+
+        /* 2. Room Card */
+        .room-card {
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            background: #fff;
+            overflow: hidden;
+        }
+
+            .room-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+            }
+
+        /* 3. Image & Badge */
+        .card-img-wrapper {
+            position: relative;
+            overflow: hidden;
+            height: 180px; /* Chiều cao cố định cho ảnh */
+        }
+
+        .card-img-top {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Giúp ảnh không bị méo */
+            transition: transform 0.5s ease;
+        }
+
+        .room-card:hover .card-img-top {
+            transform: scale(1.05); /* Zoom nhẹ khi hover */
+        }
+
+        .price-badge {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(255, 255, 255, 0.95);
+            color: #d32f2f;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* 4. Text Utilities */
+        .text-inherit {
+            color: inherit;
+            text-decoration: none;
+        }
+
+            .text-inherit:hover {
+                color: #007bff;
+                text-decoration: none;
+            }
+
+        .x-small {
+            font-size: 0.75rem;
+        }
+
+        /* 5. Pagination Custom */
+        .pagination-circle .page-link {
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 3px;
+            border: none;
+            color: #555;
+        }
+
+        .pagination-circle .page-item.active .page-link {
+            background-color: #007bff;
+            color: #fff;
+            box-shadow: 0 4px 10px rgba(0,123,255,0.3);
+        }
+    </style>
+}

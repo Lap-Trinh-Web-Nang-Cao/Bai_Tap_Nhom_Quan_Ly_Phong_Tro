@@ -1,0 +1,93 @@
+﻿@model IEnumerable<USER_QUANLYPHONGTRO.Models.ViewModels.ChuTro.DonDatPhongViewModel>
+
+@{
+    Layout = "~/Views/Shared/_ChutroLayout.cshtml";
+    ViewBag.Title = "Đơn đặt phòng";
+}
+
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <div>
+            <h1 class="page-title">Quản lý đơn đặt phòng</h1>
+            <p class="page-subtitle">Theo dõi và phê duyệt các yêu cầu thuê phòng từ khách hàng.</p>
+        </div>
+        <div class="header-actions">
+            <button class="btn-action" style="background: var(--primary); color: white;">
+                <span class="material-icons-round">filter_list</span> Bộ lọc
+            </button>
+        </div>
+    </div>
+
+    <div class="stats-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 25px;">
+        <div class="stat-card card-blue">
+            <div class="stat-label">TỔNG ĐƠN</div>
+            <div class="stat-value">@Model.Count()</div>
+        </div>
+        <div class="stat-card card-orange">
+            <div class="stat-label">CHỜ XÁC NHẬN</div>
+            <div class="stat-value">@Model.Count(m => m.TrangThai == "ChoXacNhan")</div>
+        </div>
+        <div class="stat-card card-green">
+            <div class="stat-label">ĐÃ THANH TOÁN</div>
+            <div class="stat-value">@Model.Count(m => m.TrangThai == "DaThanhToan")</div>
+        </div>
+        <div class="stat-card card-purple">
+            <div class="stat-label">HOÀN THÀNH</div>
+            <div class="stat-value">@Model.Count(m => m.TrangThai == "HoanThanh")</div>
+        </div>
+    </div>
+
+    <div class="activity-card">
+        <div class="activity-header">
+            <h3 class="activity-title">Danh sách đơn mới nhất</h3>
+        </div>
+        <div class="activity-list" style="max-height: none;">
+            @if (Model != null && Model.Any())
+            {
+                <table class="table-custom" style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="text-align: left; border-bottom: 2px solid var(--gray-100); color: var(--gray-600);">
+                            <th style="padding: 15px;">MÃ ĐƠN</th>
+                            <th>KHÁCH HÀNG</th>
+                            <th>PHÒNG</th>
+                            <th>NGÀY BẮT ĐẦU</th>
+                            <th>TRẠNG THÁI</th>
+                            <th style="text-align: right; padding-right: 15px;">THAO TÁC</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr style="border-bottom: 1px solid var(--gray-100);">
+                                <td style="padding: 15px; font-weight: 600;">#@item.SoDatPhong</td>
+                                <td>@item.TenKhachHang</td>
+                                <td>@item.TenPhong</td>
+                                <td>@item.NgayBatDau.ToString("dd/MM/yyyy")</td>
+                                <td>
+                                    <span class="status-badge @(item.TrangThai == "ChoXacNhan" ? "status-pending" : "status-confirmed")">
+                                        @item.TrangThai
+                                    </span>
+                                </td>
+                                <td style="text-align: right; padding-right: 15px;">
+                                    <button class="btn-action" title="Xem chi tiết">
+                                        <span class="material-icons-round">visibility</span>
+                                    </button>
+                                    <button class="btn-action" style="color: var(--success);" title="Xác nhận">
+                                        <span class="material-icons-round">check_circle</span>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <div class="empty-state" style="padding: 40px; text-align: center;">
+                    <span class="material-icons-round" style="font-size: 48px; color: var(--gray-300);">receipt_long</span>
+                    <p style="color: var(--gray-500); margin-top: 10px;">Chưa có đơn đặt phòng nào được ghi nhận.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>

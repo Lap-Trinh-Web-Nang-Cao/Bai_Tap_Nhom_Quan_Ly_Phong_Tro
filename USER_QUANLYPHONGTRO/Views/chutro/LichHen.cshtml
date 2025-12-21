@@ -1,0 +1,110 @@
+﻿@model IEnumerable<USER_QUANLYPHONGTRO.Models.ViewModels.ChuTro.LichHenViewModel>
+
+@{
+    Layout = "~/Views/Shared/_ChutroLayout.cshtml";
+    ViewBag.Title = "Lịch xem phòng";
+}
+
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <div>
+            <h1 class="page-title">Lịch xem phòng</h1>
+            <p class="page-subtitle">Quản lý và theo dõi các yêu cầu xem phòng từ khách hàng.</p>
+        </div>
+        <div class="header-actions" style="display: flex; gap: 10px;">
+            <select class="time-filter">
+                <option>Tất cả thời gian</option>
+                <option>Hôm nay</option>
+                <option>Tuần này</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 25px;">
+        <div class="stat-card card-orange">
+            <div class="stat-label">CHỜ XÁC NHẬN</div>
+            <div class="stat-value">5</div>
+            <div class="stat-desc">Yêu cầu mới cần xử lý</div>
+        </div>
+        <div class="stat-card card-blue">
+            <div class="stat-label">ĐÃ XÁC NHẬN</div>
+            <div class="stat-value">3</div>
+            <div class="stat-desc">Lịch hẹn sắp tới</div>
+        </div>
+        <div class="stat-card card-green">
+            <div class="stat-label">HOÀN THÀNH</div>
+            <div class="stat-value">12</div>
+            <div class="stat-desc">Tổng lịch hẹn đã xem</div>
+        </div>
+    </div>
+
+    <div class="activity-card">
+        <div class="activity-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <h3 class="activity-title">Danh sách lịch hẹn</h3>
+            <div class="filter-tabs" style="display: flex; gap: 15px;">
+                <button class="tab-item active" style="background:none; border:none; color:var(--primary); font-weight:600; cursor:pointer;">Tất cả</button>
+                <button class="tab-item" style="background:none; border:none; color:var(--gray-500); cursor:pointer;">Chờ xác nhận</button>
+                <button class="tab-item" style="background:none; border:none; color:var(--gray-500); cursor:pointer;">Sắp tới</button>
+            </div>
+        </div>
+
+        <div class="activity-list" style="max-height: none;">
+            @if (Model != null && Model.Any())
+            {
+                foreach (var item in Model)
+                {
+                    <div class="activity-item" style="padding: 20px; border-bottom: 1px solid var(--gray-100);">
+                        <div class="item-avatar" style="background: var(--primary-bg); color: var(--primary);">
+                            <span class="material-icons-round">person</span>
+                        </div>
+                        <div class="item-content">
+                            <div style="display: flex; justify-content: space-between;">
+                                <div class="item-name" style="font-size: 1.1rem;">@item.TenKhachHang</div>
+                                <div class="item-info" style="color: var(--gray-600); font-weight: 500;">
+                                    <span class="material-icons-round" style="font-size: 16px; vertical-align: middle;">calendar_today</span>
+                                    @item.NgayXem.ToString("dd/MM/yyyy") | @item.GioXem
+                                </div>
+                            </div>
+                            <div class="item-info">
+                                <strong>Phòng:</strong> @item.TenPhong | <strong>SĐT:</strong> @item.SoDienThoai
+                            </div>
+                            @if (!string.IsNullOrEmpty(item.GhiChu))
+                            {
+                                <div class="item-info" style="font-style: italic; margin-top: 5px;">
+                                    " @item.GhiChu "
+                                </div>
+                            }
+                        </div>
+                        <div class="item-actions" style="display: flex; gap: 8px; margin-left: 20px;">
+                            @if (item.TrangThai == "ChoXacNhan")
+                            {
+                                <button class="btn-action" style="background: var(--success); color: white;" title="Xác nhận">
+                                    <span class="material-icons-round">check</span>
+                                </button>
+                                <button class="btn-action" style="background: var(--danger-bg); color: var(--danger);" title="Từ chối">
+                                    <span class="material-icons-round">close</span>
+                                </button>
+                            }
+                            else
+                            {
+                                <span class="status-badge @(item.TrangThai == "DaXacNhan" ? "status-confirmed" : "status-pending")">
+                                    @item.TrangThai
+                                </span>
+                            }
+                            <button class="btn-action" style="background: var(--gray-100); color: var(--gray-700);" title="Gọi điện">
+                                <span class="material-icons-round">phone</span>
+                            </button>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="empty-state" style="padding: 60px; text-align: center; color: var(--gray-500);">
+                    <span class="material-icons-round" style="font-size: 48px; opacity: 0.5;">event_busy</span>
+                    <p style="margin-top: 15px; font-size: 1.1rem;">Hiện không có lịch hẹn nào.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>

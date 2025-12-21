@@ -1,0 +1,44 @@
+﻿using RestAPI_QUANLYPHONGTRO.Models;
+using RestAPI_QUANLYPHONGTRO.ViewModels;
+
+namespace RestAPI_QUANLYPHONGTRO.Services.Interfaces
+{
+    public interface INguoiDungService
+    {
+        // Chức năng Auth
+        Task<bool> RegisterAsync(RegisterRequest request);
+        Task<string> LoginAsync(LoginRequest request);
+
+        // Chức năng quản lý User (Ví dụ cho Admin hoặc xem profile)
+        Task<NguoiDung?> GetByIdAsync(Guid id);
+
+        Task<bool> UpdateProfileAsync(Guid userId, UpdateProfileRequest request);
+        Task<bool> ChangePasswordAsync(Guid userId, ChangePasswordRequest request);
+
+        // ===== ADMIN FEATURES =====
+        /// <summary>
+        /// Lấy danh sách users (phân trang) - trả về object hiển thị (không gồm PasswordHash)
+        /// </summary>
+        Task<PagedResult<dynamic>> GetUsersAsync(int pageIndex, int pageSize, string keyword = "", int? vaiTroId = null, bool? isKhoa = null);
+
+        /// <summary>
+        /// Lấy chi tiết user (bao gồm hồ sơ)
+        /// </summary>
+        Task<dynamic> GetUserDetailAsync(Guid userId);
+
+        /// <summary>
+        /// Admin tạo user mới
+        /// </summary>
+        Task<Guid?> CreateUserAsync(AdminCreateUserRequest request);
+
+        /// <summary>
+        /// Khóa tài khoản
+        /// </summary>
+        Task<bool> LockUserAsync(Guid userId);
+
+        /// <summary>
+        /// Mở khóa tài khoản
+        /// </summary>
+        Task<bool> UnlockUserAsync(Guid userId);
+    }
+}

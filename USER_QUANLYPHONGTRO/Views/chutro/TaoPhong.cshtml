@@ -1,0 +1,53 @@
+﻿@model USER_QUANLYPHONGTRO.Models.ViewModels.ChuTro.PhongTroEditViewModel
+
+@{
+    Layout = "~/Views/Shared/_ChutroLayout.cshtml";
+    ViewBag.Title = "Thêm phòng mới";
+}
+
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1 class="page-title">Đăng tin phòng mới</h1>
+    </div>
+
+    @using (Html.BeginForm("TaoPhong", "ChuTro", FormMethod.Post, new { enctype = "multipart/form-data" }))
+    {
+        @Html.AntiForgeryToken()
+
+        <div class="activity-card" style="padding: 30px;">
+            <div class="row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+
+                <div class="form-group" style="grid-column: span 2;">
+                    @Html.LabelFor(m => m.TieuDe, new { style = "font-weight: 600; display: block; margin-bottom: 8px;" })
+                    @Html.TextBoxFor(m => m.TieuDe, new { @class = "time-filter", style = "width: 100%; max-width: none;", placeholder = "Ví dụ: Phòng trọ cao cấp trung tâm Quận 1" })
+                    @Html.ValidationMessageFor(m => m.TieuDe, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(m => m.GiaTien, new { style = "font-weight: 600; display: block; margin-bottom: 8px;" })
+                    @Html.TextBoxFor(m => m.GiaTien, new { @class = "time-filter", style = "width: 100%; max-width: none;", type = "number" })
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(m => m.DienTich, new { style = "font-weight: 600; display: block; margin-bottom: 8px;" })
+                    @Html.TextBoxFor(m => m.DienTich, new { @class = "time-filter", style = "width: 100%; max-width: none;" })
+                </div>
+
+                <div class="form-group" style="grid-column: span 2;">
+                    @Html.LabelFor(m => m.DiaChi, new { style = "font-weight: 600; display: block; margin-bottom: 8px;" })
+                    @Html.TextBoxFor(m => m.DiaChi, new { @class = "time-filter", style = "width: 100%; max-width: none;" })
+                </div>
+
+                <div class="form-group" style="grid-column: span 2;">
+                    <label style="font-weight: 600; display: block; margin-bottom: 8px;">Hình ảnh phòng</label>
+                    <input type="file" name="ImageFiles" multiple class="time-filter" style="width: 100%; max-width: none;" />
+                </div>
+            </div>
+
+            <div style="margin-top: 30px; display: flex; gap: 15px;">
+                <button type="submit" class="btn-action" style="padding: 12px 30px;">Lưu và gửi duyệt</button>
+                <a href="@Url.Action("QuanLyPhong", "ChuTro")" class="btn-action" style="background: var(--gray-200); color: var(--gray-700); text-decoration: none;">Hủy bỏ</a>
+            </div>
+        </div>
+    }
+</div>

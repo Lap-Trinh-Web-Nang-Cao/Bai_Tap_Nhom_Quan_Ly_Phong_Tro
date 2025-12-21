@@ -1,0 +1,169 @@
+﻿@model USER_QUANLYPHONGTRO.Models.ViewModels.Auth.LoginViewModel
+
+@{
+    ViewBag.Title = "Đăng Nhập";
+    Layout = "~/Views/Shared/_LayoutAuth.cshtml";
+
+    // Xác định user type từ URL hoặc default là người thuê
+    string userType = Request.QueryString["type"] ?? "nguoithue";
+    bool isChuTro = userType.ToLower() == "chutro";
+}
+
+<style>
+    /* CSS bổ sung để đảm bảo giao diện không bị vỡ khi đổi tên class */
+    .form-submit-manual {
+        width: 100%;
+    }
+
+    .field-validation-error {
+        color: #dc3545;
+        font-size: 0.875em;
+        margin-top: 0.25rem;
+        display: block;
+    }
+</style>
+
+<header class="auth-header">
+    <div class="auth-header-container">
+        <div class="auth-header-left">
+            <a href="@Url.Action("Index", "Home")" class="auth-logo">
+                <img src="~/images/logo.png" alt="TroTot Logo" />
+            </a>
+            <span class="auth-title">Đăng nhập</span>
+        </div>
+        <div class="auth-header-right">
+            <a href="@Url.Action("Index", "HoTro")" class="auth-help-link">
+                <i class="fas fa-question-circle"></i> Bạn cần giúp đỡ?
+            </a>
+        </div>
+    </div>
+</header>
+
+<div class="auth-main-container">
+    <div class="auth-content-wrapper">
+
+        <div class="auth-left-banner">
+            <div class="banner-illustration">
+                <img src="~/images/banner-login.png" alt="Đăng nhập" onerror="this.src='https://cdni.iconscout.com/illustration/premium/thumb/login-3305943-2757111.png'" />
+            </div>
+            <h1 class="banner-title">Tìm Trọ Nhanh – Ở An Tâm</h1>
+            <p class="banner-subtitle">Nền tảng tìm kiếm phòng trọ uy tín, minh bạch và an toàn nhất Việt Nam</p>
+        </div>
+
+        <div class="auth-right-form">
+            <div class="auth-form-card">
+
+                <div class="form-header">
+                    <h2>Đăng Nhập</h2>
+                    <p>Chào mừng bạn quay trở lại</p>
+                </div>
+
+                @using (Html.BeginForm("Login", "Auth", FormMethod.Post, new { @class = "form-submit-manual", id = "frmLoginManual" }))
+                {
+                    @Html.AntiForgeryToken()
+                    @Html.Hidden("userType", userType)
+
+                    <div class="form-group">
+                        <label for="Username" class="form-label">Tên đăng nhập / Email</label>
+                        @Html.TextBoxFor(m => m.Email, new
+                        {
+                            @class = "form-input",
+                            @placeholder = "Nhập tài khoản...",
+                            id = "Username",
+                            autocomplete = "username"
+                        })
+                        @Html.ValidationMessageFor(m => m.Email, "", new { @class = "field-validation-error" })
+                    </div>
+
+                    <div class="form-group">
+                        <label for="Password" class="form-label">Mật khẩu</label>
+                        <div class="password-field">
+                            @Html.PasswordFor(m => m.Password, new
+                            {
+                                @class = "form-input",
+                                @placeholder = "Nhập mật khẩu",
+                                id = "Password",
+                                autocomplete = "current-password"
+                            })
+                            <button type="button" class="toggle-password" onclick="togglePass()">
+                                <i class="fas fa-eye" id="eyeIcon"></i>
+                            </button>
+                        </div>
+                        @Html.ValidationMessageFor(m => m.Password, "", new { @class = "field-validation-error" })
+                    </div>
+
+                    if (ViewBag.Error != null)
+                    {
+                        <div class="alert alert-danger" style="color: red; background: #fceceb; padding: 10px; border-radius: 4px; margin-bottom: 10px;">
+                            <i class="fas fa-exclamation-circle"></i> @ViewBag.Error
+                        </div>
+                    }
+
+                    <button type="submit" class="btn-submit" style="width: 100%; padding: 12px; background-color: #ee4d2d; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">
+                        ĐĂNG NHẬP
+                    </button>
+
+                    <div class="form-footer-links" style="display: flex; justify-content: space-between; margin-top: 10px;">
+                        <a href="@Url.Action("ForgotPassword", "Auth")" class="forgot-link">Quên mật khẩu</a>
+                        <a href="#" class="help-login-link">Đăng nhập với SMS</a>
+                    </div>
+
+                    <div class="or-divider" style="text-align: center; margin: 20px 0; color: #ccc;">
+                        <span>HOẶC</span>
+                    </div>
+
+                    <div class="social-login-btns" style="display: flex; gap: 10px;">
+                        <button type="button" class="social-btn facebook-btn" style="flex: 1; padding: 8px; border: 1px solid #ddd; background: white;">
+                            <i class="fab fa-facebook-f" style="color: #1877f2;"></i> Facebook
+                        </button>
+                        <button type="button" class="social-btn google-btn" style="flex: 1; padding: 8px; border: 1px solid #ddd; background: white;">
+                            <i class="fab fa-google" style="color: #db4437;"></i> Google
+                        </button>
+                    </div>
+                }
+
+                <div class="register-section" style="margin-top: 20px; text-align: center;">
+                    @if (isChuTro)
+                    {
+                        <p>
+                            Chưa có tài khoản chủ trọ? <a href="@Url.Action("ChuTro_Register", "Auth")" style="color: #ee4d2d; font-weight: bold;">Đăng ký</a>
+                        </p>
+                        <p class="switch-type">
+                            Bạn là người thuê trọ? <a href="@Url.Action("Login", "Auth", new { type = "nguoithue" })">Đăng nhập tại đây</a>
+                        </p>
+                    }
+                    else
+                    {
+                        <p>
+                            Bạn mới biết đến TroTot? <a href="@Url.Action("NguoiThue_Register", "Auth")" style="color: #ee4d2d; font-weight: bold;">Đăng ký</a>
+                        </p>
+                        <p class="landlord-promo">
+                            <a href="@Url.Action("Login", "Auth", new { type = "chutro" })" style="color: #26aa99;">
+                                <i class="fas fa-store"></i> Trở thành Chủ Trọ
+                            </a>
+                        </p>
+                    }
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function togglePass() {
+        var x = document.getElementById("Password");
+        var icon = document.getElementById("eyeIcon");
+        if (x.type === "password") {
+            x.type = "text";
+            icon.classList.remove("fa-eye");
+            icon.classList.add("fa-eye-slash");
+        } else {
+            x.type = "password";
+            icon.classList.remove("fa-eye-slash");
+            icon.classList.add("fa-eye");
+        }
+    }
+</script>
+
+@Html.Partial("_Footer")

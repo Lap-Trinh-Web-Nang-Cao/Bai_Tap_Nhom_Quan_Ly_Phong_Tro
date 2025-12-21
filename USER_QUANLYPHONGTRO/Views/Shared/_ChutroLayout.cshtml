@@ -1,0 +1,149 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - TroTot Chủ Trọ</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="@Url.Content("~/Content/chutro.css?v=2.0")" rel="stylesheet" />
+
+    <script src="@Url.Content("~/Scripts/jquery-3.7.0.min.js")"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+
+    @RenderSection("styles", required: false)
+</head>
+<body>
+    @{
+        string userName = Session["HoTen"] as string ?? Session["UserName"] as string ?? "Chủ Trọ";
+        string avatarUrl = Session["AvatarUrl"] as string ?? "/images/default-avatar.png";
+        int notificationCount = (int)(Session["NotificationCount"] ?? 0);
+        int messageCount = (int)(Session["MessageCount"] ?? 0);
+        string currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+    }
+
+    <header class="top-navbar">
+        <div class="navbar-left">
+            <button class="sidebar-toggle" id="sidebarToggle">
+                <span class="material-icons-round">menu</span>
+            </button>
+            <a href="@Url.Action("Dashboard", "ChuTro")" class="logo-link">
+                <img src="@Url.Content("~/images/logo.png")" alt="TroTot" class="logo-img" />
+            </a>
+        </div>
+
+        <div class="navbar-right">
+            <div class="navbar-search">
+                <span class="material-icons-round">search</span>
+                <input type="text" placeholder="Tìm kiếm..." />
+            </div>
+
+            <div class="navbar-icon">
+                <span class="material-icons-round">notifications</span>
+                @if (notificationCount > 0)
+                {<span class="icon-badge">@notificationCount</span>}
+            </div>
+
+            <div class="user-profile">
+                <img src="@Url.Content(avatarUrl)" alt="Avatar" class="user-avatar" />
+                <div class="user-info">
+                    <span class="user-name">@userName</span>
+                    <span class="user-role">Chủ trọ</span>
+                </div>
+                <span class="material-icons-round arrow">expand_more</span>
+                <div class="user-dropdown">
+                    <a href="@Url.Action("ThongTinCaNhan", "ChuTro")" class="dropdown-item">
+                        <span class="material-icons-round">person</span> Hồ sơ cá nhân
+                    </a>
+                    <a href="@Url.Action("Logout", "Auth")" class="dropdown-item text-danger">
+                        <span class="material-icons-round">logout</span> Đăng xuất
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-wrapper">
+        <aside class="sidebar" id="sidebar">
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <span class="nav-section-title">TỔNG QUAN</span>
+                    <a href="@Url.Action("Dashboard", "ChuTro")" class="nav-item @(currentAction == "Dashboard" ? "active" : "")">
+                        <span class="nav-icon"><span class="material-icons-round">dashboard</span></span>
+                        <span class="nav-text">Dashboard</span>
+                    </a>
+                    <a href="@Url.Action("ThongKe", "ChuTro")" class="nav-item @(currentAction == "ThongKe" ? "active" : "")">
+                        <span class="nav-icon"><span class="material-icons-round">analytics</span></span>
+                        <span class="nav-text">Thống kê</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">QUẢN LÝ</span>
+
+                    <div class="nav-item has-submenu @(currentAction == "QuanLyPhong" || currentAction == "TaoPhong" ? "open" : "")">
+                        <span class="nav-icon"><span class="material-icons-round">apartment</span></span>
+                        <span class="nav-text">Quản lý phòng</span>
+                        <span class="nav-arrow material-icons-round">chevron_right</span>
+                    </div>
+                    <div class="nav-submenu">
+                        <a href="@Url.Action("QuanLyPhong", "ChuTro")" class="nav-submenu-item @(currentAction == "QuanLyPhong" ? "active" : "")">Danh sách phòng</a>
+                        <a href="@Url.Action("TaoPhong", "ChuTro")" class="nav-submenu-item @(currentAction == "TaoPhong" ? "active" : "")">Thêm phòng mới</a>
+                    </div>
+
+                    <a href="@Url.Action("LichHen", "ChuTro")" class="nav-item @(currentAction == "LichHen" ? "active" : "")">
+                        <span class="nav-icon"><span class="material-icons-round">calendar_month</span></span>
+                        <span class="nav-text">Lịch xem phòng</span>
+                    </a>
+
+                    <a href="@Url.Action("DonDatPhong", "ChuTro")" class="nav-item @(currentAction == "DonDatPhong" ? "active" : "")">
+                        <span class="nav-icon"><span class="material-icons-round">receipt_long</span></span>
+                        <span class="nav-text">Đơn đặt phòng</span>
+                    </a>
+
+                    <a href="@Url.Action("HopDong", "ChuTro")" class="nav-item @(currentAction == "HopDong" || currentAction == "ChiTietHopDong" ? "active" : "")">
+                        <span class="nav-icon"><span class="material-icons-round">description</span></span>
+                        <span class="nav-text">Hợp đồng</span>
+                    </a>
+
+                    <a href="@Url.Action("HoaDon", "ChuTro")" class="nav-item @(currentAction == "HoaDon" ? "active" : "")">
+                        <span class="nav-icon"><span class="material-icons-round">file_invoice_dollar</span></span>
+                        <span class="nav-text">Hóa đơn</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">TƯƠNG TÁC</span>
+                    <a href="@Url.Action("TinNhan", "ChuTro")" class="nav-item @(currentAction == "TinNhan" ? "active" : "")">
+                        <span class="nav-icon"><span class="material-icons-round">chat</span></span>
+                        <span class="nav-text">Tin nhắn</span>
+                        @if (messageCount > 0)
+                        {<span class="nav-badge">@messageCount</span>}
+                    </a>
+                    <a href="@Url.Action("YeuCauHoTro", "ChuTro")" class="nav-item">
+                        <span class="nav-icon"><span class="material-icons-round">build</span></span>
+                        <span class="nav-text">Yêu cầu sửa chữa</span>
+                    </a>
+                    <a href="#" class="nav-item">
+                        <span class="nav-icon"><span class="material-icons-round">star</span></span>
+                        <span class="nav-text">Đánh giá</span>
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <div class="content-wrapper">
+                @RenderBody()
+            </div>
+        </main>
+    </div>
+
+    <script src="@Url.Content("~/Scripts/chutro.js?v=2.0")"></script>
+    <script src="@Url.Content("~/Scripts/dashboard-charts.js?v=2.0")"></script>
+
+    @RenderSection("scripts", required: false)
+</body>
+</html>

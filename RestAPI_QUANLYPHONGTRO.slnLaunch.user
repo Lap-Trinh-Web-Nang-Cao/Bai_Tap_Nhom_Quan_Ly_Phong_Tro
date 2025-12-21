@@ -1,0 +1,20 @@
+[
+  {
+    "Name": "New Profile",
+    "Projects": [
+      {
+        "Path": "USER_QUANLYPHONGTRO\\USER_QUANLYPHONGTRO.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "ADMIN_QUANLYPHONGTRO\\ADMIN_QUANLYPHONGTRO.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "..\\Hoc DH\\HK125\\LTWNC\\Bai_Tap_Nhom\\RestAPI_QUANLYPHONGTRO\\RestAPI_QUANLYPHONGTRO.csproj",
+        "Action": "Start",
+        "DebugTarget": "http"
+      }
+    ]
+  }
+]

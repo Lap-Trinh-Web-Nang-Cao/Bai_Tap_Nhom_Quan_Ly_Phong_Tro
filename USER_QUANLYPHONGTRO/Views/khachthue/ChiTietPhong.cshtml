@@ -1,0 +1,148 @@
+﻿@model USER_QUANLYPHONGTRO.Models.ViewModels.KhachThue.PhongTroDetailViewModel
+
+@{
+    ViewBag.Title = Model.TieuDe;
+}
+
+<div class="container py-5">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb bg-white pl-0">
+            <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a href="@Url.Action("DanhSachPhong", "Home")">Danh sách phòng</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Chi tiết</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div id="roomCarousel" class="carousel slide shadow-sm rounded overflow-hidden mb-4" data-ride="carousel">
+                <div class="carousel-inner">
+                    @if (Model.HinhAnh != null && Model.HinhAnh.Any())
+                    {
+                        for (int i = 0; i < Model.HinhAnh.Count; i++)
+                        {
+                            <div class="carousel-item @(i == 0 ? "active" : "")">
+                                <img src="@Model.HinhAnh[i]" class="d-block w-100" alt="Room Image"
+                                     style="height: 450px; object-fit: cover;"
+                                     onerror="this.onerror=null; this.src='/images/logo.png';">
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="carousel-item active">
+                            <img src="/images/default-room.jpg" class="d-block w-100" style="height: 450px; object-fit: cover;">
+                        </div>
+                    }
+                </div>
+                <a class="carousel-control-prev" href="#roomCarousel" role="button" data-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                </a>
+                <a class="carousel-control-next" href="#roomCarousel" role="button" data-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                </a>
+            </div>
+
+            <div class="mb-4">
+                <h2 class="font-weight-bold text-dark mb-2">@Model.TieuDe</h2>
+                <p class="text-muted"><i class="fa fa-map-marker-alt text-danger mr-2"></i>@Model.DiaChi</p>
+                <div class="d-flex align-items-center mt-3">
+                    <span class="badge badge-primary mr-2 p-2"><i class="fa fa-home mr-1"></i> @Model.TenNhaTro</span>
+                    <span class="badge badge-success p-2"><i class="fa fa-check-circle mr-1"></i> @Model.TrangThai</span>
+                </div>
+            </div>
+
+            <hr />
+
+            <div class="mb-5">
+                <h4 class="font-weight-bold mb-3">Thông tin mô tả</h4>
+                
+            </div>
+
+            <div class="mb-5">
+                <h4 class="font-weight-bold mb-3">Tiện ích phòng</h4>
+                <div class="row">
+                    @if (Model.TienIchs != null)
+                    {
+                        foreach (var ti in Model.TienIchs)
+                        {
+                            <div class="col-md-4 mb-2">
+                                <div class="d-flex align-items-center">
+                                    <i class="fa fa-check text-success mr-2"></i> <span>@ti</span>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 sticky-top" style="top: 20px; z-index: 100;">
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <p class="text-muted mb-0">Giá thuê</p>
+                        <h3 class="text-danger font-weight-bold">@Model.GiaTien.ToString("N0") đ/tháng</h3>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-4 text-center">
+                        <div class="w-50 border-right">
+                            <i class="fa fa-expand fa-2x text-secondary mb-2"></i>
+                            <p class="mb-0 font-weight-bold">@Model.DienTich m²</p>
+                            <small class="text-muted">Diện tích</small>
+                        </div>
+                        <div class="w-50">
+                            <i class="fa fa-user-friends fa-2x text-secondary mb-2"></i>
+                            <p class="mb-0 font-weight-bold">2 - 3</p>
+                            <small class="text-muted">Người ở</small>
+                        </div>
+                    </div>
+
+                    @if (Session["UserId"] != null)
+                    {
+                        <a href="@Url.Action("DatLich", "KhachThue", new { id = Model.PhongId })"
+                           class="btn btn-primary btn-block btn-lg mb-3 shadow-sm font-weight-bold">
+                            <i class="fa fa-calendar-check mr-2"></i> ĐẶT LỊCH XEM
+                        </a>
+                        <a href="#" class="btn btn-outline-success btn-block font-weight-bold">
+                            <i class="fa fa-comments mr-2"></i> CHAT VỚI CHỦ TRỌ
+                        </a>
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning text-center" role="alert">
+                            <small>Vui lòng <a href="@Url.Action("Login", "Auth")" class="font-weight-bold">Đăng nhập</a> để đặt lịch xem phòng.</small>
+                        </div>
+                        <a href="@Url.Action("Login", "Auth")" class="btn btn-primary btn-block btn-lg opacity-50">
+                            ĐĂNG NHẬP ĐỂ ĐẶT
+                        </a>
+                    }
+
+                    <hr class="my-4" />
+
+                    <div class="d-flex align-items-center">
+                        <div class="bg-light rounded-circle d-flex align-items-center justify-content-center mr-3" style="width: 50px; height: 50px;">
+                            <i class="fa fa-phone-alt text-primary"></i>
+                        </div>
+                        <div>
+                            <small class="text-muted">Hỗ trợ 24/7</small>
+                            <h6 class="font-weight-bold mb-0">1900 123 456</h6>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .carousel-item img {
+        border-radius: 8px;
+    }
+
+    .sticky-top {
+        position: -webkit-sticky;
+        position: sticky;
+        top: 90px; /* Cách Header một khoảng */
+    }
+</style>

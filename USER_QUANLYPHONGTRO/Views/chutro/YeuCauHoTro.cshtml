@@ -1,0 +1,112 @@
+﻿@model IEnumerable<USER_QUANLYPHONGTRO.Models.ViewModels.ChuTro.YeuCauHoTroViewModel>
+
+@{
+    Layout = "~/Views/Shared/_ChutroLayout.cshtml";
+    ViewBag.Title = "Yêu cầu hỗ trợ";
+}
+
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <div>
+            <h1 class="page-title">Quản lý yêu cầu hỗ trợ</h1>
+            <p class="page-subtitle">Theo dõi và xử lý các vấn đề kỹ thuật từ khách thuê phòng.</p>
+        </div>
+        <div class="header-actions">
+            <select class="time-filter">
+                <option value="all">Tất cả trạng thái</option>
+                <option value="Moi">Mới tiếp nhận</option>
+                <option value="DangXuLy">Đang xử lý</option>
+                <option value="HoanThanh">Đã hoàn thành</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 25px;">
+        <div class="stat-card card-blue">
+            <div class="stat-label">YÊU CẦU MỚI</div>
+            <div class="stat-value">@Model.Count(m => m.TrangThai == "Moi")</div>
+            <div class="stat-desc">Cần được phê duyệt/tiếp nhận</div>
+        </div>
+        <div class="stat-card card-orange">
+            <div class="stat-label">ĐANG XỬ LÝ</div>
+            <div class="stat-value">@Model.Count(m => m.TrangThai == "DangXuLy")</div>
+            <div class="stat-desc">Đang trong quá trình sửa chữa</div>
+        </div>
+        <div class="stat-card card-green">
+            <div class="stat-label">HOÀN THÀNH</div>
+            <div class="stat-value">@Model.Count(m => m.TrangThai == "HoanThanh")</div>
+            <div class="stat-desc">Các sự cố đã khắc phục xong</div>
+        </div>
+    </div>
+
+    <div class="activity-card">
+        <div class="activity-header">
+            <h3 class="activity-title">Danh sách phiếu yêu cầu từ khách thuê</h3>
+        </div>
+        <div class="activity-list" style="max-height: none;">
+            @if (Model != null && Model.Any())
+            {
+                foreach (var item in Model)
+                {
+                    <div class="activity-item" style="padding: 20px; border-bottom: 1px solid var(--gray-100); align-items: flex-start;">
+                        <div class="item-icon" style="background: var(--gray-100); color: var(--gray-600); width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-right: 20px; flex-shrink: 0;">
+                            <span class="material-icons-round">build</span>
+                        </div>
+
+                        <div class="item-content" style="flex: 1;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <h4 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--gray-800);">@item.TieuDe</h4>
+                                <span class="status-badge @(item.TrangThai == "Moi" ? "status-pending" : (item.TrangThai == "DangXuLy" ? "status-confirmed" : "status-confirmed"))"
+                                      style="@(item.TrangThai == "DangXuLy" ? "background: #e0f2fe; color: #0369a1;" : (item.TrangThai == "HoanThanh" ? "background: #dcfce7; color: #15803d;" : ""))">
+                                    @if (item.TrangThai == "Moi")
+                                    {@:Mới tiếp nhận
+                                    }
+                                    else if (item.TrangThai == "DangXuLy")
+                                    { @:Đang xử lý
+                                    }
+                                    else
+                                    { @:Hoàn thành
+                                    }
+                                </span>
+                            </div>
+
+                            <div style="color: var(--gray-600); font-size: 0.9rem; margin-bottom: 10px; display: flex; gap: 15px;">
+                                <span><strong>Phòng:</strong> @item.TenPhong</span>
+                                <span><strong>Người gửi:</strong> @item.TenNguoiYeuCau</span>
+                                <span><strong>Loại:</strong> @item.TenLoaiHoTro</span>
+                            </div>
+
+                            <p style="margin: 0; color: var(--gray-700); font-size: 0.95rem; line-height: 1.6; background: #f8fafc; padding: 12px; border-radius: 8px;">
+                                @item.MoTa
+                            </p>
+
+                            <div style="margin-top: 12px; font-size: 0.85rem; color: var(--gray-500); display: flex; align-items: center; gap: 5px;">
+                                <span class="material-icons-round" style="font-size: 16px;">schedule</span>
+                                Gửi lúc: @item.ThoiGianTao.ToString("dd/MM/yyyy HH:mm")
+                            </div>
+                        </div>
+
+                        <div class="item-actions" style="margin-left: 20px; display: flex; flex-direction: column; gap: 8px; width: 120px;">
+                            @if (item.TrangThai == "Moi")
+                            {
+                                <button class="btn-action" style="background: var(--primary); color: white; width: 100%; justify-content: center;">Tiếp nhận</button>
+                            }
+                            else if (item.TrangThai == "DangXuLy")
+                            {
+                                <button class="btn-action" style="background: #15803d; color: white; width: 100%; justify-content: center;">Hoàn thành</button>
+                            }
+                            <button class="btn-action" style="background: white; border: 1px solid var(--gray-200); color: var(--gray-700); width: 100%; justify-content: center;">Chi tiết</button>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="empty-state" style="padding: 80px 20px; text-align: center; color: var(--gray-500);">
+                    <span class="material-icons-round" style="font-size: 64px; opacity: 0.2; margin-bottom: 20px;">handyman</span>
+                    <p style="font-size: 1.1rem;">Hiện không có yêu cầu hỗ trợ nào cần xử lý.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>

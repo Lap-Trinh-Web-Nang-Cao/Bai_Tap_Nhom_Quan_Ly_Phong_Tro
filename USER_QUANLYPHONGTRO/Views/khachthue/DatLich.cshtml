@@ -1,0 +1,71 @@
+﻿@model USER_QUANLYPHONGTRO.Models.ViewModels.KhachThue.DatLichViewModel
+
+@{
+    ViewBag.Title = "Đặt lịch xem phòng";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-lg border-0 overflow-hidden">
+                <div class="row no-gutters">
+
+                    <div class="col-md-5 bg-light border-right">
+                        <img src="@Model.AnhDaiDien" class="w-100" style="height: 250px; object-fit: cover;"
+                             onerror="this.onerror=null; this.src='/images/default-room.jpg';">
+
+                        <div class="p-4">
+                            <h5 class="font-weight-bold text-primary">@Model.TieuDe</h5>
+                            <p class="mb-2"><i class="fa fa-map-marker-alt text-danger mr-2"></i> @Model.DiaChi</p>
+                            <h4 class="text-success font-weight-bold mt-3">@Model.GiaTien.ToString("N0") đ/tháng</h4>
+                            <hr>
+                            <small class="text-muted"><i class="fa fa-info-circle"></i> Bạn đang đặt lịch xem phòng này. Vui lòng chọn thời gian bạn rảnh để chủ trọ sắp xếp.</small>
+                        </div>
+                    </div>
+
+                    <div class="col-md-7">
+                        <div class="p-5">
+                            <h3 class="font-weight-bold mb-4">Xác nhận đặt lịch</h3>
+
+                            @if (ViewBag.Error != null)
+                            {
+                                <div class="alert alert-danger">@ViewBag.Error</div>
+                            }
+
+                            @using (Html.BeginForm("DatLich", "KhachThue", FormMethod.Post))
+                            {
+                                @Html.AntiForgeryToken()
+                                @Html.HiddenFor(m => m.PhongId)
+                                @Html.HiddenFor(m => m.TieuDe)
+                                @Html.HiddenFor(m => m.GiaTien)
+                                @Html.HiddenFor(m => m.DiaChi)
+                                @Html.HiddenFor(m => m.AnhDaiDien)
+                                @Html.HiddenFor(m => m.ChuTroId)
+
+                                <div class="form-group mb-4">
+                                    <label class="font-weight-bold">Thời gian muốn xem <span class="text-danger">*</span></label>
+                                    @Html.TextBoxFor(m => m.NgayHen, "{0:yyyy-MM-ddTHH:mm}", new { @class = "form-control form-control-lg", type = "datetime-local" })
+                                    @Html.ValidationMessageFor(m => m.NgayHen, "", new { @class = "text-danger" })
+                                </div>
+
+                                <div class="form-group mb-4">
+                                    <label class="font-weight-bold">Lời nhắn (Tùy chọn)</label>
+                                    @Html.TextAreaFor(m => m.GhiChu, new { @class = "form-control", rows = "4", placeholder = "Ví dụ: Tôi muốn xem phòng vào giờ nghỉ trưa..." })
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center mt-4">
+                                    <a href="@Url.Action("ChiTietPhong", new { id = Model.PhongId })" class="text-muted">
+                                        <i class="fa fa-arrow-left"></i> Quay lại
+                                    </a>
+                                    <button type="submit" class="btn btn-primary btn-lg px-5 font-weight-bold shadow">
+                                        GỬI YÊU CẦU
+                                    </button>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

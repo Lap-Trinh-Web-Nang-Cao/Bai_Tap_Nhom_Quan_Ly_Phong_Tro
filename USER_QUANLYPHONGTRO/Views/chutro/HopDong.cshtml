@@ -1,0 +1,140 @@
+﻿@model USER_QUANLYPHONGTRO.Models.ViewModels.ChuTro.LandlordHopDongViewModel
+
+@{
+    Layout = "~/Views/Shared/_ChutroLayout.cshtml";
+    ViewBag.Title = "Quản lý hợp đồng";
+}
+
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <div>
+            <h1 class="page-title">Quản lý hợp đồng</h1>
+            <p class="page-subtitle">Theo dõi tình trạng pháp lý và thời hạn thuê phòng của khách hàng.</p>
+        </div>
+        <div class="header-actions">
+            <a href="@Url.Action("TaoHopDong", "ChuTro")" class="btn-create-contract"
+               style="display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: white; padding: 12px 24px; border-radius: 12px; text-decoration: none; font-weight: 700; box-shadow: 0 8px 16px rgba(99, 102, 241, 0.25); border: none; line-height: 1;">
+
+                <span class="material-icons-round" style="font-size: 24px; display: flex; align-items: center; justify-content: center;">add</span>
+
+                <span style="display: flex; align-items: center;">Tạo hợp đồng mới</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 25px; gap: 20px;">
+        <div class="stat-card" style="border-left: 5px solid #10b981;">
+            <div class="stat-label" style="color: var(--gray-500); font-weight: 600;">ĐANG HIỆU LỰC</div>
+            <div class="stat-value" style="color: #10b981; font-size: 2.5rem; margin: 10px 0;">@Model.TongHopDongHieuLuc</div>
+            <div class="stat-desc" style="color: var(--gray-400);">Hợp đồng thuê chính thức</div>
+        </div>
+
+        <div class="stat-card" style="border-left: 5px solid #f59e0b;">
+            <div class="stat-label" style="color: var(--gray-500); font-weight: 600;">SẮP HẾT HẠN</div>
+            <div class="stat-value" style="color: #f59e0b; font-size: 2.5rem; margin: 10px 0;">@Model.HopDongSapHetHan</div>
+            <div class="stat-desc" style="color: var(--gray-400);">Hết hạn trong vòng 30 ngày</div>
+        </div>
+
+        <div class="stat-card" style="border-left: 5px solid #6366f1;">
+            <div class="stat-label" style="color: var(--gray-500); font-weight: 600;">TỔNG TIỀN CỌC</div>
+            <div class="stat-value" style="color: #6366f1; font-size: 2rem; margin: 10px 0;">
+                @(Model.DanhSachHopDong.Sum(h => h.TienCoc).ToString("N0"))đ
+            </div>
+            <div class="stat-desc" style="color: var(--gray-400);">Tiền cọc đang giữ của khách</div>
+        </div>
+    </div>
+
+    <div class="activity-card" style="background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+        <div class="activity-header" style="display: flex; justify-content: space-between; align-items: center; padding: 20px;">
+            <h3 class="activity-title" style="font-size: 1.25rem; font-weight: 700;">Danh sách hợp đồng</h3>
+            <div class="navbar-search" style="width: 350px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
+                <span class="material-icons-round">search</span>
+                <input type="text" placeholder="Tìm tên khách, số hợp đồng..." style="background: transparent;">
+            </div>
+        </div>
+
+        <div class="table-responsive" style="padding: 0 20px 20px 20px;">
+            <table class="table-custom" style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="text-align: left; color: var(--gray-500); font-size: 0.85rem; border-bottom: 1px solid #f1f5f9;">
+                        <th style="padding: 15px 10px;">SỐ HỢP ĐỒNG</th>
+                        <th>PHÒNG</th>
+                        <th>NGƯỜI THUÊ</th>
+                        <th>THỜI HẠN</th>
+                        <th>GIÁ THUÊ</th>
+                        <th>TRẠNG THÁI</th>
+                        <th style="text-align: center;">THAO TÁC</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.DanhSachHopDong != null && Model.DanhSachHopDong.Any())
+                    {
+                        foreach (var item in Model.DanhSachHopDong)
+                        {
+                            <tr style="border-bottom: 1px solid #f8fafc; transition: all 0.2s hover;">
+                                <td style="padding: 18px 10px;">
+                                    <a href="@Url.Action("ChiTietHopDong", "ChuTro", new { id = item.HopDongId })"
+                                       style="color: #6366f1; font-weight: 600; text-decoration: none;">
+                                        @item.SoHopDong
+                                    </a>
+                                </td>
+                                <td style="font-weight: 500; color: var(--gray-700);">@item.TenPhong</td>
+                                <td style="color: var(--gray-600);">@item.TenNguoiThue</td>
+                                <td style="color: var(--gray-500); font-size: 0.9rem;">
+                                    @item.NgayBatDau.ToString("dd/MM/yyyy") - @item.NgayKetThuc.ToString("dd/MM/yyyy")
+                                </td>
+                                <td style="font-weight: 700; color: var(--gray-800);">@item.GiaThue.ToString("N0")đ</td>
+                                <td>
+                                    @if (item.TrangThai == "DangHieuLuc")
+                                    {
+                                        <span class="status-badge" style="background: #dcfce7; color: #15803d; padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 0.8rem;">
+                                            Đang hiệu lực
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="status-badge" style="background: #fef3c7; color: #92400e; padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 0.8rem;">
+                                            Sắp hết hạn
+                                        </span>
+                                    }
+                                </td>
+                                <td style="text-align: center;">
+                                    <div style="display: flex; justify-content: center; gap: 8px;">
+                                        @* Icon mắt chuyển sang trang Chi tiết *@
+                                        <a href="@Url.Action("ChiTietHopDong", "ChuTro", new { id = item.HopDongId })"
+                                           class="btn-icon-action" title="Xem chi tiết"
+                                           style="background: #6366f1; color: white; border-radius: 8px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; text-decoration: none;">
+                                            <span class="material-icons-round" style="font-size: 20px;">visibility</span>
+                                        </a>
+
+                                        <button class="btn-icon-action" title="In hợp đồng"
+                                                style="background: #f1f5f9; color: var(--gray-600); border: none; border-radius: 8px; width: 36px; height: 36px; cursor: pointer;">
+                                            <span class="material-icons-round" style="font-size: 20px;">print</span>
+                                        </button>
+
+                                        <button class="btn-icon-action" title="Chấm dứt"
+                                                style="background: #f1f5f9; color: #ef4444; border: none; border-radius: 8px; width: 36px; height: 36px; cursor: pointer;">
+                                            <span class="material-icons-round" style="font-size: 20px;">gavel</span>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    .table-custom tbody tr:hover {
+        background-color: #f8fafc;
+    }
+
+    .btn-icon-action:hover {
+        opacity: 0.8;
+        transform: translateY(-2px);
+        transition: all 0.2s;
+    }
+</style>
