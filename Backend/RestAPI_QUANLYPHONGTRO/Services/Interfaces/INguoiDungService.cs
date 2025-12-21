@@ -19,7 +19,17 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Interfaces
         /// <summary>
         /// Lấy danh sách users (phân trang) - trả về object hiển thị (không gồm PasswordHash)
         /// </summary>
-        Task<PagedResult<dynamic>> GetUsersAsync(int pageIndex, int pageSize, string keyword = "");
+        Task<PagedResult<dynamic>> GetUsersAsync(int pageIndex, int pageSize, string keyword = "", int? vaiTroId = null, bool? isKhoa = null);
+
+        /// <summary>
+        /// Lấy chi tiết user (bao gồm hồ sơ)
+        /// </summary>
+        Task<dynamic> GetUserDetailAsync(Guid userId);
+
+        /// <summary>
+        /// Admin tạo user mới
+        /// </summary>
+        Task<Guid?> CreateUserAsync(AdminCreateUserRequest request);
 
         /// <summary>
         /// Khóa tài khoản

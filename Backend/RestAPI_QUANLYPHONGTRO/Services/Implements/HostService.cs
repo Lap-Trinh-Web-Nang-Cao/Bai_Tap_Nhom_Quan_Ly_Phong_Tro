@@ -314,15 +314,24 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
         /// </summary>
         private string GetHostStatus(bool isEmailVerified, bool isLocked, string? phapLyStatus)
         {
+            // If account is locked -> treated as rejected
             if (isLocked)
                 return "Đã từ chối";
-            
-            if (phapLyStatus == "DaDuyet" && isEmailVerified)
+
+            // If admin verified email flag is set, consider host verified immediately.
+            // This ensures Admin "Approve" (which sets IsEmailXacThuc = true) is reflected in UI
+            // even when ChuTroThongTinPhapLy record is missing.
+            if (isEmailVerified)
                 return "Đã xác minh";
-            
+
+            // If legal-info explicitly marked as rejected
             if (phapLyStatus == "TuChoi")
                 return "Từ chối";
-            
+
+            // If legal-info says approved but email not verified, show pending (or you can adjust)
+            if (phapLyStatus == "DaDuyet")
+                return isEmailVerified ? "Đã xác minh" : "Chờ duyệt";
+
             return "Chờ duyệt";
         }
     }

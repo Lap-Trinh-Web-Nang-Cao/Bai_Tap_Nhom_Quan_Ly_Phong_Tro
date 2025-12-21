@@ -133,6 +133,23 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
             return true;
         }
 
+        public async Task<bool> RejectRoomAsync(Guid id, string reason)
+        {
+            var phong = await _context.Phongs.FindAsync(id);
+            if (phong == null) return false;
+
+            // Không dùng UpdateAsync (vì UpdateAsync check quyền chủ trọ)
+            phong.IsDuyet = false;
+            phong.TrangThai = "Từ chối";
+            phong.UpdatedAt = DateTimeOffset.Now;
+
+            // TODO: Nếu có cột lưu lý do từ chối thì set ở đây
+            // phong.LyDoTuChoi = reason;
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
         public async Task<bool> DeleteAsync(Guid id)
         {
             var phong = await _context.Phongs.FindAsync(id);
@@ -143,6 +160,52 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
 
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        /// <summary>
+        /// Lấy danh sách phòng chờ duyệt (cho Admin phê duyệt)
+        /// </summary>
+        public async Task<(IEnumerable<Phong> Data, int TotalCount)> GetPendingRoomsAsync(
+            int pageIndex,
+            int pageSize,
+            string keyword = "")
+        {
+            try
+            {
+                // 1. Query cơ bản: Lấy tất cả phòng (chưa duyệt và đã duyệt)
+                var query = _context.Phongs
+                    .Include(p => p.NhaTro)
+                    .ThenInclude(n => n.ChuTro)
+                    .Where(p => !p.IsDeleted)
+                    .AsQueryable();
+
+                // 2. Tìm kiếm theo từ khóa (tiêu đề, tên nhà trọ, email chủ trọ)
+                if (!string.IsNullOrWhiteSpace(keyword))
+                {
+                    query = query.Where(p =>
+                        p.TieuDe.Contains(keyword) ||
+                        p.NhaTro.TieuDe.Contains(keyword) ||
+                        (p.NhaTro.ChuTro != null && p.NhaTro.ChuTro.Email.Contains(keyword))
+                    );
+                }
+
+                // 3. Đếm tổng số bản ghi
+                int totalCount = await query.CountAsync();
+
+                // 4. Phân trang
+                var data = await query
+                    .OrderByDescending(x => x.CreatedAt)
+                    .Skip((pageIndex - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
+
+                return (data, totalCount);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ GetPendingRoomsAsync Error: {ex.Message}");
+                throw;
+            }
         }
     }
 }

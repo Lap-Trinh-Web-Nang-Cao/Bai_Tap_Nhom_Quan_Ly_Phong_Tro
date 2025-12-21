@@ -8,7 +8,6 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize] // Bắt buộc đăng nhập
     public class YeuCauHoTroController : ControllerBase
     {
         private readonly IYeuCauHoTroService _service;
@@ -25,8 +24,74 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
             return Guid.Parse(id);
         }
 
-        // 1. Người thuê: Tạo yêu cầu
+        // === ADMIN ENDPOINTS (AllowAnonymous for admin panel) ===
+        
+        /// <summary>
+        /// Admin: Lấy tất cả yêu cầu hỗ trợ
+        /// </summary>
+        [HttpGet("all")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetAll()
+        {
+            var list = await _service.GetAllAsync();
+            return Ok(list);
+        }
+        
+        /// <summary>
+        /// Admin: Lấy chi tiết yêu cầu
+        /// </summary>
+        [HttpGet("{id}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetById(Guid id)
+        {
+            var yeuCau = await _service.GetByIdAsync(id);
+            if (yeuCau == null)
+            {
+                return NotFound(new { message = "Không tìm thấy yêu cầu hỗ trợ" });
+            }
+            return Ok(yeuCau);
+        }
+        
+        /// <summary>
+        /// Admin: Lấy thống kê yêu cầu hỗ trợ
+        /// </summary>
+        [HttpGet("statistics")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetStatistics()
+        {
+            var stats = await _service.GetStatisticsAsync();
+            return Ok(stats);
+        }
+        
+        /// <summary>
+        /// Admin: Cập nhật trạng thái yêu cầu
+        /// </summary>
+        [HttpPut("admin-status/{id}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> AdminUpdateStatus(Guid id, [FromQuery] string status)
+        {
+            try
+            {
+                var success = await _service.AdminUpdateStatusAsync(id, status);
+                if (!success)
+                {
+                    return NotFound(new { success = false, message = "Không tìm thấy yêu cầu" });
+                }
+                return Ok(new { success = true, message = $"Đã cập nhật trạng thái thành: {status}" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+        }
+
+        // === USER ENDPOINTS (Require authentication) ===
+        
+        /// <summary>
+        /// Người thuê: Tạo yêu cầu mới
+        /// </summary>
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> Create([FromBody] CreateYeuCauRequest request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -37,8 +102,11 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
             return Ok(result);
         }
 
-        // 2. Người thuê: Xem danh sách yêu cầu của mình
+        /// <summary>
+        /// Người thuê: Xem danh sách yêu cầu của mình
+        /// </summary>
         [HttpGet("my-requests")]
+        [Authorize]
         public async Task<IActionResult> GetMyRequests()
         {
             var userId = GetUserId();
@@ -46,8 +114,11 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
             return Ok(list);
         }
 
-        // 3. Chủ trọ: Xem danh sách yêu cầu gửi tới mình
+        /// <summary>
+        /// Chủ trọ: Xem danh sách yêu cầu gửi tới mình
+        /// </summary>
         [HttpGet("landlord-inbox")]
+        [Authorize]
         public async Task<IActionResult> GetLandlordInbox()
         {
             var userId = GetUserId();
@@ -55,8 +126,11 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
             return Ok(list);
         }
 
-        // 4. Chủ trọ: Cập nhật trạng thái (VD: ?status=DangXuLy)
+        /// <summary>
+        /// Chủ trọ: Cập nhật trạng thái (VD: ?status=DangXuLy)
+        /// </summary>
         [HttpPut("status/{id}")]
+        [Authorize]
         public async Task<IActionResult> UpdateStatus(Guid id, [FromQuery] string status)
         {
             try

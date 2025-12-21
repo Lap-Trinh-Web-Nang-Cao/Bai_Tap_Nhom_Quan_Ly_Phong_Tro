@@ -77,23 +77,48 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
         }
 
         /// <summary>
-        /// Lấy danh sách phòng chờ duyệt
-        /// GET: api/dashboard/rooms/pending?top=5
+        /// Lấy danh sách phòng chờ duyệt (với pagination)
+        /// GET: api/dashboard/rooms/pending?pageIndex=1&pageSize=10
         /// </summary>
         [HttpGet("rooms/pending")]
-        public async Task<IActionResult> GetPendingRooms([FromQuery] int top = 5)
+        public async Task<IActionResult> GetPendingRooms(
+            [FromQuery] int pageIndex = 1, 
+            [FromQuery] int pageSize = 10)
+        {
+            try
+            {
+                if (pageIndex < 1)
+                    return BadRequest(new { message = "pageIndex phải >= 1" });
+                if (pageSize < 1 || pageSize > 50)
+                    return BadRequest(new { message = "pageSize phải từ 1 đến 50" });
+
+                var data = await _dashboardService.GetPendingRoomsAsync(pageIndex, pageSize);
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Lỗi khi lấy phòng chờ duyệt", error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Lấy Top N phòng chờ duyệt (dùng cho Dashboard widget)
+        /// GET: api/dashboard/rooms/pending-top?top=5
+        /// </summary>
+        [HttpGet("rooms/pending-top")]
+        public async Task<IActionResult> GetTopPendingRooms([FromQuery] int top = 5)
         {
             try
             {
                 if (top < 1 || top > 50)
                     return BadRequest(new { message = "Top phải từ 1 đến 50" });
 
-                var data = await _dashboardService.GetPendingRoomsAsync(top);
+                var data = await _dashboardService.GetTopPendingRoomsAsync(top);
                 return Ok(data);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Lỗi khi lấy phòng chờ duyệt", error = ex.Message });
+                return StatusCode(500, new { message = "Lỗi khi lấy top phòng chờ duyệt", error = ex.Message });
             }
         }
 

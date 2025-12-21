@@ -119,21 +119,26 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
         }
 
         /// <summary>
-        /// Danh sách phòng chờ duyệt (mới nhất)
+        /// Danh sách phòng chờ duyệt (mới nhất) - Hỗ trợ pagination
         /// </summary>
-        public async Task<List<PendingRoomResponse>> GetPendingRoomsAsync(int top = 5)
+        public async Task<PagedResult<PendingRoomResponse>> GetPendingRoomsAsync(
+            int pageIndex = 1, 
+            int pageSize = 10)
         {
             try
             {
-                // ✅ Simplified: Just get pending rooms without complex joins
+                // ✅ FIXED: Lấy tất cả phòng chờ duyệt (không cứng Top 5)
+                var totalCount = await _context.Phongs
+                    .CountAsync(p => !p.IsDeleted && !p.IsDuyet);
+
                 var pendingRooms = await _context.Phongs
                     .Where(p => !p.IsDeleted && !p.IsDuyet)
                     .OrderByDescending(p => p.CreatedAt)
-                    .Take(top)
+                    .Skip((pageIndex - 1) * pageSize)  // ✅ Pagination
+                    .Take(pageSize)                     // ✅ Dynamic pageSize
                     .AsNoTracking()
                     .ToListAsync();
 
-                // Return simple response (without landlord info due to EF join issues)
                 var result = pendingRooms
                     .Select(p => new PendingRoomResponse
                     {
@@ -145,11 +150,51 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
                     })
                     .ToList();
 
-                return result;
+                return new PagedResult<PendingRoomResponse>
+                {
+                    Items = result,
+                    PageIndex = pageIndex,
+                    PageSize = pageSize,
+                    TotalCount = totalCount
+                };
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"❌ GetPendingRoomsAsync Error: {ex.Message}");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Danh sách phòng chờ duyệt Top N (dùng cho Dashboard widget)
+        /// </summary>
+        public async Task<List<PendingRoomResponse>> GetTopPendingRoomsAsync(int top = 5)
+        {
+            try
+            {
+                var pendingRooms = await _context.Phongs
+                    .Where(p => !p.IsDeleted && !p.IsDuyet)
+                    .OrderByDescending(p => p.CreatedAt)
+                    .Take(top)
+                    .AsNoTracking()
+                    .ToListAsync();
+
+                var result = pendingRooms
+                    .Select(p => new PendingRoomResponse
+                    {
+                        PhongId = p.PhongId,
+                        TieuDe = p.TieuDe ?? "Phòng trọ",
+                        GiaTien = p.GiaTien,
+                        ChuTroName = "Chủ trọ",
+                        CreatedAt = p.CreatedAt ?? DateTimeOffset.Now
+                    })
+                    .ToList();
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ GetTopPendingRoomsAsync Error: {ex.Message}");
                 throw;
             }
         }

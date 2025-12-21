@@ -5,6 +5,7 @@ using RestAPI_QUANLYPHONGTRO.Data;
 using RestAPI_QUANLYPHONGTRO.Models;
 using RestAPI_QUANLYPHONGTRO.Services.Implements;
 using RestAPI_QUANLYPHONGTRO.Services.Interfaces;
+using RestAPI_QUANLYPHONGTRO.Seed;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -60,6 +61,7 @@ builder.Services.AddScoped<ITokenThongBaoService, TokenThongBaoService>();
 builder.Services.AddScoped<ITrangThaiDatPhongService, TrangThaiDatPhongService>();
 builder.Services.AddScoped<IViPhamService, ViPhamService>();
 builder.Services.AddScoped<IYeuCauHoTroService, YeuCauHoTroService>();
+builder.Services.AddScoped<ISystemSettingService, SystemSettingService>();
 
 // 3. Cấu hình xác thực JWT
 builder.Services.AddAuthentication(options =>
@@ -82,6 +84,13 @@ builder.Services.AddAuthentication(options =>
 });
 
 var app = builder.Build();
+
+// ===== INITIALIZE DATABASE =====
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    DatabaseInitializer.InitializeDatabase(dbContext);
+}
 
 // Middleware order matters!
 app.UseAuthentication();
