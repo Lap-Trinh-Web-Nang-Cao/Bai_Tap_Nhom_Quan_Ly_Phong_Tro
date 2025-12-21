@@ -1,108 +1,134 @@
 ﻿using System;
+using System.Configuration;
 using System.Web.Mvc;
 using USER_QUANLYPHONGTRO.Models.ViewModels.Auth;
+using USER_QUANLYPHONGTRO.Services;
 
 namespace USER_QUANLYPHONGTRO.Controllers
 {
     public class AuthController : Controller
     {
-        // ===== TRANG ĐĂNG NHẬP =====
+        private readonly AuthService _authService = new AuthService();
+
+        // ===== TRANG ĐĂNG NHẬP (THỐNG NHẤT) =====
         [HttpGet]
-        public ActionResult Login(string type = "nguoithue")
+        public ActionResult Login(string returnUrl = "")
         {
-            ViewBag.UserType = type;
-            return View(new LoginViewModel());
+            // Nếu đã đăng nhập rồi thì redirect về trang chủ tương ứng
+            if (_authService.IsUserLoggedIn())
+            {
+                return RedirectToHome();
+            }
+
+            ViewBag.ReturnUrl = returnUrl;
+            // Use explicit view path to avoid view resolution issues
+            return View("~/Views/auth/Login.cshtml", new LoginViewModel());
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Login(LoginViewModel model, string userType = "nguoithue")
+        public async System.Threading.Tasks.Task<ActionResult> Login(LoginViewModel model, string returnUrl = "")
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                bool isChuTro = userType.ToLower() == "chutro";
-
-                // FAKE LOGIN - Dùng để test layout
-                if (isChuTro || model.Email.ToLower().Contains("chutro"))
-                {
-                    // Giả lập đăng nhập Chủ Trọ
-                    Session["UserName"] = model.Email;
-                    Session["HoTen"] = "Nguyễn Văn A (Chủ Trọ)";
-                    Session["UserRole"] = "ChuTro";
-                    Session["IsVerified"] = true;
-                    Session["NotificationCount"] = 5;
-                    Session["MessageCount"] = 3;
-
-                    // REDIRECT ĐẾN TRANG CHỦ TRỌ (SELLER CENTER)
-                    return RedirectToAction("Dashboard", "ChuTro");
-                }
-                else
-                {
-                    // Giả lập đăng nhập Người Thuê
-                    Session["UserName"] = model.Email;
-                    Session["HoTen"] = "Trần Thị B (Người Thuê)";
-                    Session["UserRole"] = "KhachThue";
-                    Session["IsVerified"] = true;
-                    Session["NotificationCount"] = 2;
-                    Session["MessageCount"] = 1;
-
-                    // REDIRECT VỀ TRANG CHỦ NGƯỜI THUÊ
-                    return RedirectToAction("Index", "Home");
-                }
+                ViewBag.ErrorMessage = "Vui lòng kiểm tra lại thông tin";
+                ViewBag.ReturnUrl = returnUrl;
+                return View("~/Views/auth/Login.cshtml", model);
             }
 
-            ViewBag.ErrorMessage = "Email hoặc mật khẩu không chính xác";
-            ViewBag.UserType = userType;
-            return View(model);
+            try
+            {
+                // Gọi API để đăng nhập
+                var loginResult = await _authService.LoginAsync(model.Email, model.Password);
+
+                if (!loginResult.Success)
+                {
+                    ViewBag.ErrorMessage = loginResult.Message;
+                    ViewBag.ReturnUrl = returnUrl;
+                    return View("~/Views/auth/Login.cshtml", model);
+                }
+
+                // Lưu thông tin vào Session
+                var userInfo = new AuthService().GetUserInfoFromToken(loginResult.Token);
+                _authService.SaveUserSessionFromToken(loginResult.Token, userInfo);
+
+                // Điều hướng dựa trên vai trò
+                return RedirectToHome();
+            }
+            catch (Exception ex)
+            {
+                ViewBag.ErrorMessage = $"Lỗi đăng nhập: {ex.Message}";
+                ViewBag.ReturnUrl = returnUrl;
+                return View("~/Views/auth/Login.cshtml", model);
+            }
         }
 
         // ===== TRANG ĐĂNG KÝ NGƯỜI THUÊ =====
         [HttpGet]
-        public ActionResult NguoiThue_Register()
+        public ActionResult RegisterNguoiThue()
         {
-            return View(new RegisterViewModel { UserType = "KhachThue" });
+            return View(new RegisterViewModel { UserType = "NguoiThue" });
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult RegisterNguoiThue(RegisterViewModel model)
+        public async System.Threading.Tasks.Task<ActionResult> RegisterNguoiThue(RegisterViewModel model)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                ViewBag.SuccessMessage = "Đăng ký thành công! Vui lòng đăng nhập.";
-                return RedirectToAction("Login", new { type = "nguoithue" });
+                ViewBag.ErrorMessage = "Vui lòng kiểm tra lại thông tin";
+                return View(model);
             }
 
-            ViewBag.ErrorMessage = "Vui lòng kiểm tra lại thông tin";
-            return View("NguoiThue_Register", model);
+            try
+            {
+                // TODO: Gọi API /nguoidung/register để đăng ký
+                // Tạm thời hiển thị thông báo thành công
+                TempData["SuccessMessage"] = "Đăng ký thành công! Vui lòng đăng nhập.";
+                return RedirectToAction("Login", new { type = "nguoithue" });
+            }
+            catch (Exception ex)
+            {
+                ViewBag.ErrorMessage = $"Lỗi đăng ký: {ex.Message}";
+                return View(model);
+            }
         }
 
         // ===== TRANG ĐĂNG KÝ CHỦ TRỌ =====
         [HttpGet]
-        public ActionResult ChuTro_Register()
+        public ActionResult RegisterChuTro()
         {
             return View(new RegisterViewModel { UserType = "ChuTro" });
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult RegisterChuTro(RegisterViewModel model)
+        public async System.Threading.Tasks.Task<ActionResult> RegisterChuTro(RegisterViewModel model)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                ViewBag.SuccessMessage = "Đăng ký thành công! Vui lòng đợi xác minh danh tính.";
-                return RedirectToAction("Login", new { type = "chutro" });
+                ViewBag.ErrorMessage = "Vui lòng kiểm tra lại thông tin";
+                return View(model);
             }
 
-            ViewBag.ErrorMessage = "Vui lòng kiểm tra lại thông tin";
-            return View("ChuTro_Register", model);
+            try
+            {
+                // TODO: Gọi API /nguoidung/register để đăng ký chủ trọ
+                TempData["SuccessMessage"] = "Đăng ký thành công! Vui lòng đợi xác minh danh tính.";
+                return RedirectToAction("Login", new { type = "chutro" });
+            }
+            catch (Exception ex)
+            {
+                ViewBag.ErrorMessage = $"Lỗi đăng ký: {ex.Message}";
+                return View(model);
+            }
         }
 
         // ===== ĐĂNG XUẤT =====
         [HttpGet]
         public ActionResult Logout()
         {
-            Session.Clear();
+            _authService.Logout();
             return RedirectToAction("Index", "Home");
         }
 
@@ -111,6 +137,38 @@ namespace USER_QUANLYPHONGTRO.Controllers
         public ActionResult ForgotPassword()
         {
             return View();
+        }
+
+        // ===== HÀM HELPER: ĐIỀU HƯỚNG VỀ TRANG CHỦ PHÙ HỢP =====
+        private ActionResult RedirectToHome()
+        {
+            var userSession = _authService.GetCurrentUserSession();
+            
+            if (userSession == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            // Điều hướng dựa trên vai trò
+            switch (userSession.VaiTroId)
+            {
+                case 1: // Admin → Redirect sang ADMIN project Gateway
+                    // ✅ Redirect đến Admin Gateway (auto-login)
+                    var adminGatewayUrl = ConfigurationManager.AppSettings["AdminGatewayUrl"] 
+                        ?? "https://localhost:44350/Gateway";
+                    var redirectUrl = $"{adminGatewayUrl}?token=" 
+                        + System.Web.HttpUtility.UrlEncode(userSession.AuthToken);
+                    
+                    System.Diagnostics.Debug.WriteLine($"🔵 Admin redirect → {adminGatewayUrl}");
+                    return Redirect(redirectUrl);
+                    
+                case 2: // Chủ Trọ
+                    return RedirectToAction("Dashboard", "ChuTro");
+                    
+                case 3: // Người Thuê (mặc định)
+                default:
+                    return RedirectToAction("Index", "Home");
+            }
         }
     }
 }
