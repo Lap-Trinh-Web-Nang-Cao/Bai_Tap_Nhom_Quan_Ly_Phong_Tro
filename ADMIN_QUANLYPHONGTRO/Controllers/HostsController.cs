@@ -29,7 +29,7 @@ namespace ADMIN_QUANLYPHONGTRO.Controllers
                 ViewBag.PageIndex = page;
                 ViewBag.PageSize = pageSize;
                 
-                return View(hosts != null ? hosts.Items : new List<HostPendingItemViewModel>());  // ✅ Fixed
+                return View(hosts != null ? hosts.Items : new List<HostPendingItemViewModel>());
             }
             catch (Exception ex)
             {
@@ -45,8 +45,6 @@ namespace ADMIN_QUANLYPHONGTRO.Controllers
         {
             try
             {
-                // Tạm thời sử dụng cùng logic với Pending
-                // TODO: Tạo method riêng GetApprovedHostsAsync() khi cần lọc khác
                 var hosts = await _service.GetPendingHostsAsync(page, pageSize, keyword);
                 
                 ViewBag.Keyword = keyword;
@@ -54,7 +52,7 @@ namespace ADMIN_QUANLYPHONGTRO.Controllers
                 ViewBag.PageSize = pageSize;
                 ViewBag.Status = "approved";
                 
-                return View("Pending", hosts != null ? hosts.Items : new List<HostPendingItemViewModel>());  // ✅ Fixed
+                return View("Pending", hosts != null ? hosts.Items : new List<HostPendingItemViewModel>());
             }
             catch (Exception ex)
             {
@@ -70,8 +68,6 @@ namespace ADMIN_QUANLYPHONGTRO.Controllers
         {
             try
             {
-                // Tạm thời sử dụng cùng logic với Pending
-                // TODO: Tạo method riêng GetRejectedHostsAsync() khi cần lọc khác
                 var hosts = await _service.GetPendingHostsAsync(page, pageSize, keyword);
                 
                 ViewBag.Keyword = keyword;
@@ -79,7 +75,7 @@ namespace ADMIN_QUANLYPHONGTRO.Controllers
                 ViewBag.PageSize = pageSize;
                 ViewBag.Status = "rejected";
                 
-                return View("Pending", hosts != null ? hosts.Items : new List<HostPendingItemViewModel>());  // ✅ Fixed
+                return View("Pending", hosts != null ? hosts.Items : new List<HostPendingItemViewModel>());
             }
             catch (Exception ex)
             {
@@ -90,82 +86,62 @@ namespace ADMIN_QUANLYPHONGTRO.Controllers
             }
         }
 
-        // GET: Hosts/ApproveModal - Lấy thông tin để duyệt
-        [HttpGet]
-        public async Task<ActionResult> ApproveModal(string id)
-        {
-            try
-            {
-                var hostData = await _service.GetHostDetailAsync(id);
-                if (hostData == null)
-                    return HttpNotFound();
-
-                return PartialView("_ApproveModal", hostData);
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"❌ HostsController.ApproveModal Error: {ex.Message}");
-                return HttpNotFound();
-            }
-        }
-
-        // POST: Hosts/Approve - Phê duyệt chủ trọ
-        [HttpPost]
-        public async Task<ActionResult> Approve(string id)
-        {
-            try
-            {
-                await _service.ApproveHostAsync(id);
-                return RedirectToAction("Pending");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"❌ HostsController.Approve Error: {ex.Message}");
-                ViewBag.Error = "Lỗi khi phê duyệt";
-                return RedirectToAction("Pending");
-            }
-        }
-
-        // POST: Hosts/Reject - Từ chối chủ trọ
-        [HttpPost]
-        public async Task<ActionResult> Reject(string id, string reason)
-        {
-            try
-            {
-                await _service.RejectHostAsync(id, reason);
-                return RedirectToAction("Pending");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"❌ HostsController.Reject Error: {ex.Message}");
-                ViewBag.Error = "Lỗi khi từ chối";
-                return RedirectToAction("Pending");
-            }
-        }
-
         // ============ DATATABLES API METHODS ============
 
         /// <summary>
-        /// API cho DataTables: Lấy danh sách chủ trọ chờ duyệt
+        /// API cho DataTables: Lấy danh sách chủ trọ với filter
         /// </summary>
         [HttpPost]
-        public async Task<JsonResult> GetPendingHosts(int draw, int start, int length, string search = "")
+        public async Task<JsonResult> GetPendingHosts(int draw, int start, int length, string status = "", string keyword = "")
         {
             try
             {
                 // Tính toán pageIndex từ start và length
                 int pageIndex = (start / length) + 1;
                 
-                // Gọi service để lấy dữ liệu từ API Backend (PagedResult<T>)
-                var pagedResult = await _service.GetPendingHostsAsync(pageIndex, length, search);
+                // Lấy search value từ DataTables nếu không có keyword
+                if (string.IsNullOrEmpty(keyword) && Request.Form["search[value]"] != null)
+                {
+                    keyword = Request.Form["search[value]"];
+                }
 
-                // Trả về format DataTables đúng
+                // Gọi service để lấy dữ liệu từ API Backend
+                var pagedResult = await _service.GetPendingHostsAsync(pageIndex, length, keyword);
+
+                // Lọc theo trạng thái nếu có
+                var filteredItems = pagedResult?.Items ?? new List<HostPendingItemViewModel>();
+                var totalFiltered = pagedResult?.TotalRecords ?? 0;
+
+                if (!string.IsNullOrEmpty(status))
+                {
+                    switch (status.ToLower())
+                    {
+                        case "pending":
+                            filteredItems = filteredItems.Where(x => 
+                                x.TrangThaiXacThuc == "Chờ duyệt" || 
+                                string.IsNullOrEmpty(x.TrangThaiXacThuc)).ToList();
+                            break;
+                        case "approved":
+                            filteredItems = filteredItems.Where(x => 
+                                x.TrangThaiXacThuc == "Đã xác minh").ToList();
+                            break;
+                        case "rejected":
+                            // Accept both "Từ chối" and "Đã từ chối" (backend uses both variants in places)
+                            filteredItems = filteredItems.Where(x => 
+                                x.TrangThaiXacThuc == "Từ chối" || 
+                                x.TrangThaiXacThuc == "Đã từ chối").ToList();
+                            break;
+                    }
+                    totalFiltered = filteredItems.Count;
+                }
+
+                // Trả về format DataTables
                 return Json(new
                 {
                     draw = draw,
-                    recordsTotal = pagedResult?.TotalRecords ?? 0,  // ✅ Tổng số records
-                    recordsFiltered = pagedResult?.TotalRecords ?? 0,  // ✅ Số records sau filter
-                    data = pagedResult?.Items ?? new List<HostPendingItemViewModel>()  // ✅ Items hiện tại
+                    recordsTotal = pagedResult?.TotalRecords ?? 0,
+                    recordsFiltered = totalFiltered,
+                    data = filteredItems
                 });
             }
             catch (Exception ex)
@@ -179,6 +155,133 @@ namespace ADMIN_QUANLYPHONGTRO.Controllers
                     error = ex.Message,
                     data = new List<object>()
                 });
+            }
+        }
+
+        /// <summary>
+        /// API: Lấy thống kê số lượng chủ trọ theo trạng thái
+        /// </summary>
+        [HttpGet]
+        public async Task<JsonResult> GetHostStats()
+        {
+            try
+            {
+                // Lấy tất cả host để đếm theo trạng thái
+                var allHosts = await _service.GetPendingHostsAsync(1, 1000, "");
+                
+                var items = allHosts?.Items ?? new List<HostPendingItemViewModel>();
+
+                var pending = items.Count(x => 
+                    x.TrangThaiXacThuc == "Chờ duyệt" || 
+                    string.IsNullOrEmpty(x.TrangThaiXacThuc));
+                var approved = items.Count(x => x.TrangThaiXacThuc == "Đã xác minh");
+                var rejected = items.Count(x => x.TrangThaiXacThuc == "Từ chối");
+
+                return Json(
+                    new
+                    {
+                        success = true,
+                        data = new
+                        {
+                            pending = pending,
+                            approved = approved,
+                            rejected = rejected,
+                            total = items.Count
+                        }
+                    },
+                    JsonRequestBehavior.AllowGet
+                );
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ HostsController.GetHostStats Error: {ex.Message}");
+                return Json(
+                    new
+                    {
+                        success = false,
+                        message = ex.Message,
+                        data = new { pending = 0, approved = 0, rejected = 0, total = 0 }
+                    },
+                    JsonRequestBehavior.AllowGet
+                );
+            }
+        }
+
+        /// <summary>
+        /// API: Lấy thống kê số lượng chủ trọ theo trạng thái (cho sidebar)
+        /// </summary>
+        [HttpGet]
+        public async Task<JsonResult> GetHostStatistics()
+        {
+            try
+            {
+                // Cách 1: Thử lấy từ API Backend trước
+                System.Diagnostics.Debug.WriteLine("📊 GetHostStatistics - Attempting to fetch from Backend API...");
+                
+                try
+                {
+                    var allHosts = await _service.GetPendingHostsAsync(1, 1000, "");
+                    
+                    if (allHosts?.Items != null && allHosts.Items.Count > 0)
+                    {
+                        var items = allHosts.Items;
+                        
+                        var pending = items.Count(x => 
+                            x.TrangThaiXacThuc == "Chờ duyệt" || 
+                            string.IsNullOrEmpty(x.TrangThaiXacThuc));
+                        var approved = items.Count(x => x.TrangThaiXacThuc == "Đã xác minh");
+                        var rejected = items.Count(x => 
+                            x.TrangThaiXacThuc == "Từ chối" || 
+                            x.TrangThaiXacThuc == "Đã từ chối");
+
+                        System.Diagnostics.Debug.WriteLine($"✅ Got data from Backend API: Pending={pending}, Approved={approved}, Rejected={rejected}");
+
+                        return Json(new
+                        {
+                            success = true,
+                            data = new
+                            {
+                                PendingCount = pending,
+                                ApprovedCount = approved,
+                                RejectedCount = rejected,
+                                TotalCount = items.Count
+                            }
+                        }, JsonRequestBehavior.AllowGet);
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine("⚠️ Backend API returned empty data");
+                    }
+                }
+                catch (Exception apiEx)
+                {
+                    System.Diagnostics.Debug.WriteLine($"⚠️ Backend API call failed: {apiEx.Message}. Returning empty stats.");
+                }
+
+                // Cách 2: Nếu API Backend lỗi, trả về dữ liệu mặc định
+                System.Diagnostics.Debug.WriteLine("📊 Returning default empty stats");
+                return Json(new
+                {
+                    success = true,
+                    data = new
+                    {
+                        PendingCount = 0,
+                        ApprovedCount = 0,
+                        RejectedCount = 0,
+                        TotalCount = 0
+                    }
+                }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ GetHostStatistics Error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+                return Json(new
+                {
+                    success = false,
+                    message = ex.Message,
+                    data = new { PendingCount = 0, ApprovedCount = 0, RejectedCount = 0, TotalCount = 0 }
+                }, JsonRequestBehavior.AllowGet);
             }
         }
 
@@ -251,14 +354,14 @@ namespace ADMIN_QUANLYPHONGTRO.Controllers
                 var result = await _service.ApproveHostAsync(id);
 
                 if (result)
-                    return Json(new { success = true, message = "Đã xác thực chủ trọ" });
+                    return Json(new { success = true, message = "Đã xác thực chủ trọ thành công" });
                 else
-                    return Json(new { success = false, message = "Xác thực thất bại" });
+                    return Json(new { success = false, message = "Xác thực thất bại. Vui lòng thử lại." });
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"❌ HostsController.ApproveHost Error: {ex.Message}");
-                return Json(new { success = false, message = ex.Message });
+                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
             }
         }
 
@@ -274,19 +377,71 @@ namespace ADMIN_QUANLYPHONGTRO.Controllers
                     return Json(new { success = false, message = "ID không hợp lệ" });
 
                 if (string.IsNullOrEmpty(reason))
-                    return Json(new { success = false, message = "Lý do từ chối không được để trống" });
+                    return Json(new { success = false, message = "Vui lòng nhập lý do từ chối" });
 
                 var result = await _service.RejectHostAsync(id, reason);
 
                 if (result)
                     return Json(new { success = true, message = "Đã từ chối chủ trọ" });
                 else
-                    return Json(new { success = false, message = "Từ chối thất bại" });
+                    return Json(new { success = false, message = "Từ chối thất bại. Vui lòng thử lại." });
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"❌ HostsController.RejectHost Error: {ex.Message}");
-                return Json(new { success = false, message = ex.Message });
+                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
+            }
+        }
+
+        // ============ LEGACY METHODS (for backward compatibility) ============
+
+        [HttpGet]
+        public async Task<ActionResult> ApproveModal(string id)
+        {
+            try
+            {
+                var hostData = await _service.GetHostDetailAsync(id);
+                if (hostData == null)
+                    return HttpNotFound();
+
+                return PartialView("_ApproveModal", hostData);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ HostsController.ApproveModal Error: {ex.Message}");
+                return HttpNotFound();
+            }
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> Approve(string id)
+        {
+            try
+            {
+                await _service.ApproveHostAsync(id);
+                return RedirectToAction("Pending");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ HostsController.Approve Error: {ex.Message}");
+                ViewBag.Error = "Lỗi khi phê duyệt";
+                return RedirectToAction("Pending");
+            }
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> Reject(string id, string reason)
+        {
+            try
+            {
+                await _service.RejectHostAsync(id, reason);
+                return RedirectToAction("Pending");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ HostsController.Reject Error: {ex.Message}");
+                ViewBag.Error = "Lỗi khi từ chối";
+                return RedirectToAction("Pending");
             }
         }
     }

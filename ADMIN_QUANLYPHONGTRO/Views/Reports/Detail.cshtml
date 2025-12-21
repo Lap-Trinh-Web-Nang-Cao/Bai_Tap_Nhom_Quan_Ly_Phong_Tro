@@ -1,7 +1,402 @@
-﻿
+﻿@model ADMIN_QUANLYPHONGTRO.Models.DTO.BaoCaoViPhamDto
 @{
-    ViewBag.Title = "Detail";
+    ViewBag.Title = "Chi tiết báo cáo vi phạm";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    var violationTypes = ViewBag.ViolationTypes as List<ADMIN_QUANLYPHONGTRO.Models.DTO.ViPhamDto> ?? new List<ADMIN_QUANLYPHONGTRO.Models.DTO.ViPhamDto>();
+    
+    var statusClass = "";
+    var statusText = "";
+    var trangThai = Model != null ? Model.TrangThai : null;
+    switch (trangThai)
+    {
+        case "CHO_XU_LY":
+            statusClass = "badge-warning";
+            statusText = "Chờ xử lý";
+            break;
+        case "DANG_XU_LY":
+            statusClass = "badge-info";
+            statusText = "Đang xử lý";
+            break;
+        case "DA_XU_LY":
+            statusClass = "badge-success";
+            statusText = "Đã xử lý";
+            break;
+        case "TU_CHOI":
+            statusClass = "badge-danger";
+            statusText = "Từ chối";
+            break;
+        default:
+            statusClass = "badge-secondary";
+            statusText = trangThai != null ? trangThai : "N/A";
+            break;
+    }
+
+    var typeIcon = "";
+    var typeText = "";
+    var loaiThucThe = Model != null ? Model.LoaiThucThe : null;
+    switch (loaiThucThe)
+    {
+        case "PHONG":
+            typeIcon = "fas fa-building";
+            typeText = "Phòng";
+            break;
+        case "NGUOIDUNG":
+            typeIcon = "fas fa-user";
+            typeText = "Người dùng";
+            break;
+        case "DANHGIA":
+            typeIcon = "fas fa-star";
+            typeText = "Đánh giá";
+            break;
+        default:
+            typeIcon = "fas fa-question";
+            typeText = loaiThucThe != null ? loaiThucThe : "N/A";
+            break;
+    }
+
+    var violationType = Model != null && Model.ViPhamId.HasValue ? violationTypes.FirstOrDefault(v => v.ViPhamId == Model.ViPhamId) : null;
 }
 
-<h2>Detail</h2>
+@section styles {
+    <link rel="stylesheet" href="~/Content/css/pages/reports.css?v=@DateTime.Now.Ticks" />
+}
+
+<!-- Page Header -->
+<div class="page-header">
+    <h4 class="page-title">Chi tiết báo cáo vi phạm</h4>
+    <ul class="breadcrumbs">
+        <li class="nav-home">
+            <a href="@Url.Action("Index", "Dashboard")">
+                <i class="flaticon-home"></i>
+            </a>
+        </li>
+        <li class="separator">
+            <i class="flaticon-right-arrow"></i>
+        </li>
+        <li class="nav-item">
+            <a href="@Url.Action("Index", "Reports")">Báo cáo vi phạm</a>
+        </li>
+        <li class="separator">
+            <i class="flaticon-right-arrow"></i>
+        </li>
+        <li class="nav-item">
+            <a href="#">Chi tiết</a>
+        </li>
+    </ul>
+</div>
+
+@if (!string.IsNullOrEmpty(ViewBag.Error as string))
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong><i class="fas fa-exclamation-triangle"></i> Lỗi!</strong> @ViewBag.Error
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+}
+
+@if (Model != null)
+{
+    <div class="row">
+        <!-- Main Info -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-head-row">
+                        <div class="card-title">
+                            <i class="fas fa-exclamation-triangle text-warning"></i>
+                            Báo cáo #@Model.SoBaoCao
+                        </div>
+                        <div class="card-tools">
+                            <span class="badge @statusClass mr-2" style="font-size: 14px;">@statusText</span>
+                            <span class="badge badge-primary">
+                                <i class="@typeIcon"></i> @typeText
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Tiêu đề -->
+                    <div class="form-group">
+                        <label class="text-muted font-weight-bold">Tiêu đề báo cáo</label>
+                        <h5>@(Model.TieuDe ?? "Không có tiêu đề")</h5>
+                    </div>
+
+                    <hr>
+
+                    <!-- Mô tả -->
+                    <div class="form-group">
+                        <label class="text-muted font-weight-bold">Mô tả chi tiết</label>
+                        <div class="p-3 bg-light rounded">
+                            @if (!string.IsNullOrEmpty(Model.MoTa))
+                            {
+                                <p class="mb-0">@Model.MoTa</p>
+                            }
+                            else
+                            {
+                                <p class="text-muted mb-0"><em>Không có mô tả</em></p>
+                            }
+                        </div>
+                    </div>
+
+                    @if (violationType != null)
+                    {
+                        <hr>
+                        <!-- Loại vi phạm -->
+                        <div class="form-group">
+                            <label class="text-muted font-weight-bold">Loại vi phạm</label>
+                            <div class="p-3 bg-light rounded">
+                                <h6 class="mb-2">@violationType.TenViPham</h6>
+                                @if (!string.IsNullOrEmpty(violationType.MoTa))
+                                {
+                                    <p class="text-muted mb-2">@violationType.MoTa</p>
+                                }
+                                @if (violationType.HinhPhatTien.HasValue)
+                                {
+                                    <span class="badge badge-warning mr-2">
+                                        <i class="fas fa-money-bill"></i> Phạt: @violationType.HinhPhatTien.Value.ToString("N0") VNĐ
+                                    </span>
+                                }
+                                @if (violationType.SoDiemTru.HasValue)
+                                {
+                                    <span class="badge badge-danger">
+                                        <i class="fas fa-minus-circle"></i> Trừ @violationType.SoDiemTru điểm uy tín
+                                    </span>
+                                }
+                            </div>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(Model.KetQua))
+                    {
+                        <hr>
+                        <!-- Kết quả xử lý -->
+                        <div class="form-group">
+                            <label class="text-muted font-weight-bold">
+                                <i class="fas fa-clipboard-check text-success"></i> Kết quả xử lý
+                            </label>
+                            <div class="p-3 bg-success-light rounded border border-success">
+                                <p class="mb-0">@Model.KetQua</p>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Action Buttons -->
+                @if (Model.TrangThai == "CHO_XU_LY" || Model.TrangThai == "DANG_XU_LY")
+                {
+                    <div class="card-footer">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <button type="button" class="btn btn-success btn-block" onclick="resolveReport('@Model.BaoCaoId')">
+                                    <i class="fa fa-check"></i> Xử lý báo cáo
+                                </button>
+                            </div>
+                            <div class="col-md-6">
+                                <button type="button" class="btn btn-warning btn-block" onclick="rejectReport('@Model.BaoCaoId')">
+                                    <i class="fa fa-ban"></i> Từ chối
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Sidebar Info -->
+        <div class="col-md-4">
+            <!-- Thông tin thời gian -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="fas fa-clock"></i> Thông tin thời gian
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="text-muted">Thời gian báo cáo:</span>
+                        <span class="font-weight-bold">
+                            @if (Model.ThoiGianBaoCao.HasValue)
+                            {
+                                @Model.ThoiGianBaoCao.Value.ToString("dd/MM/yyyy HH:mm")
+                            }
+                            else
+                            {
+                                <span class="text-muted">N/A</span>
+                            }
+                        </span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted">Thời gian xử lý:</span>
+                        <span class="font-weight-bold">
+                            @if (Model.ThoiGianXuLy.HasValue)
+                            {
+                                @Model.ThoiGianXuLy.Value.ToString("dd/MM/yyyy HH:mm")
+                            }
+                            else
+                            {
+                                <span class="text-muted">Chưa xử lý</span>
+                            }
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thông tin người liên quan -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="fas fa-users"></i> Người liên quan
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="text-muted">Người báo cáo:</label>
+                        <p class="mb-0">
+                            <i class="fas fa-user text-primary"></i>
+                            @(Model.NguoiBaoCao != Guid.Empty ? Model.NguoiBaoCao.ToString().Substring(0, 8) + "..." : "N/A")
+                        </p>
+                    </div>
+                    @if (Model.NguoiXuLy.HasValue && Model.NguoiXuLy.Value != Guid.Empty)
+                    {
+                        <div class="mb-0">
+                            <label class="text-muted">Người xử lý:</label>
+                            <p class="mb-0">
+                                <i class="fas fa-user-shield text-success"></i>
+                                @Model.NguoiXuLy.Value.ToString().Substring(0, 8)...
+                            </p>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Đối tượng bị báo cáo -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="@typeIcon"></i> Đối tượng bị báo cáo
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="text-muted">Loại:</label>
+                        <p class="mb-0">
+                            <span class="badge badge-primary">@typeText</span>
+                        </p>
+                    </div>
+                    @if (Model.ThucTheId.HasValue)
+                    {
+                        <div class="mb-0">
+                            <label class="text-muted">ID đối tượng:</label>
+                            <p class="mb-0">
+                                <code>@Model.ThucTheId.Value.ToString().Substring(0, 8)...</code>
+                                @if (Model.LoaiThucThe == "PHONG")
+                                {
+                                    <a href="@Url.Action("Detail", "Rooms", new { id = Model.ThucTheId })" class="btn btn-sm btn-info ml-2" title="Xem phòng">
+                                        <i class="fa fa-external-link-alt"></i>
+                                    </a>
+                                }
+                                else if (Model.LoaiThucThe == "NGUOIDUNG")
+                                {
+                                    <a href="@Url.Action("Detail", "Users", new { id = Model.ThucTheId })" class="btn btn-sm btn-info ml-2" title="Xem người dùng">
+                                        <i class="fa fa-external-link-alt"></i>
+                                    </a>
+                                }
+                            </p>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="card">
+                <div class="card-body">
+                    <a href="@Url.Action("Index", "Reports")" class="btn btn-secondary btn-block">
+                        <i class="fa fa-arrow-left"></i> Quay lại danh sách
+                    </a>
+                    <button type="button" class="btn btn-danger btn-block mt-2" onclick="deleteReport('@Model.BaoCaoId')">
+                        <i class="fa fa-trash"></i> Xóa báo cáo
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <i class="fas fa-exclamation-circle fa-4x text-warning mb-3"></i>
+            <h4>Không tìm thấy báo cáo</h4>
+            <p class="text-muted">Báo cáo này có thể đã bị xóa hoặc không tồn tại.</p>
+            <a href="@Url.Action("Index", "Reports")" class="btn btn-primary">
+                <i class="fa fa-arrow-left"></i> Quay lại danh sách
+            </a>
+        </div>
+    </div>
+}
+
+<!-- Resolve Modal -->
+<div class="modal fade" id="resolveModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-check-circle"></i> Xử lý báo cáo
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="resolveReportId">
+                <div class="form-group">
+                    <label for="resolveResult">Kết quả xử lý <span class="text-danger">*</span></label>
+                    <textarea class="form-control" id="resolveResult" rows="4" 
+                              placeholder="Nhập kết quả xử lý vi phạm...">Đã xử lý vi phạm theo quy định.</textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-success" onclick="submitResolve()">
+                    <i class="fa fa-check"></i> Xác nhận xử lý
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reject Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title">
+                    <i class="fas fa-ban"></i> Từ chối báo cáo
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="rejectReportId">
+                <div class="form-group">
+                    <label for="rejectReason">Lý do từ chối <span class="text-danger">*</span></label>
+                    <textarea class="form-control" id="rejectReason" rows="4" 
+                              placeholder="Nhập lý do từ chối báo cáo..." required></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-warning" onclick="submitReject()">
+                    <i class="fa fa-ban"></i> Xác nhận từ chối
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script src="~/Scripts/pages/reports.js?v=@DateTime.Now.Ticks"></script>
+}
 

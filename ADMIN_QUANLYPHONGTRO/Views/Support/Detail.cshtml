@@ -1,7 +1,290 @@
-﻿
+﻿@model ADMIN_QUANLYPHONGTRO.Models.DTO.YeuCauHoTroDto
 @{
-    ViewBag.Title = "Detail";
+    ViewBag.Title = "Chi tiết yêu cầu hỗ trợ";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    var loaiHoTros = ViewBag.LoaiHoTros as List<ADMIN_QUANLYPHONGTRO.Models.DTO.LoaiHoTroDto>;
+    if (loaiHoTros == null) { loaiHoTros = new List<ADMIN_QUANLYPHONGTRO.Models.DTO.LoaiHoTroDto>(); }
+    
+    var statusClass = "";
+    var statusText = "";
+    var trangThai = Model != null ? Model.TrangThai : null;
+    switch (trangThai)
+    {
+        case "Moi":
+            statusClass = "badge-info";
+            statusText = "Mới gửi";
+            break;
+        case "DangXuLy":
+            statusClass = "badge-warning";
+            statusText = "Đang xử lý";
+            break;
+        case "HoanThanh":
+            statusClass = "badge-success";
+            statusText = "Hoàn thành";
+            break;
+        case "TuChoi":
+            statusClass = "badge-danger";
+            statusText = "Từ chối";
+            break;
+        default:
+            statusClass = "badge-secondary";
+            statusText = trangThai != null ? trangThai : "N/A";
+            break;
+    }
+    
+    var tenLoai = Model != null && Model.TenLoaiHoTro != null ? Model.TenLoaiHoTro : "Khác";
+    var loaiIcon = "fas fa-question-circle";
+    if (tenLoai.ToLower().Contains("sua") || tenLoai.ToLower().Contains("sửa"))
+    {
+        loaiIcon = "fas fa-tools";
+    }
+    else if (tenLoai.ToLower().Contains("dien") || tenLoai.ToLower().Contains("điện"))
+    {
+        loaiIcon = "fas fa-bolt";
+    }
+    else if (tenLoai.ToLower().Contains("nuoc") || tenLoai.ToLower().Contains("nước"))
+    {
+        loaiIcon = "fas fa-tint";
+    }
+    else if (tenLoai.ToLower().Contains("ve sinh") || tenLoai.ToLower().Contains("vệ sinh"))
+    {
+        loaiIcon = "fas fa-broom";
+    }
 }
 
-<h2>Detail</h2>
+@section styles {
+    <link rel="stylesheet" href="~/Content/css/pages/support.css?v=@DateTime.Now.Ticks" />
+}
+
+<!-- Page Header -->
+<div class="page-header">
+    <h4 class="page-title">Chi tiết yêu cầu hỗ trợ</h4>
+    <ul class="breadcrumbs">
+        <li class="nav-home">
+            <a href="@Url.Action("Index", "Dashboard")">
+                <i class="flaticon-home"></i>
+            </a>
+        </li>
+        <li class="separator">
+            <i class="flaticon-right-arrow"></i>
+        </li>
+        <li class="nav-item">
+            <a href="@Url.Action("Index", "Support")">Ticket hỗ trợ</a>
+        </li>
+        <li class="separator">
+            <i class="flaticon-right-arrow"></i>
+        </li>
+        <li class="nav-item">
+            <a href="#">Chi tiết</a>
+        </li>
+    </ul>
+</div>
+
+@if (!string.IsNullOrEmpty(ViewBag.Error as string))
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong><i class="fas fa-exclamation-triangle"></i> Lỗi!</strong> @ViewBag.Error
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+}
+
+@if (Model != null)
+{
+    <div class="row">
+        <!-- Main Info -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-head-row">
+                        <div class="card-title">
+                            <i class="fas fa-headset text-primary"></i>
+                            Yêu cầu #@(Model.SoYeuCau > 0 ? Model.SoYeuCau.ToString() : Model.HoTroId.ToString().Substring(0, 8))
+                        </div>
+                        <div class="card-tools">
+                            <span class="badge @statusClass mr-2" style="font-size: 14px;">@statusText</span>
+                            <span class="badge badge-primary">
+                                <i class="@loaiIcon"></i> @tenLoai
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Tiêu đề -->
+                    <div class="form-group">
+                        <label class="text-muted font-weight-bold">Tiêu đề yêu cầu</label>
+                        <h5>@(Model.TieuDe != null ? Model.TieuDe : "Không có tiêu đề")</h5>
+                    </div>
+
+                    <hr>
+
+                    <!-- Mô tả -->
+                    <div class="form-group">
+                        <label class="text-muted font-weight-bold">Mô tả chi tiết</label>
+                        <div class="p-3 bg-light rounded">
+                            @if (!string.IsNullOrEmpty(Model.MoTa))
+                            {
+                                <p class="mb-0">@Model.MoTa</p>
+                            }
+                            else
+                            {
+                                <p class="text-muted mb-0"><em>Không có mô tả</em></p>
+                            }
+                        </div>
+                    </div>
+
+                    @if (Model.PhongId.HasValue)
+                    {
+                        <hr>
+                        <!-- Thông tin phòng -->
+                        <div class="form-group">
+                            <label class="text-muted font-weight-bold">
+                                <i class="fas fa-door-open"></i> Phòng liên quan
+                            </label>
+                            <div class="p-3 bg-light rounded">
+                                @if (!string.IsNullOrEmpty(Model.TenPhong))
+                                {
+                                    <p class="mb-0">@Model.TenPhong</p>
+                                }
+                                else
+                                {
+                                    <p class="mb-0">Phòng #@Model.PhongId.Value.ToString().Substring(0, 8)...</p>
+                                }
+                                <a href="@Url.Action("Detail", "Rooms", new { id = Model.PhongId })" class="btn btn-sm btn-info mt-2">
+                                    <i class="fa fa-external-link-alt"></i> Xem phòng
+                                </a>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Action Buttons -->
+                @if (Model.TrangThai == "Moi" || Model.TrangThai == "DangXuLy")
+                {
+                    <div class="card-footer">
+                        <div class="row">
+                            @if (Model.TrangThai == "Moi")
+                            {
+                                <div class="col-md-4">
+                                    <button type="button" class="btn btn-warning btn-block" onclick="processRequest('@Model.HoTroId')">
+                                        <i class="fa fa-play"></i> Bắt đầu xử lý
+                                    </button>
+                                </div>
+                            }
+                            <div class="col-md-4">
+                                <button type="button" class="btn btn-success btn-block" onclick="completeRequest('@Model.HoTroId')">
+                                    <i class="fa fa-check"></i> Hoàn thành
+                                </button>
+                            </div>
+                            <div class="col-md-4">
+                                <button type="button" class="btn btn-danger btn-block" onclick="rejectRequest('@Model.HoTroId')">
+                                    <i class="fa fa-times"></i> Từ chối
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Sidebar Info -->
+        <div class="col-md-4">
+            <!-- Thông tin thời gian -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="fas fa-clock"></i> Thông tin thời gian
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="text-muted">Thời gian gửi:</span>
+                        <span class="font-weight-bold">
+                            @if (Model.ThoiGianTao.HasValue)
+                            {
+                                @Model.ThoiGianTao.Value.ToString("dd/MM/yyyy HH:mm")
+                            }
+                            else
+                            {
+                                <span class="text-muted">N/A</span>
+                            }
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thông tin người gửi -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="fas fa-user"></i> Người gửi yêu cầu
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="text-muted">Người yêu cầu:</label>
+                        <p class="mb-0">
+                            <i class="fas fa-user text-primary"></i>
+                            @if (!string.IsNullOrEmpty(Model.TenNguoiYeuCau))
+                            {
+                                @Model.TenNguoiYeuCau
+                            }
+                            else
+                            {
+                                <span>@(Model.NguoiYeuCau != Guid.Empty ? Model.NguoiYeuCau.ToString().Substring(0, 8) + "..." : "N/A")</span>
+                            }
+                        </p>
+                    </div>
+                    @if (Model.NguoiYeuCau != Guid.Empty)
+                    {
+                        <a href="@Url.Action("Detail", "Users", new { id = Model.NguoiYeuCau })" class="btn btn-sm btn-info">
+                            <i class="fa fa-external-link-alt"></i> Xem hồ sơ
+                        </a>
+                    }
+                </div>
+            </div>
+
+            <!-- Loại hỗ trợ -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="@loaiIcon"></i> Loại hỗ trợ
+                    </div>
+                </div>
+                <div class="card-body">
+                    <span class="badge badge-primary" style="font-size: 14px;">
+                        <i class="@loaiIcon"></i> @tenLoai
+                    </span>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="card">
+                <div class="card-body">
+                    <a href="@Url.Action("Index", "Support")" class="btn btn-secondary btn-block">
+                        <i class="fa fa-arrow-left"></i> Quay lại danh sách
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <i class="fas fa-exclamation-circle fa-4x text-warning mb-3"></i>
+            <h4>Không tìm thấy yêu cầu hỗ trợ</h4>
+            <p class="text-muted">Yêu cầu này có thể đã bị xóa hoặc không tồn tại.</p>
+            <a href="@Url.Action("Index", "Support")" class="btn btn-primary">
+                <i class="fa fa-arrow-left"></i> Quay lại danh sách
+            </a>
+        </div>
+    </div>
+}
+
+@section scripts {
+    <script src="~/Scripts/pages/support.js?v=@DateTime.Now.Ticks"></script>
+}
 

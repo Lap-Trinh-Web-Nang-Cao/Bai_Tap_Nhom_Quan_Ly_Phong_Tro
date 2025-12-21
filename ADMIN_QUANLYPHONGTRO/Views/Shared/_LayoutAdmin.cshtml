@@ -111,7 +111,8 @@
 
     <!-- Core JavaScript Files -->
     <script src="~/Scripts/core/jquery.3.2.1.min.js"></script>
-    <script src="~/Scripts/core/popper.min.js"></script>
+    <!-- Popper.js from CDN (required for Bootstrap tooltips/popovers) -->
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="~/Scripts/core/bootstrap.min.js"></script>
 
     <!-- jQuery UI -->
@@ -145,10 +146,20 @@
     <!-- Setting Demo (for color switcher) -->
     <script src="~/Scripts/setting-demo.js?v=1.0"></script>
 
+    <!-- Sidebar Manager (Statistics + Navigation) -->
+    <script src="~/Scripts/sidebar-statistics.js?v=@DateTime.Now.Ticks"></script>
+
     <!-- Custom Scripts -->
     <script>
         $(document).ready(function() {
             console.log('=== TroTot Admin Initialization ===');
+            
+            // Check if Popper.js is loaded
+            if (typeof Popper === 'undefined') {
+                console.warn('⚠️ Popper.js not loaded - tooltips/popovers will be disabled');
+            } else {
+                console.log('✅ Popper.js loaded successfully');
+            }
             
             // Check if settings panel exists
             var $settingsPanel = $('.custom-template');
@@ -167,6 +178,14 @@
                     'opacity': '1'
                 });
                 console.log('✅ Settings toggle button visibility forced');
+            }
+            
+            // Initialize tooltips safely
+            try {
+                $('[data-toggle="tooltip"]').tooltip();
+                console.log('✅ Tooltips initialized');
+            } catch (e) {
+                console.warn('⚠️ Tooltip initialization failed:', e.message);
             }
             
             console.log('=================================');

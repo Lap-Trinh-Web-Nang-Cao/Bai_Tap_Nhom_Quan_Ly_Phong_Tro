@@ -46,7 +46,7 @@
             <!-- Menu Navigation -->
             <ul class="nav nav-primary">
                 <!-- Dashboard -->
-                <li class="nav-item active">
+                <li class="nav-item">
                     <a href="@Url.Action("Index", "Dashboard")">
                         <i class="fas fa-home"></i>
                         <p>Dashboard</p>
@@ -72,16 +72,19 @@
                             <li>
                                 <a href="@Url.Action("Index", "Users", new { role = "nguoithue" })">
                                     <span class="sub-item">Người thuê</span>
+                                    <span class="badge badge-secondary" id="tenantCount">0</span>
                                 </a>
                             </li>
                             <li>
                                 <a href="@Url.Action("Index", "Users", new { role = "chutro" })">
                                     <span class="sub-item">Chủ trọ</span>
+                                    <span class="badge badge-secondary" id="landlordCount">0</span>
                                 </a>
                             </li>
                             <li>
                                 <a href="@Url.Action("Index", "Users", new { role = "admin" })">
                                     <span class="sub-item">Admin / Moderator</span>
+                                    <span class="badge badge-secondary" id="adminCount">0</span>
                                 </a>
                             </li>
                         </ul>
@@ -107,17 +110,19 @@
                             <li>
                                 <a href="@Url.Action("Pending", "Hosts")">
                                     <span class="sub-item">Chờ duyệt</span>
-                                    <span class="badge badge-warning">5</span>
+                                    <span class="badge badge-secondary" id="hostPendingCount">0</span>
                                 </a>
                             </li>
                             <li>
                                 <a href="@Url.Action("Approved", "Hosts")">
                                     <span class="sub-item">Đã duyệt</span>
+                                    <span class="badge badge-secondary" id="hostApprovedCount">0</span>
                                 </a>
                             </li>
                             <li>
                                 <a href="@Url.Action("Rejected", "Hosts")">
                                     <span class="sub-item">Từ chối</span>
+                                    <span class="badge badge-secondary" id="hostRejectedCount">0</span>
                                 </a>
                             </li>
                         </ul>
@@ -136,7 +141,7 @@
                             <li>
                                 <a href="@Url.Action("Pending", "Rooms")">
                                     <span class="sub-item">Chờ duyệt</span>
-                                    <span class="badge badge-warning">8</span>
+                                    <span class="badge badge-warning" id="roomPendingCount">8</span>
                                 </a>
                             </li>
                             <li>
@@ -165,7 +170,7 @@
                     <a href="@Url.Action("Index", "Reports")">
                         <i class="fas fa-exclamation-triangle"></i>
                         <p>Báo cáo vi phạm</p>
-                        <span class="badge badge-danger">12</span>
+                        <span class="badge badge-secondary" id="reportPendingCount">0</span>
                     </a>
                 </li>
 
@@ -174,7 +179,7 @@
                     <a href="@Url.Action("Index", "Support")">
                         <i class="fas fa-headset"></i>
                         <p>Ticket hỗ trợ</p>
-                        <span class="badge badge-info">7</span>
+                        <span class="badge badge-secondary" id="supportPendingCount">0</span>
                     </a>
                 </li>
 

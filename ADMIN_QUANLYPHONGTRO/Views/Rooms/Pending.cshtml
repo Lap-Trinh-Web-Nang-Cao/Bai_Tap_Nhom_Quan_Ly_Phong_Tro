@@ -3,106 +3,228 @@
     Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
 }
 
-<div class="container-fluid mt-5">
-    <div class="row mb-4">
-        <div class="col-md-8">
-            <h2>
+@section styles {
+    <link rel="stylesheet" href="~/Content/css/pages/rooms.css?v=@DateTime.Now.Ticks" />
+}
+
+<!-- Page Header -->
+<div class="page-header">
+    <h4 class="page-title">Quản lý phòng trọ</h4>
+    <ul class="breadcrumbs">
+        <li class="nav-home">
+            <a href="@Url.Action("Index", "Dashboard")">
+                <i class="flaticon-home"></i>
+            </a>
+        </li>
+        <li class="separator">
+            <i class="flaticon-right-arrow"></i>
+        </li>
+        <li class="nav-item">
+            <a href="#">Quản lý phòng</a>
+        </li>
+        <li class="separator">
+            <i class="flaticon-right-arrow"></i>
+        </li>
+        <li class="nav-item">
+            <a href="#">
                 @if (ViewBag.Status == "approved")
                 {
-                    <text>Phòng Đã Duyệt</text>
+                    <text>Phòng đã duyệt</text>
                 }
                 else if (ViewBag.Status == "locked")
                 {
-                    <text>Phòng Bị Khóa</text>
+                    <text>Phòng bị khóa</text>
                 }
                 else
                 {
-                    <text>Phòng Chờ Duyệt</text>
+                    <text>Phòng chờ duyệt</text>
                 }
-            </h2>
-        </div>
-        <div class="col-md-4">
-            <input type="text" id="searchInput" class="form-control" placeholder="Tìm kiếm phòng...">
-        </div>
-    </div>
+            </a>
+        </li>
+    </ul>
+</div>
 
-    @if (ViewBag.Error != null)
-    {
-        <div class="alert alert-danger" role="alert">
-            <strong>Lỗi:</strong> @ViewBag.Error
-            @if (ViewBag.ErrorDetails != null)
-            {
-                <div class="small mt-2">Chi tiết: @ViewBag.ErrorDetails</div>
-            }
-        </div>
-    }
+<!-- Main Content Card -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex align-items-center flex-wrap" style="gap: 10px;">
+                    <h4 class="card-title mb-0">
+                        <i class="fa fa-door-open mr-2"></i>
+                        @if (ViewBag.Status == "approved")
+                        {
+                            <text>Phòng Đã Duyệt</text>
+                        }
+                        else if (ViewBag.Status == "locked")
+                        {
+                            <text>Phòng Bị Khóa</text>
+                        }
+                        else
+                        {
+                            <text>Phòng Chờ Duyệt</text>
+                        }
+                    </h4>
+                    <button class="btn btn-sm btn-outline-primary ml-auto" onclick="RoomsPage.refreshTable()">
+                        <i class="fa fa-sync-alt mr-1"></i> Làm mới
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- Filter & Search Section -->
+                <div class="filter-section">
+                    <div class="row">
+                        <div class="col-md-4 col-sm-6 mb-3 mb-md-0">
+                            <div class="form-group">
+                                <label><i class="fa fa-toggle-on mr-1"></i> Trạng thái</label>
+                                <select class="form-control" id="filterStatus">
+                                    <option value="">Tất cả trạng thái</option>
+                                    <option value="pending" selected>Chờ duyệt</option>
+                                    <option value="approved">Đã duyệt</option>
+                                    <option value="locked">Bị khóa</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-5 col-sm-8 mb-3 mb-md-0">
+                            <div class="form-group">
+                                <label><i class="fa fa-search mr-1"></i> Tìm kiếm</label>
+                                <input type="text" class="form-control" id="filterKeyword" 
+                                       placeholder="Tìm theo tiêu đề, chủ trọ, địa điểm...">
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-4 d-flex align-items-end">
+                            <button type="button" class="btn btn-primary btn-block" id="btnApplyFilter">
+                                <i class="fa fa-search mr-1"></i> Tìm kiếm
+                            </button>
+                        </div>
+                    </div>
+                </div>
 
-    <div class="card">
-        <div class="card-body">
-            <table id="roomsTable" class="table table-striped table-hover">
-                <thead class="table-dark">
-                    <tr>
-                        <th>STT</th>
-                        <th>Tiêu Đề</th>
-                        <th>Diện Tích</th>
-                        <th>Giá Tiền</th>
-                        <th>Chủ Trọ</th>
-                        <th>Ngày Tạo</th>
-                        <th>Trạng Thái</th>
-                        <th>Hành Động</th>
-                    </tr>
-                </thead>
-                <tbody>
-                </tbody>
-            </table>
+                <!-- Data Table -->
+                <div class="table-responsive">
+                    <table id="roomsTable" class="display table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th style="width: 25px;">STT</th>
+                                <th style="width: 250px;">Phòng</th>
+                                <th style="width: 80px;">Diện Tích</th>
+                                <th style="width: 120px;">Giá Tiền</th>
+                                <th style="width: 120px;">Chủ Trọ</th>
+                                <th style="width: 100px;">Ngày Tạo</th>
+                                <th style="width: 100px;">Trạng Thái</th>
+                                <th style="width: 120px; text-align: center;">Hành Động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- Modal Chi Tiết Phòng -->
-<div class="modal fade" id="roomDetailModal" tabindex="-1" role="dialog" aria-labelledby="roomDetailModalLabel" aria-hidden="true">
+<!-- Modal Chi tiết phòng -->
+<div class="modal fade room-detail-modal" id="roomDetailModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="roomDetailModalLabel">Chi Tiết Phòng</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body" id="roomDetailBody">
-                <!-- Dữ liệu sẽ được load vào đây -->
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
-                <button type="button" class="btn btn-primary" id="approveBtn">Duyệt Phòng</button>
-                <button type="button" class="btn btn-danger" id="rejectBtn">Từ Chối</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal Từ Chối -->
-<div class="modal fade" id="rejectModal" tabindex="-1" role="dialog" aria-labelledby="rejectModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="rejectModalLabel">Từ Chối Phòng</h5>
+                <h5 class="modal-title">
+                    <i class="fa fa-door-open mr-2"></i>
+                    Chi tiết phòng
+                </h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
-                <form id="rejectForm">
-                    <input type="hidden" id="rejectRoomId" value="">
-                    <div class="form-group">
-                        <label for="rejectReason">Lý Do Từ Chối</label>
-                        <textarea class="form-control" id="rejectReason" rows="4" required placeholder="Nhập lý do từ chối..."></textarea>
+                <!-- Loading State -->
+                <div id="roomDetailLoading" class="text-center py-5">
+                    <div class="loading-spinner mx-auto"></div>
+                    <p class="mt-3 text-muted">Đang tải thông tin...</p>
+                </div>
+
+                <!-- Room Detail Content -->
+                <div id="roomDetailContent" style="display: none;">
+                    <div class="row">
+                        <!-- Cột Trái: Hình ảnh -->
+                        <div class="col-lg-6">
+                            <div class="room-images-section">
+                                <h6><i class="fa fa-images"></i> Hình ảnh phòng</h6>
+                                <div class="room-image-grid" id="roomImageGrid">
+                                    <!-- Images will be loaded here -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Cột Phải: Thông tin -->
+                        <div class="col-lg-6">
+                            <div class="room-info-section">
+                                <h6><i class="fa fa-info-circle"></i> Thông tin phòng</h6>
+
+                                <div class="info-row">
+                                    <span class="info-label">Tiêu đề:</span>
+                                    <span class="info-value" id="detailTieuDe"></span>
+                                </div>
+
+                                <div class="info-row">
+                                    <span class="info-label">Diện tích:</span>
+                                    <span class="info-value" id="detailDienTich"></span>
+                                </div>
+
+                                <div class="info-row">
+                                    <span class="info-label">Giá tiền:</span>
+                                    <span class="info-value" id="detailGiaTien"></span>
+                                </div>
+
+                                <div class="info-row">
+                                    <span class="info-label">Tiền cọc:</span>
+                                    <span class="info-value" id="detailTienCoc"></span>
+                                </div>
+
+                                <div class="info-row">
+                                    <span class="info-label">Số người tối đa:</span>
+                                    <span class="info-value" id="detailSoNguoi"></span>
+                                </div>
+
+                                <div class="info-row">
+                                    <span class="info-label">Chủ trọ:</span>
+                                    <span class="info-value" id="detailChuTro"></span>
+                                </div>
+
+                                <div class="info-row">
+                                    <span class="info-label">Nhà trọ:</span>
+                                    <span class="info-value" id="detailNhaTro"></span>
+                                </div>
+
+                                <div class="info-row">
+                                    <span class="info-label">Trạng thái:</span>
+                                    <span class="info-value" id="detailTrangThai"></span>
+                                </div>
+                            </div>
+
+                            <!-- Reject Reason Section -->
+                            <div class="reject-reason-section">
+                                <label for="rejectReason">
+                                    <i class="fa fa-comment-alt"></i> Lý do từ chối (bắt buộc khi từ chối)
+                                </label>
+                                <textarea class="form-control" id="rejectReason" rows="3" 
+                                          placeholder="Ví dụ: Hình ảnh không phù hợp, thông tin chưa đầy đủ..."></textarea>
+                            </div>
+                        </div>
                     </div>
-                </form>
+                </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
-                <button type="button" class="btn btn-danger" id="submitRejectBtn">Xác Nhận Từ Chối</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                    <i class="fa fa-times mr-1"></i> Đóng
+                </button>
+                <button type="button" class="btn btn-danger" id="btnModalReject" onclick="RoomsPage.rejectRoom()">
+                    <i class="fa fa-ban mr-1"></i> Từ chối
+                </button>
+                <button type="button" class="btn btn-success" id="btnModalApprove" onclick="RoomsPage.approveRoom()">
+                    <i class="fa fa-check mr-1"></i> Duyệt phòng
+                </button>
             </div>
         </div>
     </div>
@@ -111,207 +233,19 @@
 @section Scripts {
     <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.10.24/js/dataTables.bootstrap4.min.js"></script>
+    <script src="~/Scripts/pages/rooms.js?v=@DateTime.Now.Ticks"></script>
     
     <script>
-        $(document).ready(function () {
-            let currentRoomId = null;
-
-            // Khởi tạo DataTable
-            const table = $('#roomsTable').DataTable({
-                processing: true,
-                serverSide: true,
-                ajax: {
-                    url: '@Url.Action("GetPendingRooms", "Rooms")',
-                    type: 'POST',
-                    datatype: 'json',
-                    data: function (d) {
-                        d.search = $('#searchInput').val();
-                    },
-                    error: function (xhr, error, thrown) {
-                        console.error('DataTable Error:', error, thrown);
-                        console.error('Response:', xhr.responseText);
-                        alert('Lỗi tải dữ liệu: ' + error);
-                    }
-                },
-                columns: [
-                    {
-                        data: null,
-                        render: function (data, type, row, meta) {
-                            return meta.row + 1;
-                        },
-                        width: '5%'
-                    },
-                    { data: 'tieuDe', width: '20%' },
-                    {
-                        data: 'dienTich',
-                        render: function (data) {
-                            return (data || 0) + ' m²';
-                        },
-                        width: '10%'
-                    },
-                    {
-                        data: 'giaTien',
-                        render: function (data) {
-                            return new Intl.NumberFormat('vi-VN', {
-                                style: 'currency',
-                                currency: 'VND'
-                            }).format(data || 0);
-                        },
-                        width: '12%'
-                    },
-                    { data: 'chuTroName', width: '12%' },
-                    {
-                        data: 'createdAt',
-                        render: function (data) {
-                            if (!data) return '';
-                            const date = new Date(data);
-                            return date.toLocaleDateString('vi-VN');
-                        },
-                        width: '10%'
-                    },
-                    {
-                        data: 'isDuyet',
-                        render: function (data) {
-                            return data ? '<span class="badge badge-success">Đã Duyệt</span>' : '<span class="badge badge-warning">Chờ Duyệt</span>';
-                        },
-                        width: '10%'
-                    },
-                    {
-                        data: 'phongId',
-                        render: function (data) {
-                            return `
-                                <button class="btn btn-sm btn-info viewDetailBtn" data-id="${data}">
-                                    <i class="fas fa-eye"></i> Chi Tiết
-                                </button>
-                            `;
-                        },
-                        width: '15%',
-                        orderable: false
-                    }
-                ],
-                language: {
-                    url: '//cdn.datatables.net/plug-ins/1.10.24/i18n/Vietnamese.json'
-                },
-                pageLength: 10,
-                lengthMenu: [[10, 25, 50], [10, 25, 50]]
+        $(function () {
+            // Khởi tạo RoomsPage với các URLs
+            RoomsPage.init({
+                getPendingRooms: '@Url.Action("GetPendingRooms", "Rooms")',
+                getRoomDetail: '@Url.Action("GetRoomDetail", "Rooms")',
+                approveRoom: '@Url.Action("ApproveRoom", "Rooms")',
+                rejectRoom: '@Url.Action("RejectRoom", "Rooms")',
+                toggleLockRoom: '@Url.Action("ToggleLockRoom", "Rooms")',
+                getRoomStats: '@Url.Action("GetRoomStats", "Rooms")'
             });
-
-            // Tìm kiếm
-            $('#searchInput').on('keyup', function () {
-                table.draw();
-            });
-
-            // Xem chi tiết phòng
-            $(document).on('click', '.viewDetailBtn', function () {
-                currentRoomId = $(this).data('id');
-                loadRoomDetail(currentRoomId);
-                $('#roomDetailModal').modal('show');
-            });
-
-            // Load chi tiết phòng
-            function loadRoomDetail(roomId) {
-                $.ajax({
-                    url: '@Url.Action("GetRoomDetail", "Rooms")?id=' + roomId,
-                    type: 'GET',
-                    dataType: 'json',
-                    success: function (response) {
-                        if (response.success) {
-                            const room = response.data;
-                            const detailHtml = `
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <p><strong>Tiêu Đề:</strong> ${room.tieuDe || 'N/A'}</p>
-                                        <p><strong>Diện Tích:</strong> ${room.dienTich || 0} m²</p>
-                                        <p><strong>Giá Tiền:</strong> ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(room.giaTien || 0)}</p>
-                                        <p><strong>Tiền Coc:</strong> ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(room.tienCoc || 0)}</p>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <p><strong>Chủ Trọ:</strong> ${room.chuTroName || 'N/A'}</p>
-                                        <p><strong>Nhà Trọ:</strong> ${room.nhaTroName || 'N/A'}</p>
-                                        <p><strong>Số Người Tối Đa:</strong> ${room.soNguoiToiDa || 1}</p>
-                                        <p><strong>Trạng Thái:</strong> ${room.trangThai || 'N/A'}</p>
-                                    </div>
-                                </div>
-                            `;
-                            $('#roomDetailBody').html(detailHtml);
-                        } else {
-                            $('#roomDetailBody').html('<div class="alert alert-danger">' + response.message + '</div>');
-                        }
-                    },
-                    error: function (xhr, error) {
-                        console.error('Error:', error);
-                        $('#roomDetailBody').html('<div class="alert alert-danger">Lỗi tải chi tiết phòng</div>');
-                    }
-                });
-            }
-
-            // Duyệt phòng
-            $('#approveBtn').on('click', function () {
-                if (!currentRoomId) return;
-                if (!confirm('Bạn chắc chắn muốn duyệt phòng này?')) return;
-
-                $.ajax({
-                    url: '@Url.Action("ApproveRoom", "Rooms")',
-                    type: 'POST',
-                    data: { id: currentRoomId },
-                    dataType: 'json',
-                    success: function (response) {
-                        if (response.success) {
-                            alert(response.message);
-                            $('#roomDetailModal').modal('hide');
-                            table.draw();
-                        } else {
-                            alert('Lỗi: ' + response.message);
-                        }
-                    },
-                    error: function (xhr, error) {
-                        console.error('Error:', error);
-                        alert('Lỗi khi duyệt phòng');
-                    }
-                });
-            });
-
-            // Mở modal từ chối
-            $('#rejectBtn').on('click', function () {
-                $('#rejectRoomId').val(currentRoomId);
-                $('#roomDetailModal').modal('hide');
-                $('#rejectModal').modal('show');
-            });
-
-            // Gửi từ chối
-            $('#submitRejectBtn').on('click', function () {
-                const roomId = $('#rejectRoomId').val();
-                const reason = $('#rejectReason').val();
-
-                if (!reason.trim()) {
-                    alert('Vui lòng nhập lý do từ chối');
-                    return;
-                }
-
-                $.ajax({
-                    url: '@Url.Action("RejectRoom", "Rooms")',
-                    type: 'POST',
-                    data: { id: roomId, reason: reason },
-                    dataType: 'json',
-                    success: function (response) {
-                        if (response.success) {
-                            alert(response.message);
-                            $('#rejectModal').modal('hide');
-                            $('#rejectReason').val('');
-                            table.draw();
-                        } else {
-                            alert('Lỗi: ' + response.message);
-                        }
-                    },
-                    error: function (xhr, error) {
-                        console.error('Error:', error);
-                        alert('Lỗi khi từ chối phòng');
-                    }
-                });
-            });
-
-            // Debug: Kiểm tra API response
-            console.log('Rooms page loaded');
         });
     </script>
 }

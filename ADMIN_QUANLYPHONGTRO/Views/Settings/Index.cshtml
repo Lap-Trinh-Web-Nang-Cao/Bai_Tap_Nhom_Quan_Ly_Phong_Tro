@@ -1,7 +1,506 @@
-﻿
-@{
-    ViewBag.Title = "Index";
+﻿@{
+    ViewBag.Title = "Cài đặt hệ thống";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
 }
 
-<h2>Index</h2>
+@section styles {
+    <!-- Toastr CSS for notifications -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
+    <link rel="stylesheet" href="~/Content/css/pages/settings.css?v=@DateTime.Now.Ticks" />
+}
+
+<!-- Page Header -->
+<div class="page-header">
+    <h4 class="page-title">Cài đặt hệ thống</h4>
+    <ul class="breadcrumbs">
+        <li class="nav-home">
+            <a href="@Url.Action("Index", "Dashboard")">
+                <i class="flaticon-home"></i>
+            </a>
+        </li>
+        <li class="separator">
+            <i class="flaticon-right-arrow"></i>
+        </li>
+        <li class="nav-item">
+            <a href="#">Cài đặt</a>
+        </li>
+    </ul>
+</div>
+
+<!-- Main Content -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex align-items-center">
+                    <h4 class="card-title mb-0">
+                        <i class="fa fa-cog mr-2"></i>Quản lý danh mục hệ thống
+                    </h4>
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- Tab Navigation -->
+                <ul class="nav nav-pills nav-secondary nav-pills-no-bd mb-4" id="settingsTabs" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="system-config-tab" data-toggle="pill" href="#system-config-content" role="tab">
+                            <i class="fa fa-sliders-h mr-1"></i> Cấu hình hệ thống
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="tienich-tab" data-toggle="pill" href="#tienich-content" role="tab">
+                            <i class="fa fa-wifi mr-1"></i> Tiện ích
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="quanhuyen-tab" data-toggle="pill" href="#quanhuyen-content" role="tab">
+                            <i class="fa fa-map-marker-alt mr-1"></i> Quận/Huyện
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="phuong-tab" data-toggle="pill" href="#phuong-content" role="tab">
+                            <i class="fa fa-building mr-1"></i> Phường/Xã
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- Tab Content -->
+                <div class="tab-content" id="settingsTabContent">
+                    <!-- Tab 0: Cấu hình Hệ thống -->
+                    <div class="tab-pane fade show active" id="system-config-content" role="tabpanel">
+                        <div class="row">
+                            <!-- Thông tin chung -->
+                            <div class="col-md-6 mb-4">
+                                <div class="card shadow-sm">
+                                    <div class="card-header bg-primary">
+                                        <h5 class="card-title text-white mb-0">
+                                            <i class="fa fa-info-circle mr-2"></i>Thông tin chung
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="form-group">
+                                            <label><i class="fa fa-globe mr-1"></i> Tên website <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" id="app_name" placeholder="Tên ứng dụng/website" maxlength="200">
+                                            <small class="form-text text-muted">Ví dụ: Quản lý Phòng Trọ Online</small>
+                                        </div>
+                                        <div class="form-group">
+                                            <label><i class="fa fa-align-left mr-1"></i> Mô tả website</label>
+                                            <textarea class="form-control" id="app_description" placeholder="Mô tả ngắn về ứng dụng" rows="3"></textarea>
+                                        </div>
+                                        <div class="form-group">
+                                            <label><i class="fa fa-globe mr-1"></i> URL website</label>
+                                            <input type="text" class="form-control" id="app_url" placeholder="https://example.com">
+                                        </div>
+                                        <button class="btn btn-primary btn-block mt-3" onclick="SystemConfig.saveGeneral()">
+                                            <i class="fa fa-save mr-1"></i> Lưu cài đặt chung
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Thông tin liên hệ -->
+                            <div class="col-md-6 mb-4">
+                                <div class="card shadow-sm">
+                                    <div class="card-header bg-success">
+                                        <h5 class="card-title text-white mb-0">
+                                            <i class="fa fa-phone-alt mr-2"></i>Thông tin liên hệ
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="form-group">
+                                            <label><i class="fa fa-phone mr-1"></i> Hotline hỗ trợ</label>
+                                            <input type="tel" class="form-control" id="support_hotline" placeholder="0123 456 789">
+                                        </div>
+                                        <div class="form-group">
+                                            <label><i class="fa fa-envelope mr-1"></i> Email hỗ trợ</label>
+                                            <input type="email" class="form-control" id="support_email" placeholder="support@example.com">
+                                        </div>
+                                        <div class="form-group">
+                                            <label><i class="fa fa-map-marker-alt mr-1"></i> Địa chỉ văn phòng</label>
+                                            <input type="text" class="form-control" id="company_address" placeholder="123 Đường ABC, Q.1, TP.HCM">
+                                        </div>
+                                        <button class="btn btn-success btn-block mt-3" onclick="SystemConfig.saveContact()">
+                                            <i class="fa fa-save mr-1"></i> Lưu thông tin liên hệ
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Cấu hình Phí dịch vụ -->
+                            <div class="col-md-6 mb-4">
+                                <div class="card shadow-sm">
+                                    <div class="card-header bg-warning">
+                                        <h5 class="card-title text-white mb-0">
+                                            <i class="fa fa-credit-card mr-2"></i>Phí dịch vụ
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="form-group">
+                                            <label><i class="fa fa-coins mr-1"></i> Phí đăng tin (VND)</label>
+                                            <input type="number" class="form-control" id="service_post_fee" placeholder="0" min="0">
+                                            <small class="form-text text-muted">Phí mỗi lần đăng bài viết</small>
+                                        </div>
+                                        <div class="form-group">
+                                            <label><i class="fa fa-rocket mr-1"></i> Phí đẩy bài (VND)</label>
+                                            <input type="number" class="form-control" id="service_boost_fee" placeholder="0" min="0">
+                                            <small class="form-text text-muted">Phí để nâng cao bài viết</small>
+                                        </div>
+                                        <div class="form-group">
+                                            <label><i class="fa fa-star mr-1"></i> Phí xác minh (VND)</label>
+                                            <input type="number" class="form-control" id="service_verify_fee" placeholder="0" min="0">
+                                            <small class="form-text text-muted">Phí xác minh chủ trọ</small>
+                                        </div>
+                                        <button class="btn btn-warning btn-block mt-3" onclick="SystemConfig.saveService()">
+                                            <i class="fa fa-save mr-1"></i> Lưu cài đặt phí
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Cấu hình Duyệt bài -->
+                            <div class="col-md-6 mb-4">
+                                <div class="card shadow-sm">
+                                    <div class="card-header bg-info">
+                                        <h5 class="card-title text-white mb-0">
+                                            <i class="fa fa-check-circle mr-2"></i>Chính sách duyệt bài
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="form-group">
+                                            <div class="custom-control custom-switch">
+                                                <input type="checkbox" class="custom-control-input" id="auto_approve">
+                                                <label class="custom-control-label" for="auto_approve">
+                                                    <i class="fa fa-magic mr-1"></i>Tự động duyệt bài
+                                                </label>
+                                            </div>
+                                            <small class="form-text text-muted d-block mt-2">Khi bật: Bài viết sẽ được phát hành ngay. Khi tắt: Admin phải duyệt thủ công</small>
+                                        </div>
+                                        <hr>
+                                        <div class="form-group">
+                                            <label><i class="fa fa-hourglass-half mr-1"></i> Thời gian duyệt tối đa (giờ)</label>
+                                            <input type="number" class="form-control" id="review_timeout_hours" placeholder="24" min="1">
+                                            <small class="form-text text-muted">Bài viết chưa duyệt sẽ bị ẩn sau thời gian này</small>
+                                        </div>
+                                        <button class="btn btn-info btn-block mt-3" onclick="SystemConfig.savePolicies()">
+                                            <i class="fa fa-save mr-1"></i> Lưu chính sách
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Cài đặt Bảo mật -->
+                            <div class="col-md-6 mb-4">
+                                <div class="card shadow-sm">
+                                    <div class="card-header bg-danger">
+                                        <h5 class="card-title text-white mb-0">
+                                            <i class="fa fa-shield-alt mr-2"></i>Bảo mật & An toàn
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="form-group">
+                                            <label><i class="fa fa-lock mr-1"></i> Yêu cầu xác minh email</label>
+                                            <div class="custom-control custom-switch">
+                                                <input type="checkbox" class="custom-control-input" id="require_email_verify">
+                                                <label class="custom-control-label" for="require_email_verify">Bắt buộc xác minh</label>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label><i class="fa fa-redo mr-1"></i> Yêu cầu xác minh điện thoại</label>
+                                            <div class="custom-control custom-switch">
+                                                <input type="checkbox" class="custom-control-input" id="require_phone_verify">
+                                                <label class="custom-control-label" for="require_phone_verify">Bắt buộc xác minh</label>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label><i class="fa fa-ban mr-1"></i> Hạn chế IP đăng nhập</label>
+                                            <textarea class="form-control" id="blocked_ips" placeholder="IP1, IP2, IP3..." rows="2"></textarea>
+                                            <small class="form-text text-muted">Ngăn chặn các IP cố gắng đăng nhập (cách nhau bởi dấu phẩy)</small>
+                                        </div>
+                                        <button class="btn btn-danger btn-block mt-3" onclick="SystemConfig.saveSecurity()">
+                                            <i class="fa fa-save mr-1"></i> Lưu cài đặt bảo mật
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Cài đặt Giao diện -->
+                            <div class="col-md-6 mb-4">
+                                <div class="card shadow-sm">
+                                    <div class="card-header bg-secondary">
+                                        <h5 class="card-title text-white mb-0">
+                                            <i class="fa fa-palette mr-2"></i>Giao diện & Theme
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="form-group">
+                                            <label><i class="fa fa-paint-brush mr-1"></i> Chủ đề màu</label>
+                                            <select class="form-control" id="theme_color">
+                                                <option value="blue">Xanh dương (Mặc định)</option>
+                                                <option value="purple">Tím</option>
+                                                <option value="dark">Tối (Dark)</option>
+                                                <option value="green">Xanh lá</option>
+                                                <option value="orange">Cam</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label><i class="fa fa-image mr-1"></i> Logo (URL)</label>
+                                            <input type="text" class="form-control" id="logo_url" placeholder="https://example.com/logo.png">
+                                            <small class="form-text text-muted">URL hình ảnh logo</small>
+                                        </div>
+                                        <div class="form-group">
+                                            <label><i class="fa fa-language mr-1"></i> Ngôn ngữ mặc định</label>
+                                            <select class="form-control" id="default_language">
+                                                <option value="vi">Tiếng Việt</option>
+                                                <option value="en">English</option>
+                                            </select>
+                                        </div>
+                                        <button class="btn btn-secondary btn-block mt-3" onclick="SystemConfig.saveAppearance()">
+                                            <i class="fa fa-save mr-1"></i> Lưu giao diện
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab 1: Tiện Ích -->
+                    <div class="tab-pane fade" id="tienich-content" role="tabpanel">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0"><i class="fa fa-wifi text-primary mr-2"></i>Danh sách tiện ích</h5>
+                            <button class="btn btn-primary btn-sm" onclick="SettingsPage.showAddTienIch()">
+                                <i class="fa fa-plus mr-1"></i> Thêm tiện ích
+                            </button>
+                        </div>
+                        <div class="table-responsive">
+                            <table id="tienIchTable" class="display table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 60px;">STT</th>
+                                        <th>Tên tiện ích</th>
+                                        <th style="width: 150px; text-align: center;">Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tienIchTableBody">
+                                    <!-- Data loaded via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="tienIchLoading" class="text-center py-4" style="display: none;">
+                            <div class="loading-spinner mx-auto"></div>
+                            <p class="mt-2 text-muted">Đang tải dữ liệu...</p>
+                        </div>
+                        <div id="tienIchEmpty" class="text-center py-4" style="display: none;">
+                            <i class="fa fa-inbox fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">Chưa có tiện ích nào</p>
+                        </div>
+                    </div>
+
+                    <!-- Tab 2: Quận/Huyện -->
+                    <div class="tab-pane fade" id="quanhuyen-content" role="tabpanel">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0"><i class="fa fa-map-marker-alt text-success mr-2"></i>Danh sách quận/huyện</h5>
+                            <button class="btn btn-success btn-sm" onclick="SettingsPage.showAddQuanHuyen()">
+                                <i class="fa fa-plus mr-1"></i> Thêm quận/huyện
+                            </button>
+                        </div>
+                        <div class="table-responsive">
+                            <table id="quanHuyenTable" class="display table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 60px;">STT</th>
+                                        <th>Tên quận/huyện</th>
+                                        <th style="width: 150px; text-align: center;">Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="quanHuyenTableBody">
+                                    <!-- Data loaded via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="quanHuyenLoading" class="text-center py-4" style="display: none;">
+                            <div class="loading-spinner mx-auto"></div>
+                            <p class="mt-2 text-muted">Đang tải dữ liệu...</p>
+                        </div>
+                        <div id="quanHuyenEmpty" class="text-center py-4" style="display: none;">
+                            <i class="fa fa-inbox fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">Chưa có quận/huyện nào</p>
+                        </div>
+                    </div>
+
+                    <!-- Tab 3: Phường/Xã -->
+                    <div class="tab-pane fade" id="phuong-content" role="tabpanel">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0"><i class="fa fa-building text-info mr-2"></i>Danh sách phường/xã</h5>
+                            <div class="d-flex align-items-center" style="gap: 10px;">
+                                <select class="form-control form-control-sm" id="filterQuanHuyen" style="width: 200px;">
+                                    <option value="">-- Tất cả quận/huyện --</option>
+                                </select>
+                                <button class="btn btn-info btn-sm" onclick="SettingsPage.showAddPhuong()">
+                                    <i class="fa fa-plus mr-1"></i> Thêm phường/xã
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table id="phuongTable" class="display table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 60px;">STT</th>
+                                        <th>Tên phường/xã</th>
+                                        <th>Thuộc quận/huyện</th>
+                                        <th style="width: 150px; text-align: center;">Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="phuongTableBody">
+                                    <!-- Data loaded via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="phuongLoading" class="text-center py-4" style="display: none;">
+                            <div class="loading-spinner mx-auto"></div>
+                            <p class="mt-2 text-muted">Đang tải dữ liệu...</p>
+                        </div>
+                        <div id="phuongEmpty" class="text-center py-4" style="display: none;">
+                            <i class="fa fa-inbox fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">Chưa có phường/xã nào</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Thêm/Sửa Tiện Ích -->
+<div class="modal fade" id="tienIchModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="tienIchModalTitle">
+                    <i class="fa fa-wifi mr-2"></i>Thêm tiện ích
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="tienIchId" value="0" />
+                <div class="form-group">
+                    <label for="tienIchTen"><i class="fa fa-tag mr-1"></i> Tên tiện ích <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="tienIchTen" placeholder="Nhập tên tiện ích..." maxlength="200">
+                    <small class="form-text text-muted">Ví dụ: Wifi miễn phí, Máy lạnh, Bãi giữ xe...</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                    <i class="fa fa-times mr-1"></i> Đóng
+                </button>
+                <button type="button" class="btn btn-primary" onclick="SettingsPage.saveTienIch()">
+                    <i class="fa fa-save mr-1"></i> Lưu
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Thêm/Sửa Quận/Huyện -->
+<div class="modal fade" id="quanHuyenModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="quanHuyenModalTitle">
+                    <i class="fa fa-map-marker-alt mr-2"></i>Thêm quận/huyện
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="quanHuyenId" value="0" />
+                <div class="form-group">
+                    <label for="quanHuyenTen"><i class="fa fa-tag mr-1"></i> Tên quận/huyện <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="quanHuyenTen" placeholder="Nhập tên quận/huyện..." maxlength="200">
+                    <small class="form-text text-muted">Ví dụ: Quận 1, Quận Bình Thạnh, Huyện Củ Chi...</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                    <i class="fa fa-times mr-1"></i> Đóng
+                </button>
+                <button type="button" class="btn btn-success" onclick="SettingsPage.saveQuanHuyen()">
+                    <i class="fa fa-save mr-1"></i> Lưu
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Thêm/Sửa Phường -->
+<div class="modal fade" id="phuongModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="phuongModalTitle">
+                    <i class="fa fa-building mr-2"></i>Thêm phường/xã
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="phuongId" value="0" />
+                <div class="form-group">
+                    <label for="phuongQuanHuyenId"><i class="fa fa-map-marker-alt mr-1"></i> Thuộc quận/huyện <span class="text-danger">*</span></label>
+                    <select class="form-control" id="phuongQuanHuyenId">
+                        <option value="">-- Chọn quận/huyện --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="phuongTen"><i class="fa fa-tag mr-1"></i> Tên phường/xã <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="phuongTen" placeholder="Nhập tên phường/xã..." maxlength="200">
+                    <small class="form-text text-muted">Ví dụ: Phường 1, Phường Bến Nghé, Xã Tân Thới Nhì...</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                    <i class="fa fa-times mr-1"></i> Đóng
+                </button>
+                <button type="button" class="btn btn-info" onclick="SettingsPage.savePhuong()">
+                    <i class="fa fa-save mr-1"></i> Lưu
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <!-- Toastr JS for notifications -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script src="~/Scripts/pages/system-config.js?v=@DateTime.Now.Ticks"></script>
+    <script src="~/Scripts/pages/settings.js?v=@DateTime.Now.Ticks"></script>
+    <script>
+        $(document).ready(function() {
+            // Khởi tạo SettingsPage với các URLs
+            SettingsPage.init({
+                // Tiện ích
+                getTienIch: '@Url.Action("GetTienIch", "Settings")',
+                createTienIch: '@Url.Action("CreateTienIch", "Settings")',
+                updateTienIch: '@Url.Action("UpdateTienIch", "Settings")',
+                deleteTienIch: '@Url.Action("DeleteTienIch", "Settings")',
+                // Quận/Huyện
+                getQuanHuyen: '@Url.Action("GetQuanHuyen", "Settings")',
+                createQuanHuyen: '@Url.Action("CreateQuanHuyen", "Settings")',
+                updateQuanHuyen: '@Url.Action("UpdateQuanHuyen", "Settings")',
+                deleteQuanHuyen: '@Url.Action("DeleteQuanHuyen", "Settings")',
+                // Phường
+                getPhuong: '@Url.Action("GetPhuong", "Settings")',
+                createPhuong: '@Url.Action("CreatePhuong", "Settings")',
+                updatePhuong: '@Url.Action("UpdatePhuong", "Settings")',
+                deletePhuong: '@Url.Action("DeletePhuong", "Settings")'
+            });
+        });
+    </script>
+}
 

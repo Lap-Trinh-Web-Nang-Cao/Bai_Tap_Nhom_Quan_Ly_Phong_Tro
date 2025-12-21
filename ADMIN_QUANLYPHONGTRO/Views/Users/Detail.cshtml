@@ -1,0 +1,305 @@
+﻿@model ADMIN_QUANLYPHONGTRO.Models.DTO.NguoiDungDetailDto
+
+@{
+    ViewBag.Title = "Chi tiết người dùng";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    
+    var roleName = Model != null ? (Model.VaiTroId == 1 ? "Admin" : (Model.VaiTroId == 2 ? "Chủ trọ" : "Người thuê")) : "Unknown";
+    var roleClass = Model != null ? (Model.VaiTroId == 1 ? "badge-role-admin" : (Model.VaiTroId == 2 ? "badge-role-landlord" : "badge-role-tenant")) : "";
+    var ngaySinhStr = Model != null && Model.NgaySinh.HasValue ? Model.NgaySinh.Value.ToString("dd/MM/yyyy") : "-";
+}
+
+@section styles {
+    <link rel="stylesheet" href="~/Content/css/pages/users.css?v=@DateTime.Now.Ticks" />
+}
+
+<!-- Page Header -->
+<div class="page-header">
+    <h4 class="page-title">Chi tiết người dùng</h4>
+    <ul class="breadcrumbs">
+        <li class="nav-home">
+            <a href="@Url.Action("Index", "Dashboard")">
+                <i class="flaticon-home"></i>
+            </a>
+        </li>
+        <li class="separator">
+            <i class="flaticon-right-arrow"></i>
+        </li>
+        <li class="nav-item">
+            <a href="@Url.Action("Index", "Users")">Người dùng</a>
+        </li>
+        <li class="separator">
+            <i class="flaticon-right-arrow"></i>
+        </li>
+        <li class="nav-item">
+            <a href="#">Chi tiết</a>
+        </li>
+    </ul>
+</div>
+
+@if (Model == null)
+{
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="empty-state">
+                        <i class="fa fa-user-slash"></i>
+                        <h5>Không tìm thấy người dùng</h5>
+                        <p>Người dùng không tồn tại hoặc đã bị xóa</p>
+                        <a href="@Url.Action("Index", "Users")" class="btn btn-primary mt-3">
+                            <i class="fa fa-arrow-left mr-1"></i> Quay lại danh sách
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="row">
+        <!-- Left Column: User Info Card -->
+        <div class="col-md-4">
+            <div class="card card-profile">
+                <div class="card-header" style="background: linear-gradient(135deg, #6C63FF, #5A52D5);">
+                    <div class="profile-picture">
+                        <div class="avatar avatar-xl">
+                            <img src="@(string.IsNullOrEmpty(Model.Avatar) ? "/Content/img/default-avatar.png" : Model.Avatar)" 
+                                 alt="@Model.HoTen" 
+                                 class="avatar-img rounded-circle"
+                                 style="width: 120px; height: 120px; object-fit: cover; border: 4px solid white;"
+                                 onerror="this.onerror=null; this.src='/Content/img/default-avatar.png';">
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="user-profile text-center">
+                        <div class="name">@(string.IsNullOrEmpty(Model.HoTen) ? "Chưa cập nhật" : Model.HoTen)</div>
+                        <div class="job mb-2">
+                            <span class="badge @roleClass" style="padding: 8px 15px; font-size: 13px;">
+                                @roleName
+                            </span>
+                        </div>
+                        <div class="mb-3">
+                            @if (Model.IsKhoa)
+                            {
+                                <span class="badge badge-danger"><i class="fa fa-lock mr-1"></i> Đã khóa</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-success"><i class="fa fa-check-circle mr-1"></i> Hoạt động</span>
+                            }
+                            @if (Model.IsEmailXacThuc)
+                            {
+                                <span class="badge badge-info ml-1"><i class="fa fa-envelope-check mr-1"></i> Email xác thực</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="row user-stats text-center">
+                        <div class="col">
+                            <div class="number">@Model.SoPhongDaDang</div>
+                            <div class="title">Phòng đăng</div>
+                        </div>
+                        <div class="col">
+                            <div class="number">@Model.SoDatPhong</div>
+                            <div class="title">Đặt phòng</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Thao tác</div>
+                </div>
+                <div class="card-body">
+                    @if (Model.IsKhoa)
+                    {
+                        <button class="btn btn-success btn-block mb-2" onclick="unlockUserAction('@Model.NguoiDungId')">
+                            <i class="fa fa-unlock mr-1"></i> Mở khóa tài khoản
+                        </button>
+                    }
+                    else
+                    {
+                        <button class="btn btn-danger btn-block mb-2" onclick="lockUserAction('@Model.NguoiDungId')">
+                            <i class="fa fa-lock mr-1"></i> Khóa tài khoản
+                        </button>
+                    }
+                    <a href="@Url.Action("Index", "Users")" class="btn btn-secondary btn-block">
+                        <i class="fa fa-arrow-left mr-1"></i> Quay lại danh sách
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Column: Details -->
+        <div class="col-md-8">
+            <!-- Contact Info -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title"><i class="fa fa-address-card mr-2"></i> Thông tin liên hệ</div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="text-muted small">Email</label>
+                                <p class="font-weight-bold">
+                                    <i class="fa fa-envelope text-primary mr-2"></i>
+                                    @(string.IsNullOrEmpty(Model.Email) ? "-" : Model.Email)
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="text-muted small">Số điện thoại</label>
+                                <p class="font-weight-bold">
+                                    <i class="fa fa-phone text-success mr-2"></i>
+                                    @(string.IsNullOrEmpty(Model.DienThoai) ? "-" : Model.DienThoai)
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="text-muted small">Ngày sinh</label>
+                                <p class="font-weight-bold">
+                                    <i class="fa fa-birthday-cake text-warning mr-2"></i>
+                                    @ngaySinhStr
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="text-muted small">Ngày đăng ký</label>
+                                <p class="font-weight-bold">
+                                    <i class="fa fa-calendar text-info mr-2"></i>
+                                    @Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Additional Info -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title"><i class="fa fa-info-circle mr-2"></i> Thông tin bổ sung</div>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label class="text-muted small">Loại giấy tờ</label>
+                        <p class="font-weight-bold">
+                            <i class="fa fa-id-card text-secondary mr-2"></i>
+                            @(string.IsNullOrEmpty(Model.LoaiGiayTo) ? "Chưa cập nhật" : Model.LoaiGiayTo)
+                        </p>
+                    </div>
+                    <div class="form-group">
+                        <label class="text-muted small">Ghi chú</label>
+                        <p>
+                            @if (!string.IsNullOrEmpty(Model.GhiChu))
+                            {
+                                @Model.GhiChu
+                            }
+                            else
+                            {
+                                <span class="text-muted">Không có ghi chú</span>
+                            }
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Activity History (placeholder) -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title"><i class="fa fa-history mr-2"></i> Lịch sử hoạt động</div>
+                </div>
+                <div class="card-body">
+                    <div class="empty-state" style="padding: 30px;">
+                        <i class="fa fa-clock" style="font-size: 36px;"></i>
+                        <h6 class="mt-3">Chức năng đang phát triển</h6>
+                        <p class="text-muted small">Lịch sử hoạt động sẽ được hiển thị ở đây</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section scripts {
+    <script src="~/Scripts/pages/users.js?v=@DateTime.Now.Ticks"></script>
+    <script>
+        // Lock/Unlock actions for detail page
+        function lockUserAction(userId) {
+            swal({
+                title: 'Xác nhận khóa tài khoản?',
+                text: "Người dùng sẽ không thể đăng nhập sau khi bị khóa",
+                icon: 'warning',
+                buttons: {
+                    cancel: { text: 'Hủy', visible: true, className: 'btn btn-secondary' },
+                    confirm: { text: 'Khóa', className: 'btn btn-danger' }
+                },
+                dangerMode: true
+            }).then(function(willLock) {
+                if (willLock) {
+                    $.ajax({
+                        url: '@Url.Action("LockUser", "Users")',
+                        type: 'POST',
+                        data: { id: userId },
+                        success: function(response) {
+                            if (response.success) {
+                                swal("Thành công!", "Đã khóa tài khoản", "success").then(function() {
+                                    location.reload();
+                                });
+                            } else {
+                                swal("Lỗi", response.message || "Không thể khóa tài khoản", "error");
+                            }
+                        },
+                        error: function() {
+                            swal("Lỗi", "Lỗi server", "error");
+                        }
+                    });
+                }
+            });
+        }
+
+        function unlockUserAction(userId) {
+            swal({
+                title: 'Xác nhận mở khóa?',
+                text: "Người dùng sẽ có thể đăng nhập trở lại",
+                icon: 'info',
+                buttons: {
+                    cancel: { text: 'Hủy', visible: true, className: 'btn btn-secondary' },
+                    confirm: { text: 'Mở khóa', className: 'btn btn-success' }
+                }
+            }).then(function(willUnlock) {
+                if (willUnlock) {
+                    $.ajax({
+                        url: '@Url.Action("UnlockUser", "Users")',
+                        type: 'POST',
+                        data: { id: userId },
+                        success: function(response) {
+                            if (response.success) {
+                                swal("Thành công!", "Đã mở khóa tài khoản", "success").then(function() {
+                                    location.reload();
+                                });
+                            } else {
+                                swal("Lỗi", response.message || "Không thể mở khóa tài khoản", "error");
+                            }
+                        },
+                        error: function() {
+                            swal("Lỗi", "Lỗi server", "error");
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+}

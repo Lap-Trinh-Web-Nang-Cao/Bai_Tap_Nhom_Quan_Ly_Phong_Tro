@@ -26,59 +26,47 @@ namespace ADMIN_QUANLYPHONGTRO.Services.Implementations
         {
             try
             {
-                // TODO: Gọi API thực tế
-                // var result = await _apiClient.GetPendingRooms(pageIndex, pageSize, keyword);
-                // return result;
-
-                // STUB DATA cho testing UI
-                await Task.Delay(100); // Simulate API call
-
-                var mockData = new List<RoomPendingItemViewModel>
+                var result = await _apiClient.GetPendingRooms(pageIndex, pageSize, keyword);
+                
+                if (result == null || result.Items == null || result.Items.Count == 0)
                 {
-                    new RoomPendingItemViewModel
+                    return new PagedResult<RoomPendingItemViewModel>
                     {
-                        PhongId = Guid.NewGuid(),
-                        TieuDe = "Phòng trọ cao cấp gần ĐH Đà Nẵng",
-                        DienTich = 25m,
-                        GiaTien = 3500000,
-                        TienCoc = 3500000,
-                        SoNguoiToiDa = 2,
-                        TrangThai = "Trống",
-                        CreatedAt = DateTime.Now.AddDays(-2),
-                        IsDuyet = false,
-                        IsBiKhoa = false,
-                        NhaTroName = "Nhà trọ ABC",
-                        ChuTroName = "Nguyễn Văn A",
-                        DiemTrungBinh = 0,
-                        SoLuongDanhGia = 0,
-                        ImageUrl = "/Content/img/room-placeholder.jpg"
-                    },
-                    new RoomPendingItemViewModel
-                    {
-                        PhongId = Guid.NewGuid(),
-                        TieuDe = "Phòng đơn có gác lửng",
-                        DienTich = 18m,
-                        GiaTien = 2500000,
-                        TienCoc = 2500000,
-                        SoNguoiToiDa = 1,
-                        TrangThai = "Trống",
-                        CreatedAt = DateTime.Now.AddDays(-1),
-                        IsDuyet = false,
-                        IsBiKhoa = false,
-                        NhaTroName = "Nhà trọ XYZ",
-                        ChuTroName = "Trần Thị B",
-                        DiemTrungBinh = 4.5,
-                        SoLuongDanhGia = 12,
-                        ImageUrl = "/Content/img/room-placeholder.jpg"
-                    }
-                };
+                        Items = new List<RoomPendingItemViewModel>(),
+                        PageIndex = pageIndex,
+                        PageSize = pageSize,
+                        TotalRecords = 0
+                    };
+                }
+
+                // Chuyển đổi PhongDto sang RoomPendingItemViewModel
+                var viewModels = result.Items.Select(dto => new RoomPendingItemViewModel
+                {
+                    PhongId = dto.PhongId,
+                    TieuDe = dto.TieuDe ?? "N/A",
+                    DienTich = (decimal?)dto.DienTich,
+                    GiaTien = (long)dto.GiaTien,
+                    TienCoc = null,
+                    SoNguoiToiDa = null,
+                    TrangThai = "Chờ duyệt",
+                    CreatedAt = dto.CreatedAt.LocalDateTime,
+                    UpdatedAt = null,
+                    DiemTrungBinh = 0,
+                    SoLuongDanhGia = 0,
+                    IsDuyet = dto.IsDuyet,
+                    IsBiKhoa = dto.IsBiKhoa,
+                    ThoiGianDuyet = null,
+                    NhaTroName = "Nhà trọ",
+                    ChuTroName = "Chủ trọ",
+                    ImageUrl = "/Content/img/room-placeholder.jpg"
+                }).ToList();
 
                 return new PagedResult<RoomPendingItemViewModel>
                 {
-                    Items = mockData,
+                    Items = viewModels,
                     PageIndex = pageIndex,
                     PageSize = pageSize,
-                    TotalRecords = mockData.Count
+                    TotalRecords = result.TotalRecords
                 };
             }
             catch (Exception ex)
@@ -99,23 +87,29 @@ namespace ADMIN_QUANLYPHONGTRO.Services.Implementations
         {
             try
             {
-                // TODO: Gọi API thực tế
-                await Task.Delay(100);
+                var dto = await _apiClient.GetRoomDetail(roomId);
+                
+                if (dto == null)
+                    return null;
 
                 return new RoomPendingItemViewModel
                 {
-                    PhongId = Guid.Parse(roomId),
-                    TieuDe = "Phòng trọ cao cấp gần ĐH Đà Nẵng",
-                    DienTich = 25m,
-                    GiaTien = 3500000,
-                    TienCoc = 3500000,
-                    SoNguoiToiDa = 2,
-                    TrangThai = "Trống",
-                    CreatedAt = DateTime.Now.AddDays(-2),
-                    IsDuyet = false,
-                    IsBiKhoa = false,
-                    NhaTroName = "Nhà trọ ABC",
-                    ChuTroName = "Nguyễn Văn A",
+                    PhongId = dto.PhongId,
+                    TieuDe = dto.TieuDe ?? "N/A",
+                    DienTich = (decimal?)dto.DienTich,
+                    GiaTien = (long)dto.GiaTien,
+                    TienCoc = null,
+                    SoNguoiToiDa = null,
+                    TrangThai = "Chờ duyệt",
+                    CreatedAt = dto.CreatedAt.LocalDateTime,
+                    UpdatedAt = null,
+                    DiemTrungBinh = 0,
+                    SoLuongDanhGia = 0,
+                    IsDuyet = dto.IsDuyet,
+                    IsBiKhoa = dto.IsBiKhoa,
+                    ThoiGianDuyet = null,
+                    NhaTroName = "Nhà trọ",
+                    ChuTroName = "Chủ trọ",
                     ImageUrl = "/Content/img/room-placeholder.jpg"
                 };
             }
@@ -133,14 +127,14 @@ namespace ADMIN_QUANLYPHONGTRO.Services.Implementations
         {
             try
             {
-                // TODO: Gọi API thực tế
-                await Task.Delay(100);
-                System.Diagnostics.Debug.WriteLine($"✅ Approved room: {roomId}");
-                return true;
+                var result = await _apiClient.ApproveRoom(roomId);
+                System.Diagnostics.Debug.WriteLine($"✅ ApproveRoom Result: {(result?.Success ?? false)}");
+                return result?.Success ?? false;
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"❌ RoomService.ApproveRoomAsync Error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"❌ Stack Trace: {ex.StackTrace}");
                 return false;
             }
         }
@@ -152,14 +146,14 @@ namespace ADMIN_QUANLYPHONGTRO.Services.Implementations
         {
             try
             {
-                // TODO: Gọi API thực tế
-                await Task.Delay(100);
-                System.Diagnostics.Debug.WriteLine($"❌ Rejected room: {roomId}, Reason: {reason}");
-                return true;
+                var result = await _apiClient.RejectRoom(roomId, reason);
+                System.Diagnostics.Debug.WriteLine($"✅ RejectRoom Result: {(result?.Success ?? false)}");
+                return result?.Success ?? false;
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"❌ RoomService.RejectRoomAsync Error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"❌ Stack Trace: {ex.StackTrace}");
                 return false;
             }
         }
@@ -171,15 +165,117 @@ namespace ADMIN_QUANLYPHONGTRO.Services.Implementations
         {
             try
             {
-                // TODO: Gọi API thực tế
-                await Task.Delay(100);
-                System.Diagnostics.Debug.WriteLine($"🔒 {(isLocked ? "Locked" : "Unlocked")} room: {roomId}");
-                return true;
+                var result = await _apiClient.ToggleLockRoom(roomId, isLocked);
+                System.Diagnostics.Debug.WriteLine($"✅ ToggleLockRoom Result: {(result?.Success ?? false)}");
+                return result?.Success ?? false;
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"❌ RoomService.ToggleLockRoomAsync Error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"❌ Stack Trace: {ex.StackTrace}");
                 return false;
+            }
+        }
+
+        /// <summary>
+        /// Lấy danh sách tất cả phòng
+        /// </summary>
+        public async Task<PagedResult<RoomPendingItemViewModel>> GetAllRoomsAsync(int pageIndex, int pageSize, string keyword = "")
+        {
+            try
+            {
+                var result = await _apiClient.GetAllRooms(pageIndex, pageSize, keyword);
+                
+                if (result == null || result.Items == null || result.Items.Count == 0)
+                {
+                    return new PagedResult<RoomPendingItemViewModel>
+                    {
+                        Items = new List<RoomPendingItemViewModel>(),
+                        PageIndex = pageIndex,
+                        PageSize = pageSize,
+                        TotalRecords = 0
+                    };
+                }
+
+                // Chuyển đổi PhongDto sang RoomPendingItemViewModel
+                var viewModels = result.Items.Select(dto => new RoomPendingItemViewModel
+                {
+                    PhongId = dto.PhongId,
+                    TieuDe = dto.TieuDe ?? "N/A",
+                    DienTich = (decimal?)dto.DienTich,
+                    GiaTien = (long)dto.GiaTien,
+                    TienCoc = null,
+                    SoNguoiToiDa = null,
+                    TrangThai = "Trống",
+                    CreatedAt = dto.CreatedAt.LocalDateTime,
+                    UpdatedAt = null,
+                    DiemTrungBinh = 0,
+                    SoLuongDanhGia = 0,
+                    IsDuyet = dto.IsDuyet,
+                    IsBiKhoa = dto.IsBiKhoa,
+                    ThoiGianDuyet = null,
+                    NhaTroName = "Nhà trọ",
+                    ChuTroName = "Chủ trọ",
+                    ImageUrl = "/Content/img/room-placeholder.jpg"
+                }).ToList();
+
+                return new PagedResult<RoomPendingItemViewModel>
+                {
+                    Items = viewModels,
+                    PageIndex = pageIndex,
+                    PageSize = pageSize,
+                    TotalRecords = result.TotalRecords
+                };
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ RoomService.GetAllRoomsAsync Error: {ex.Message}");
+                return new PagedResult<RoomPendingItemViewModel> 
+                { 
+                    Items = new List<RoomPendingItemViewModel>(), 
+                    TotalRecords = 0 
+                };
+            }
+        }
+
+        /// <summary>
+        /// Lấy thống kê phòng
+        /// </summary>
+        public async Task<RoomStatsViewModel> GetRoomStatsAsync()
+        {
+            try
+            {
+                var stats = await _apiClient.GetRoomStats();
+                
+                if (stats == null)
+                {
+                    return new RoomStatsViewModel
+                    {
+                        Total = 0,
+                        Pending = 0,
+                        Approved = 0,
+                        Locked = 0
+                    };
+                }
+
+                return new RoomStatsViewModel
+                {
+                    Total = stats.Total,
+                    Pending = stats.Pending,
+                    Approved = stats.Approved,
+                    Locked = stats.Locked
+                };
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ RoomService.GetRoomStatsAsync Error: {ex.Message}");
+                return new RoomStatsViewModel
+                {
+                    Total = 0,
+                    Pending = 0,
+                    Approved = 0,
+                    Locked = 0
+                };
             }
         }
     }

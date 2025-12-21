@@ -61,14 +61,60 @@ body {
     margin-top: 5px;
 }
 
-/* Active Menu Item */
+/* ===== REMOVE TEST CSS ===== */
+/* .sidebar .nav-primary .nav-item.active.submenu > a {
+    background: red !important;
+    color: white !important;
+} */
+
+/* Active Menu Item - ONLY for direct links without submenus */
 .sidebar .nav-primary .nav-item.active > a {
-    background: var(--primary-color);
-    box-shadow: 0 4px 8px rgba(21, 114, 232, 0.4);
+    background: var(--primary-color) !important;
+    box-shadow: 0 4px 8px rgba(21, 114, 232, 0.4) !important;
+    color: white !important;
+}
+
+.sidebar .nav-primary .nav-item.active > a i {
+    color: white !important;
+}
+
+.sidebar .nav-primary .nav-item.active > a p {
+    color: white !important;
 }
 
 .sidebar .nav-primary .nav-item a:hover {
     background: rgba(21, 114, 232, 0.1);
+}
+
+/* REMOVE all parent menu active styling since we don't highlight parents anymore */
+/* .sidebar .nav-primary .nav-item.submenu > a,
+.sidebar .nav-primary .nav-item.active.submenu > a {
+    background: var(--primary-color);
+    box-shadow: 0 4px 8px rgba(21, 114, 232, 0.4);
+    color: white;
+} */
+
+/* REMOVE submenu item active styling */
+.sidebar .nav-primary .nav-collapse li.active > a {
+    /* No special styling */
+}
+
+.sidebar .nav-primary .nav-collapse li.active > a .sub-item {
+    /* Keep normal color */
+}
+
+.sidebar .nav-primary .nav-collapse li.active > a::before {
+    display: none;
+}
+
+/* Light background for expanded submenu (optional) */
+.sidebar .nav-primary .collapse.show {
+    background: rgba(21, 114, 232, 0.02);
+}
+
+/* Hover effect for submenu items */
+.sidebar .nav-primary .nav-collapse li > a:hover {
+    background: rgba(21, 114, 232, 0.08);
 }
 
 /* Navbar Customization */

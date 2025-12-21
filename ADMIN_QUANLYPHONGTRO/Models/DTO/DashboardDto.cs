@@ -104,7 +104,7 @@ namespace ADMIN_QUANLYPHONGTRO.Models.DTO
     /// </summary>
     public class ActivityLogDto
     {
-        public Guid ActivityId { get; set; }
+        public long ActivityId { get; set; }  // Changed from Guid to long to match backend bigint
         public string Action { get; set; }  // "DUYET_PHONG", "KHOA_TAI_KHOAN"...
         public string Description { get; set; }  // Mô tả chi tiết
         public string PerformedBy { get; set; }  // Tên admin thực hiện

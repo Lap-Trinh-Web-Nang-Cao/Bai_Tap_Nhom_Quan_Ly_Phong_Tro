@@ -1,7 +1,397 @@
-﻿
+﻿@model List<ADMIN_QUANLYPHONGTRO.Models.DTO.YeuCauHoTroDto>
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "Ticket hỗ trợ";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    var statistics = ViewBag.Statistics as ADMIN_QUANLYPHONGTRO.ApiClients.SupportStatistics;
+    if (statistics == null) { statistics = new ADMIN_QUANLYPHONGTRO.ApiClients.SupportStatistics(); }
+    var loaiHoTros = ViewBag.LoaiHoTros as List<ADMIN_QUANLYPHONGTRO.Models.DTO.LoaiHoTroDto>;
+    if (loaiHoTros == null) { loaiHoTros = new List<ADMIN_QUANLYPHONGTRO.Models.DTO.LoaiHoTroDto>(); }
 }
 
-<h2>Index</h2>
+@section styles {
+    <link rel="stylesheet" href="~/Content/css/pages/support.css?v=@DateTime.Now.Ticks" />
+}
+
+<!-- Page Header -->
+<div class="page-header">
+    <h4 class="page-title">Ticket hỗ trợ</h4>
+    <ul class="breadcrumbs">
+        <li class="nav-home">
+            <a href="@Url.Action("Index", "Dashboard")">
+                <i class="flaticon-home"></i>
+            </a>
+        </li>
+        <li class="separator">
+            <i class="flaticon-right-arrow"></i>
+        </li>
+        <li class="nav-item">
+            <a href="#">Hỗ trợ & Báo cáo</a>
+        </li>
+        <li class="separator">
+            <i class="flaticon-right-arrow"></i>
+        </li>
+        <li class="nav-item">
+            <a href="#">Ticket hỗ trợ</a>
+        </li>
+    </ul>
+</div>
+
+@if (!string.IsNullOrEmpty(ViewBag.Error as string))
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong><i class="fas fa-exclamation-triangle"></i> Lỗi!</strong> @ViewBag.Error
+        @if (!string.IsNullOrEmpty(ViewBag.ErrorDetails as string))
+        {
+            <br /><small>Chi tiết: @ViewBag.ErrorDetails</small>
+        }
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+}
+
+<!-- Stats Cards -->
+<div class="row">
+    <!-- Tổng yêu cầu -->
+    <div class="col-sm-6 col-md-3">
+        <div class="card card-stats card-round">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-icon">
+                        <div class="icon-big text-center icon-primary bubble-shadow-small">
+                            <i class="fas fa-headset"></i>
+                        </div>
+                    </div>
+                    <div class="col col-stats ml-3 ml-sm-0">
+                        <div class="numbers">
+                            <p class="card-category">Tổng yêu cầu</p>
+                            <h4 class="card-title" data-stat="total">@statistics.TotalRequests</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mới gửi -->
+    <div class="col-sm-6 col-md-3">
+        <div class="card card-stats card-round">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-icon">
+                        <div class="icon-big text-center icon-info bubble-shadow-small">
+                            <i class="fas fa-inbox"></i>
+                        </div>
+                    </div>
+                    <div class="col col-stats ml-3 ml-sm-0">
+                        <div class="numbers">
+                            <p class="card-category">Mới gửi</p>
+                            <h4 class="card-title" data-stat="new">@statistics.NewRequests</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Đang xử lý -->
+    <div class="col-sm-6 col-md-3">
+        <div class="card card-stats card-round">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-icon">
+                        <div class="icon-big text-center icon-warning bubble-shadow-small">
+                            <i class="fas fa-spinner"></i>
+                        </div>
+                    </div>
+                    <div class="col col-stats ml-3 ml-sm-0">
+                        <div class="numbers">
+                            <p class="card-category">Đang xử lý</p>
+                            <h4 class="card-title" data-stat="processing">@statistics.ProcessingRequests</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Đã hoàn thành -->
+    <div class="col-sm-6 col-md-3">
+        <div class="card card-stats card-round">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-icon">
+                        <div class="icon-big text-center icon-success bubble-shadow-small">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                    <div class="col col-stats ml-3 ml-sm-0">
+                        <div class="numbers">
+                            <p class="card-category">Hoàn thành</p>
+                            <h4 class="card-title" data-stat="completed">@statistics.CompletedRequests</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-head-row">
+                    <div class="card-title">Danh sách yêu cầu hỗ trợ</div>
+                    <div class="card-tools">
+                        <button class="btn btn-primary btn-border btn-round btn-sm" onclick="refreshTable()">
+                            <span class="btn-label">
+                                <i class="fa fa-sync-alt"></i>
+                            </span>
+                            Làm mới
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- Filters -->
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Lọc theo trạng thái</label>
+                            <select class="form-control" id="statusFilter">
+                                <option value="">Tất cả trạng thái</option>
+                                <option value="Moi">Mới gửi</option>
+                                <option value="DangXuLy">Đang xử lý</option>
+                                <option value="HoanThanh">Hoàn thành</option>
+                                <option value="TuChoi">Từ chối</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Lọc theo loại</label>
+                            <select class="form-control" id="typeFilter">
+                                <option value="">Tất cả loại</option>
+                                @foreach (var loai in loaiHoTros)
+                                {
+                                    <option value="@loai.LoaiHoTroId">@loai.TenLoai</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Tìm kiếm</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="searchInput" placeholder="Nhập tiêu đề hoặc mô tả...">
+                                <div class="input-group-append">
+                                    <button type="button" class="btn btn-primary" id="btnSearchSupport">
+                                        <i class="fa fa-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button class="btn btn-secondary btn-block" onclick="clearFilters()">
+                            <i class="fa fa-times"></i> Xóa lọc
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Data Table -->
+                <div class="table-responsive">
+                    <table id="supportTable" class="display table table-striped table-hover"
+                           data-support-detail-url="@Url.Action("GetSupportDetail", "Support")"
+                           data-support-process-url="@Url.Action("Process", "Support")"
+                           data-support-complete-url="@Url.Action("Complete", "Support")"
+                           data-support-reject-url="@Url.Action("Reject", "Support")">
+                        <thead>
+                            <tr>
+                                <th style="width: 5%">#</th>
+                                <th style="width: 12%">Loại</th>
+                                <th style="width: 25%">Tiêu đề</th>
+                                <th style="width: 15%">Phòng</th>
+                                <th style="width: 12%">Thời gian</th>
+                                <th style="width: 12%">Trạng thái</th>
+                                <th style="width: 19%">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model != null && Model.Count > 0)
+                            {
+                                var index = 1;
+                                foreach (var item in Model)
+                                {
+                                    var statusClass = "";
+                                    var statusText = "";
+                                    switch (item.TrangThai)
+                                    {
+                                        case "Moi":
+                                            statusClass = "badge-info";
+                                            statusText = "Mới gửi";
+                                            break;
+                                        case "DangXuLy":
+                                            statusClass = "badge-warning";
+                                            statusText = "Đang xử lý";
+                                            break;
+                                        case "HoanThanh":
+                                            statusClass = "badge-success";
+                                            statusText = "Hoàn thành";
+                                            break;
+                                        case "TuChoi":
+                                            statusClass = "badge-danger";
+                                            statusText = "Từ chối";
+                                            break;
+                                        default:
+                                            statusClass = "badge-secondary";
+                                            statusText = item.TrangThai != null ? item.TrangThai : "N/A";
+                                            break;
+                                    }
+                                    
+                                    var tenLoai = item.TenLoaiHoTro != null ? item.TenLoaiHoTro : "Khác";
+                                    var loaiIcon = "fas fa-question-circle";
+                                    if (tenLoai.ToLower().Contains("sua") || tenLoai.ToLower().Contains("sửa"))
+                                    {
+                                        loaiIcon = "fas fa-tools";
+                                    }
+                                    else if (tenLoai.ToLower().Contains("dien") || tenLoai.ToLower().Contains("điện"))
+                                    {
+                                        loaiIcon = "fas fa-bolt";
+                                    }
+                                    else if (tenLoai.ToLower().Contains("nuoc") || tenLoai.ToLower().Contains("nước"))
+                                    {
+                                        loaiIcon = "fas fa-tint";
+                                    }
+                                    else if (tenLoai.ToLower().Contains("ve sinh") || tenLoai.ToLower().Contains("vệ sinh"))
+                                    {
+                                        loaiIcon = "fas fa-broom";
+                                    }
+                                    <tr data-id="@item.HoTroId" data-status="@item.TrangThai" data-type="@tenLoai">
+                                        <td>@index</td>
+                                        <td>
+                                            <span class="badge badge-primary" title="@tenLoai">
+                                                <i class="@loaiIcon"></i> @tenLoai
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <strong>@(item.TieuDe != null ? item.TieuDe : "Không có tiêu đề")</strong>
+                                            @if (!string.IsNullOrEmpty(item.MoTa))
+                                            {
+                                                var moTaShort = item.MoTa.Length > 50 ? item.MoTa.Substring(0, 50) + "..." : item.MoTa;
+                                                <br /><small class="text-muted">@moTaShort</small>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(item.TenPhong))
+                                            {
+                                                <span><i class="fas fa-door-open"></i> @item.TenPhong</span>
+                                            }
+                                            else if (item.PhongId.HasValue)
+                                            {
+                                                <span class="text-muted">Phòng #@item.PhongId.Value.ToString().Substring(0, 8)...</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">-</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (item.ThoiGianTao.HasValue)
+                                            {
+                                                <span>@item.ThoiGianTao.Value.ToString("dd/MM/yyyy")</span>
+                                                <br /><small class="text-muted">@item.ThoiGianTao.Value.ToString("HH:mm")</small>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">N/A</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <span class="badge @statusClass">@statusText</span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <button type="button" class="btn btn-sm btn-info" onclick="viewDetails('@item.HoTroId')" title="Xem chi tiết">
+                                                    <i class="fa fa-eye"></i>
+                                                </button>
+                                                @if (item.TrangThai == "Moi")
+                                                {
+                                                    <button type="button" class="btn btn-sm btn-warning" onclick="processRequest('@item.HoTroId')" title="Bắt đầu xử lý">
+                                                        <i class="fa fa-play"></i>
+                                                    </button>
+                                                }
+                                                @if (item.TrangThai == "Moi" || item.TrangThai == "DangXuLy")
+                                                {
+                                                    <button type="button" class="btn btn-sm btn-success" onclick="completeRequest('@item.HoTroId')" title="Hoàn thành">
+                                                        <i class="fa fa-check"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-sm btn-danger" onclick="rejectRequest('@item.HoTroId')" title="Từ chối">
+                                                        <i class="fa fa-times"></i>
+                                                    </button>
+                                                }
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    index++;
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Detail Modal -->
+<div class="modal fade" id="detailModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-headset text-primary"></i>
+                    <span class="fw-mediumbold">Chi tiết</span>
+                    <span class="fw-light">yêu cầu hỗ trợ</span>
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="detailContent">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="sr-only">Đang tải...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" id="detailFooter">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script src="~/Scripts/pages/support.js?v=@DateTime.Now.Ticks"></script>
+    <script>
+        $(function () {
+            // Initialize SupportPage with URLs from the view
+            if (window.SupportPage && typeof window.SupportPage.init === 'function') {
+                window.SupportPage.init({
+                    urls: {
+                        getSupports: '@Url.Action("GetSupports", "Support")',
+                        getSupportDetail: '@Url.Action("GetSupportDetail", "Support")',
+                        process: '@Url.Action("Process", "Support")',
+                        complete: '@Url.Action("Complete", "Support")',
+                        reject: '@Url.Action("Reject", "Support")',
+                        getStatistics: '@Url.Action("GetStatistics", "Support")'
+                    }
+                });
+            }
+        });
+    </script>
+}
 
