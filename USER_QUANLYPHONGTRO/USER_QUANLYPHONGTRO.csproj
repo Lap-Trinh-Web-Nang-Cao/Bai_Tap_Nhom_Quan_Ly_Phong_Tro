@@ -143,6 +143,7 @@
     <Compile Include="Models\Dtos\Support\YeuCauHoTroDto.cs" />
     <Compile Include="Models\Dtos\Users\UserDto.cs" />
     <Compile Include="Models\Dtos\Users\UserProfileDto.cs" />
+    <Compile Include="Models\Dtos\ThongBaoDto.cs" />
     <Compile Include="Models\Dtos\Users\VaiTroDto.cs" />
     <Compile Include="Models\ViewModels\Auth\LoginRequestDto.cs" />
     <Compile Include="Models\ViewModels\Auth\LoginResponseDto.cs" />
@@ -271,6 +272,7 @@
     <Content Include="Views\Guest\ChiTietPhong.cshtml" />
     <Content Include="Views\Guest\Index.cshtml" />
     <Content Include="Views\Guest\Danhsachphong.cshtml" />
+    <Content Include="Views\Guest\PhongNoiBat.cshtml" />
     <Content Include="Views\KhachThue\Thongbao.cshtml" />
     <Content Include="Views\KhachThue\DatPhong.cshtml" />
     <Content Include="Views\KhachThue\TinNhan.cshtml" />

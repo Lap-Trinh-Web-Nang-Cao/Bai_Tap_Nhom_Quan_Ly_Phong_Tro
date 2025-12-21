@@ -562,92 +562,7 @@
             <p>Những phòng trọ được yêu thích nhất tháng này</p>
         </div>
 
-        @if (Model != null && Model.Any())
-        {
-            <div class="rooms-grid">
-                @foreach (var room in Model)
-                {
-                    <div class="room-card">
-                        <div class="room-image"
-                            style="background-image: url('@room.HinhAnhDaiDien'); background-size: cover; background-position: center;">
-                            @if (room.IsDuyet)
-                            {
-                                <span class="room-badge">✓ Đã Duyệt</span>
-                            }
-                        </div>
-                        <div class="room-content">
-                            <h3 class="room-title">@room.TieuDe</h3>
-
-                            @if (room.NhaTro != null)
-                            {
-                                <div class="room-location">
-                                    <i class="fa fa-map-marker-alt"></i>
-                                    <span>@room.NhaTro.DiaChi</span>
-                                </div>
-                            }
-
-                            @if (room.DiemTrungBinh.HasValue && room.DiemTrungBinh > 0)
-                            {
-                                <div style="color: #ffa500; font-size: 14px; margin-bottom: 10px;">
-                                    @for (int i = 0; i < (int)Math.Floor(room.DiemTrungBinh.Value); i++)
-                                    {
-                                        <i class="fa fa-star"></i>
-                                    }
-                                    <span style="color: #333; font-weight: 600; margin-left: 5px;">
-                                        @room.DiemTrungBinh.Value.ToString("0.0")
-                                    </span>
-                                </div>
-                            }
-
-                            <div class="room-price">
-                                @room.GiaTien.ToString("N0")đ
-                                <span style="font-size: 0.4em; color: #999;">/tháng</span>
-                            </div>
-
-                            <div class="room-features">
-                                @if (room.DienTich.HasValue)
-                                {
-                                    <div class="feature-item">
-                                        <i class="fa fa-expand-arrows-alt"></i>
-                                        <span>@room.DienTich m²</span>
-                                    </div>
-                                }
-                                <div class="feature-item">
-                                    <i class="fa fa-users"></i>
-                                    <span>@room.SoNguoiToiDa người</span>
-                                </div>
-                            </div>
-
-                            <a href="@Url.Action("ChiTietPhong", "Guest", new { id = room.PhongId })" class="view-btn">
-                                <i class="fa fa-eye"></i> Xem Chi Tiết
-                            </a>
-                        </div>
-                    </div>
-                }
-            </div>
-
-            <div class="view-all-container">
-                <a href="@Url.Action("DanhSachPhong", "Guest")" class="view-all-btn">
-                    Xem Tất Cả @ViewBag.TotalRooms Phòng <i class="fa fa-arrow-right"></i>
-                </a>
-            </div>
-        }
-        else
-        {
-            <div class="no-rooms">
-                <p>Đang cập nhật thêm phòng trọ...</p>
-                @if (ViewBag.ErrorMessage != null)
-                {
-                    <p style="color: red; margin-top: 20px;">
-                        <strong>Debug Info:</strong> @ViewBag.ErrorMessage
-                    </p>
-                }
-                @if (ViewBag.ApiSuccess == false)
-                {
-                    <p style="color: orange;">API call không thành công. Vui lòng kiểm tra Backend.</p>
-                }
-            </div>
-        }
+        @Html.Partial("PhongNoiBat", Model)
     </div>
 
     <!-- How It Works -->
@@ -685,9 +600,9 @@
     </div>
 
     <!-- CTA Section -->
-    <div class="cta-section">
-        @if (!isLoggedIn)
-        {
+    @if (!isLoggedIn)
+    {
+        <div class="cta-section">
             <h2>🎉 Sẵn Sàng Tìm Phòng Trọ?</h2>
             <p>Đăng ký ngay hôm nay để trải nghiệm đầy đủ tính năng</p>
             <div class="cta-buttons">
@@ -698,18 +613,8 @@
                     <i class="fa fa-building"></i> Đăng Ký Chủ Trọ
                 </a>
             </div>
-        }
-        else
-        {
-            <h2>👋 Chào mừng trở lại, @userName!</h2>
-            <p>Khám phá thêm nhiều phòng trọ tuyệt vời ngay bây giờ</p>
-            <div class="cta-buttons">
-                <a href="@Url.Action("DanhSachPhong", "Guest")" class="cta-btn cta-btn-primary">
-                    <i class="fa fa-search"></i> Khám Phá Ngay
-                </a>
-            </div>
-        }
-    </div>
+        </div>
+    }
 </div>
 
 @section scripts {

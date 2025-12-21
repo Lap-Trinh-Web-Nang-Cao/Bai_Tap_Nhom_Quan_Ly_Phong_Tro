@@ -76,6 +76,16 @@ namespace USER_QUANLYPHONGTRO.Models.Dtos.Rooms
         public List<TienIchDto> TienIchs { get; set; } = new List<TienIchDto>();
 
         /// <summary>
+        /// Mô tả chi tiết phòng
+        /// </summary>
+        public string MoTa { get; set; }
+
+        /// <summary>
+        /// Danh sách hình ảnh chi tiết
+        /// </summary>
+        public List<string> DanhSachHinhAnh { get; set; } = new List<string>();
+
+        /// <summary>
         /// Ngày tạo phòng
         /// </summary>
         public DateTimeOffset? CreatedAt { get; set; }

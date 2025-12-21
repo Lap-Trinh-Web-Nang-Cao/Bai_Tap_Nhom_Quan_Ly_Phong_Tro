@@ -20,6 +20,12 @@ namespace USER_QUANLYPHONGTRO.Models.Dtos.Bookings
         public int TrangThaiId { get; set; }
         public string TenTrangThai { get; set; }
 
+        public string TieuDePhong { get; set; }
+        public string DiaChi { get; set; }
+        public string SdtChuTro { get; set; }
+        public string HoTenNguoiThue { get; set; }
+        public string SdtNguoiThue { get; set; }
+
         public Guid? TapTinBienLaiId { get; set; }
         public string GhiChu { get; set; }
     }

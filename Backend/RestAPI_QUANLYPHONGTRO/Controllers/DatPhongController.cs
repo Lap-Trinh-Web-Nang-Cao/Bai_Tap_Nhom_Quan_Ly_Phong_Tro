@@ -8,7 +8,7 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize] // Toàn bộ Controller này yêu cầu đăng nhập
+    // [Authorize] // Toàn bộ Controller này yêu cầu đăng nhập (Tắt để test Fake Login)
     public class DatPhongController : ControllerBase
     {
         private readonly IDatPhongService _service;
@@ -21,8 +21,10 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
         private Guid GetUserId()
         {
             var id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(id)) throw new UnauthorizedAccessException();
-            return Guid.Parse(id);
+            if (!string.IsNullOrEmpty(id)) return Guid.Parse(id);
+
+            // Fallback cho Fake Login hỗ trợ "thông báo thật"
+            return Guid.Parse("00000000-0000-0000-0000-000000000001");
         }
 
         //1. Người thuê: Đặt phòng

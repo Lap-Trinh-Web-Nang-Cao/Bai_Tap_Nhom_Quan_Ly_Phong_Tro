@@ -311,31 +311,158 @@
 
 @section scripts {
 <script>
-    // TODO: Implement real-time chat with SignalR
     $(document).ready(function () {
-        // Click conversation item
-        $('.conversation-item').click(function () {
+        let currentUserId = '@Session["UserId"]';
+        let activeOtherUserId = null;
+
+        // 1. Load danh sách hội thoại
+        function loadConversations() {
+            $.get('@Url.Action("GetConversations", "KhachThue")', function(res) {
+                const $list = $('.conversation-list');
+                const $loading = $('.no-conversation');
+                
+                if (res.success && res.data && res.data.length > 0) {
+                    $loading.hide();
+                    // Giữ lại header
+                    $list.find('.conversation-item').remove();
+                    
+                    res.data.forEach(conv => {
+                        const unreadHtml = conv.UnreadCount > 0 ? `<div class="unread-dot"></div>` : '';
+                        const activeClass = activeOtherUserId == conv.OtherUserId ? 'active' : '';
+                        
+                        const html = `
+                            <div class="conversation-item ${activeClass}" data-id="${conv.OtherUserId}" data-name="${conv.OtherUserName}" data-avatar="${conv.OtherUserAvatar}">
+                                <img src="${conv.OtherUserAvatar}" class="conversation-avatar" onerror="this.src='/images/default-avatar.png'" />
+                                <div class="conversation-info">
+                                    <div class="conversation-name">${conv.OtherUserName}</div>
+                                    <div class="conversation-preview">${conv.LastMessage || 'Tiệp đính kèm...'}</div>
+                                </div>
+                                <div style="display:flex; flex-direction:column; align-items:flex-end; gap:5px;">
+                                    <div class="conversation-time">${formatTime(conv.LastTime)}</div>
+                                    ${unreadHtml}
+                                </div>
+                            </div>
+                        `;
+                        $list.append(html);
+                    });
+                } else {
+                    $loading.show();
+                }
+            });
+        }
+
+        // 2. Load tin nhắn trong một cuộc hội thoại
+        function loadMessages(otherUserId, name, avatar) {
+            activeOtherUserId = otherUserId;
+            
+            // UI Update Header
+            $('.chat-area').html(`
+                <div class="chat-header">
+                    <img src="${avatar}" onerror="this.src='/images/default-avatar.png'" />
+                    <div class="chat-header-info">
+                        <h4>${name}</h4>
+                        <span>Đang trực tuyến</span>
+                    </div>
+                </div>
+                <div class="chat-messages" id="chatMessages">
+                    <div class="text-center py-5"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
+                </div>
+                <div class="chat-input">
+                    <input type="text" id="msgInput" placeholder="Nhập tin nhắn..." />
+                    <button class="btn-send" id="btnSend">
+                        <i class="fa fa-paper-plane"></i>
+                    </button>
+                </div>
+            `);
+
+            $.get('@Url.Action("GetChatMessages", "KhachThue")', { otherUserId: otherUserId }, function(res) {
+                const $msgBox = $('#chatMessages');
+                $msgBox.empty();
+                
+                if (res.success && res.data) {
+                    res.data.forEach(msg => {
+                        const isSent = msg.fromUser.toLowerCase() === currentUserId.toLowerCase();
+                        const msgClass = isSent ? 'sent' : 'received';
+                        
+                        const html = `
+                            <div class="message ${msgClass}">
+                                ${msg.noiDung}
+                                <div class="message-time">${formatTime(msg.thoiGian)}</div>
+                            </div>
+                        `;
+                        $msgBox.append(html);
+                    });
+                    scrollToBottom();
+                }
+            });
+        }
+
+        // 3. Gửi tin nhắn
+        $(document).on('click', '#btnSend', function() {
+            const $input = $('#msgInput');
+            const content = $input.val().trim();
+            
+            if (content && activeOtherUserId) {
+                $.post('@Url.Action("SendChatMessage", "KhachThue")', { toUserId: activeOtherUserId, content: content }, function(res) {
+                    if (res.success) {
+                        $input.val('');
+                        // Render locally for speed
+                        const html = `
+                            <div class="message sent">
+                                ${content}
+                                <div class="message-time">Vừa xong</div>
+                            </div>
+                        `;
+                        $('#chatMessages').append(html);
+                        scrollToBottom();
+                        loadConversations(); // Update preview sidebar
+                    }
+                });
+            }
+        });
+
+        // Event delegates
+        $(document).on('click', '.conversation-item', function () {
+            const id = $(this).data('id');
+            const name = $(this).data('name');
+            const avatar = $(this).data('avatar');
+            
             $('.conversation-item').removeClass('active');
             $(this).addClass('active');
-            // Load messages for this conversation
+            
+            loadMessages(id, name, avatar);
         });
 
-        // Send message
-        $('.btn-send').click(function () {
-            var input = $('.chat-input input');
-            var message = input.val().trim();
-            if (message) {
-                // TODO: Send message via API/SignalR
-                input.val('');
-            }
+        $(document).on('keypress', '#msgInput', function(e) {
+            if (e.which === 13) $('#btnSend').click();
         });
 
-        // Enter to send
-        $('.chat-input input').keypress(function (e) {
-            if (e.which === 13) {
-                $('.btn-send').click();
+        function scrollToBottom() {
+            const $box = $('#chatMessages');
+            $box.scrollTop($box[0].scrollHeight);
+        }
+
+        function formatTime(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            return date.getHours().toString().padStart(2, '0') + ':' + date.getMinutes().toString().padStart(2, '0');
+        }
+
+        // Init
+        loadConversations();
+        // Polling for new messages every 5s
+        setInterval(function() {
+            if (activeOtherUserId) {
+                 // Option: chỉ reload nếu đang mở chat
             }
-        });
+            loadConversations();
+        }, 5000);
     });
 </script>
+
+<style>
+    .unread-dot { width: 8px; height: 8px; background: #3182ce; border-radius: 50%; }
+    #chatMessages::-webkit-scrollbar { width: 6px; }
+    #chatMessages::-webkit-scrollbar-thumb { background: #cbd5e0; border-radius: 3px; }
+</style>
 }

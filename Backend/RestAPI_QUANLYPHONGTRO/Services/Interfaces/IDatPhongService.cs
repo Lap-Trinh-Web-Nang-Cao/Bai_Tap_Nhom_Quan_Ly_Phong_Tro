@@ -9,10 +9,10 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Interfaces
         Task<DatPhong> CreateBookingAsync(CreateDatPhongRequest request, Guid userId);
 
         // Lấy lịch sử đặt phòng của người dùng hiện tại
-        Task<IEnumerable<DatPhong>> GetMyBookingsAsync(Guid userId);
+        Task<IEnumerable<BookingDetailDto>> GetMyBookingsAsync(Guid userId);
 
         // Lấy danh sách yêu cầu đặt phòng (Dành cho Chủ trọ xem ai đặt phòng mình)
-        Task<IEnumerable<DatPhong>> GetRequestsForLandlordAsync(Guid chuTroId);
+        Task<IEnumerable<BookingDetailDto>> GetRequestsForLandlordAsync(Guid chuTroId);
 
         // Chủ trọ duyệt hoặc từ chối
         Task<bool> UpdateStatusAsync(Guid datPhongId, int trangThaiId, Guid chuTroId);

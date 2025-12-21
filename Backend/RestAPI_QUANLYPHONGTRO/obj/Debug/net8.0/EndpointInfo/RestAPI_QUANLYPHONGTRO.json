@@ -2496,29 +2496,6 @@
         }
       }
     },
-    "/api/ThongBao/nguoithue/{userId}": {
-      "get": {
-        "tags": [
-          "ThongBao"
-        ],
-        "parameters": [
-          {
-            "name": "userId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
     "/api/ThongBao": {
       "get": {
         "tags": [
@@ -2531,8 +2508,20 @@
         }
       }
     },
-    "/api/ThongBao/{id}": {
+    "/api/ThongBao/unread-count": {
       "get": {
+        "tags": [
+          "ThongBao"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/ThongBao/mark-as-read/{id}": {
+      "post": {
         "tags": [
           "ThongBao"
         ],
@@ -2554,19 +2543,36 @@
         }
       }
     },
-    "/api/ThongBao/{id}/daodoc": {
-      "put": {
+    "/api/ThongBao/mark-all-as-read": {
+      "post": {
+        "tags": [
+          "ThongBao"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/ThongBao/create-test": {
+      "post": {
         "tags": [
           "ThongBao"
         ],
         "parameters": [
           {
-            "name": "id",
-            "in": "path",
-            "required": true,
+            "name": "title",
+            "in": "query",
             "schema": {
-              "type": "string",
-              "format": "uuid"
+              "type": "string"
+            }
+          },
+          {
+            "name": "content",
+            "in": "query",
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -2771,6 +2777,18 @@
               "format": "uuid"
             }
           }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TinNhan/my-conversations": {
+      "get": {
+        "tags": [
+          "TinNhan"
         ],
         "responses": {
           "200": {

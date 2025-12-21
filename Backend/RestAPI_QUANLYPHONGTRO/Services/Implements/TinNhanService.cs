@@ -68,5 +68,45 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
             await _context.SaveChangesAsync();
             return true;
         }
+
+        public async Task<IEnumerable<object>> GetMyConversationsAsync(Guid userId)
+        {
+            // Lấy tất cả tin nhắn liên quan đến user
+            var allMessages = await _context.TinNhans
+                .Where(m => m.FromUser == userId || m.ToUser == userId)
+                .OrderByDescending(m => m.ThoiGian)
+                .ToListAsync();
+
+            // Nhóm theo người đối thoại
+            var conversations = allMessages
+                .GroupBy(m => m.FromUser == userId ? m.ToUser : m.FromUser)
+                .Select(g => new
+                {
+                    OtherUserId = g.Key,
+                    LastMessage = g.First().NoiDung,
+                    LastTime = g.First().ThoiGian,
+                    UnreadCount = g.Count(m => m.ToUser == userId && !m.DaDoc)
+                })
+                .ToList();
+
+            var result = new List<object>();
+            foreach (var conv in conversations)
+            {
+                var otherUser = await _context.HoSoNguoiDungs
+                    .FirstOrDefaultAsync(h => h.NguoiDungId == conv.OtherUserId);
+
+                result.Add(new
+                {
+                    conv.OtherUserId,
+                    conv.LastMessage,
+                    conv.LastTime,
+                    conv.UnreadCount,
+                    OtherUserName = otherUser?.HoTen ?? "Người dùng",
+                    //OtherUserAvatar = otherUser?.HinhAnh ?? "/images/default-avatar.png"
+                });
+            }
+
+            return result;
+        }
     }
 }

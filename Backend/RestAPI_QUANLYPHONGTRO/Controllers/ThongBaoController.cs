@@ -1,79 +1,107 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using RestAPI_QUANLYPHONGTRO.Data;
+using RestAPI_QUANLYPHONGTRO.Models;
 using System.Security.Claims;
 
 namespace RestAPI_QUANLYPHONGTRO.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    // [Authorize] // T·∫°m th·ªùi comment ƒë·ªÉ test t·ª´ giao di·ªán demo (Fake Login)
     public class ThongBaoController : ControllerBase
     {
+        private readonly ApplicationDbContext _context;
+        private static readonly Guid FakeUserId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+
+        public ThongBaoController(ApplicationDbContext context)
+        {
+            _context = context;
+        }
+
         private Guid GetUserId()
-     {
-    var id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-      return Guid.Parse(id);
-        }
-
-        // GET /api/thongbao/nguoithue/{userId}
-        [HttpGet("nguoithue/{userId}")]
-        public async Task<IActionResult> GetByTenantId(Guid userId)
         {
-    try
-            {
-        // TODO: Implement logic ? l?y danh s·ch thÙng b·o c?a ng˝?i thuÍ
-          // T?m th?i tr? v? list r?ng
-         return Ok(new { Success = true, Data = new List<object>(), Message = "L?y danh s·ch thÙng b·o th‡nh cÙng" });
-            }
-  catch (Exception ex)
-    {
-      return BadRequest(new { Success = false, Message = ex.Message });
-       }
+            // Th·ª≠ l·∫•y t·ª´ Token
+            var id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrEmpty(id)) return Guid.Parse(id);
+
+            // N·∫øu kh√¥ng c√≥ Token (Fake Login), d√πng ID m·∫∑c ƒë·ªãnh ƒë·ªÉ demo "th√¥ng b√°o th·∫≠t"
+            return FakeUserId;
         }
 
-        // GET /api/thongbao - L?y t?t c? thÙng b·o
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetMyNotifications()
         {
-    try
-       {
-         // TODO: Implement logic l?y t?t c? thÙng b·o
-            return Ok(new { Success = true, Data = new List<object>(), Message = "L?y danh s·ch thÙng b·o th‡nh cÙng" });
-            }
- catch (Exception ex)
-  {
-       return BadRequest(new { Success = false, Message = ex.Message });
-   }
+            var userId = GetUserId();
+            var notifications = await _context.ThongBaos
+                .Where(n => n.NguoiDungId == userId)
+                .OrderByDescending(n => n.ThoiGianTao)
+                .Take(50)
+                .ToListAsync();
+
+            return Ok(new { Success = true, Data = notifications });
         }
 
-  // GET /api/thongbao/{id}
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(Guid id)
-  {
-          try
-            {
-                // TODO: Implement logic l?y 1 thÙng b·o by ID
-  return Ok(new { Success = true, Data = (object)null, Message = "L?y thÙng b·o th‡nh cÙng" });
-            }
-            catch (Exception ex)
-            {
-  return BadRequest(new { Success = false, Message = ex.Message });
-            }
+        [HttpGet("unread-count")]
+        public async Task<IActionResult> GetUnreadCount()
+        {
+            var userId = GetUserId();
+            var count = await _context.ThongBaos
+                .CountAsync(n => n.NguoiDungId == userId && !n.DaXem);
+
+            return Ok(new { Success = true, Data = count });
         }
 
-        // PUT /api/thongbao/{id}/daoc
-        [HttpPut("{id}/daodoc")]
-    public async Task<IActionResult> MarkAsRead(Guid id)
-     {
-         try
-      {
-    // TODO: Implement logic ·nh d?u ? ?c
-     return Ok(new { Success = true, Message = "–·nh d?u ? ?c th‡nh cÙng" });
- }
-            catch (Exception ex)
- {
-                return BadRequest(new { Success = false, Message = ex.Message });
+        [HttpPost("mark-as-read/{id}")]
+        public async Task<IActionResult> MarkAsRead(Guid id)
+        {
+            var userId = GetUserId();
+            var notification = await _context.ThongBaos
+                .FirstOrDefaultAsync(n => n.ThongBaoId == id && n.NguoiDungId == userId);
+
+            if (notification == null) return NotFound();
+
+            notification.DaXem = true;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { Success = true });
+        }
+
+        [HttpPost("mark-all-as-read")]
+        public async Task<IActionResult> MarkAllAsRead()
+        {
+            var userId = GetUserId();
+            var unreadNotifications = await _context.ThongBaos
+                .Where(n => n.NguoiDungId == userId && !n.DaXem)
+                .ToListAsync();
+
+            foreach (var n in unreadNotifications)
+            {
+                n.DaXem = true;
             }
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { Success = true });
+        }
+
+        // Action gi√∫p t·∫°o th√¥ng b√°o nhanh t·ª´ UI (ƒë·ªÉ test live)
+        [HttpPost("create-test")]
+        public async Task<IActionResult> CreateTest([FromQuery] string title, [FromQuery] string content)
+        {
+            var thongBao = new ThongBao
+            {
+                ThongBaoId = Guid.NewGuid(),
+                NguoiDungId = FakeUserId,
+                TieuDe = title ?? "Th√¥ng b√°o m·ªõi",
+                NoiDung = content ?? "ƒê√¢y l√† n·ªôi dung th√¥ng b√°o th·∫≠t t·ª´ DB.",
+                Loai = "info",
+                ThoiGianTao = DateTimeOffset.Now,
+                DaXem = false
+            };
+            _context.ThongBaos.Add(thongBao);
+            await _context.SaveChangesAsync();
+            return Ok(new { Success = true, Data = thongBao });
         }
     }
 }

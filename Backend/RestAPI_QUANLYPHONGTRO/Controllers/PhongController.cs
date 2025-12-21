@@ -46,6 +46,11 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
                 // (Kept for backward compatibility; proper implementation should be in service.)
             }
 
+            // Lấy ảnh thumbnail cho các phòng trong trang hiện tại
+            // NOTE: DB có bảng PhongHinhAnh (PhongId, DuongDanAnh, LaThumbnail, ThuTu ...)
+            var phongIds = result.Data.Select(p => p.PhongId).ToList();
+            var roomImages = await _service.GetRoomImagesAsync(phongIds);
+
             // Map Entity -> DTO để tránh circular reference
             var dtoList = result.Data.Select(p => new
             {
@@ -63,6 +68,8 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
                 IsBiKhoa = p.IsBiKhoa,
                 CreatedAt = p.CreatedAt,
                 UpdatedAt = p.UpdatedAt,
+                HinhAnhDaiDien = roomImages.TryGetValue(p.PhongId, out var imgs) ? imgs.Thumbnail : null,
+                DanhSachHinhAnh = roomImages.TryGetValue(p.PhongId, out var imgs2) ? imgs2.All : null,
                 NhaTro = p.NhaTro == null ? null : new
                 {
                     NhaTroId = p.NhaTro.NhaTroId,
@@ -110,7 +117,14 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
                 IsDuyet = p.IsDuyet,
                 IsBiKhoa = p.IsBiKhoa,
                 CreatedAt = p.CreatedAt,
-                UpdatedAt = p.UpdatedAt
+                UpdatedAt = p.UpdatedAt,
+                NhaTro = p.NhaTro == null ? null : new
+                {
+                    NhaTroId = p.NhaTro.NhaTroId,
+                    ChuTroId = p.NhaTro.ChuTroId,
+                    TieuDe = p.NhaTro.TieuDe ?? "",
+                    DiaChi = p.NhaTro.DiaChi
+                }
             };
 
             return Ok(new { Success = true, Data = dto, Message = "Thành công" });

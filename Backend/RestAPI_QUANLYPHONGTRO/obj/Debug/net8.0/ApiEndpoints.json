@@ -1603,7 +1603,7 @@
   },
   {
     "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.ThongBaoController",
-    "Method": "GetAll",
+    "Method": "GetMyNotifications",
     "RelativePath": "api/ThongBao",
     "HttpMethod": "GET",
     "IsController": true,
@@ -1613,25 +1613,40 @@
   },
   {
     "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.ThongBaoController",
-    "Method": "GetById",
-    "RelativePath": "api/ThongBao/{id}",
-    "HttpMethod": "GET",
+    "Method": "CreateTest",
+    "RelativePath": "api/ThongBao/create-test",
+    "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "id",
-        "Type": "System.Guid",
-        "IsRequired": true
+        "Name": "title",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "content",
+        "Type": "System.String",
+        "IsRequired": false
       }
     ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.ThongBaoController",
+    "Method": "MarkAllAsRead",
+    "RelativePath": "api/ThongBao/mark-all-as-read",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
     "ReturnTypes": []
   },
   {
     "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.ThongBaoController",
     "Method": "MarkAsRead",
-    "RelativePath": "api/ThongBao/{id}/daodoc",
-    "HttpMethod": "PUT",
+    "RelativePath": "api/ThongBao/mark-as-read/{id}",
+    "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
     "Parameters": [
@@ -1645,18 +1660,12 @@
   },
   {
     "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.ThongBaoController",
-    "Method": "GetByTenantId",
-    "RelativePath": "api/ThongBao/nguoithue/{userId}",
+    "Method": "GetUnreadCount",
+    "RelativePath": "api/ThongBao/unread-count",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
-    "Parameters": [
-      {
-        "Name": "userId",
-        "Type": "System.Guid",
-        "IsRequired": true
-      }
-    ],
+    "Parameters": [],
     "ReturnTypes": []
   },
   {
@@ -1768,6 +1777,16 @@
         "IsRequired": true
       }
     ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RestAPI_QUANLYPHONGTRO.Controllers.TinNhanController",
+    "Method": "GetMyConversations",
+    "RelativePath": "api/TinNhan/my-conversations",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
     "ReturnTypes": []
   },
   {

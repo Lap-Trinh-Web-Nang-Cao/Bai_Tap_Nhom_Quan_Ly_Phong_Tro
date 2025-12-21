@@ -1,4 +1,6 @@
-﻿@{
+﻿@model IEnumerable<USER_QUANLYPHONGTRO.Models.Dtos.Rooms.PhongDto>
+
+@{
     ViewBag.Title = "Chào Mừng";
     Layout = "~/Views/Shared/_Layout.cshtml";
     var userName = Session["HoTen"] as string ?? "Khách Hàng";
@@ -143,7 +145,7 @@
 
         .rooms-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(3, 1fr);
             gap: 25px;
             max-width: 1200px;
             margin: 0 auto 50px;
@@ -206,7 +208,6 @@
         .view-all-btn:hover { transform: translateY(-3px); box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4); color: white; }
 
         /* Responsive */
-        @@media (max-width: 1200px) { .rooms-grid { grid-template-columns: repeat(3, 1fr); } }
         @@media (max-width: 992px) { 
             .rooms-grid, .quick-actions-grid { grid-template-columns: repeat(2, 1fr); }
             .welcome-title { font-size: 36px; }
@@ -224,7 +225,7 @@
         <p class="welcome-subtitle">Xin chào, <strong>@userName</strong>. Bạn đang tìm kiếm điều gì hôm nay?</p>
 
         <div class="quick-actions-grid">
-            <a href="@Url.Action("DanhSachPhong", "Guest")" class="action-card">
+            <a href="@Url.Action("DanhSachPhong", "KhachThue")" class="action-card">
                 <div class="card-icon-wrapper"><i class="fa fa-search"></i></div>
                 <h3>Tìm Phòng</h3>
                 <p>Khám phá phòng trọ lý tưởng ngay hôm nay</p>
@@ -255,21 +256,23 @@
             <p>Những phòng trọ chất lượng hàng đầu dành riêng cho bạn</p>
         </div>
 
-        @{
-            var featuredRooms = ViewBag.FeaturedRooms as IEnumerable<dynamic>;
-        }
-
-        @if (featuredRooms != null && featuredRooms.Any())
+        @if (Model != null && Model.Any())
         {
             <div class="rooms-grid">
-                @foreach (var room in featuredRooms.Take(8))
+                @foreach (var room in Model)
                 {
-                    <a href="@Url.Action("ChiTietPhong", "Guest", new { id = room.PhongId })" class="room-card">
-                        <div class="room-image">
+                    <a href="@Url.Action("ChiTietPhong", "KhachThue", new { id = room.PhongId })" class="room-card">
+                        <div class="room-image" style="background-image: url('@Url.Content(room.HinhAnhDaiDien ?? "~/images/banner-login.png")'); background-size: cover; background-position: center;">
                             @if (room.DiemTrungBinh != null && room.DiemTrungBinh > 0)
                             {
                                 <div class="room-rating">
                                     <i class="fa fa-star"></i> @string.Format("{0:0.0}", room.DiemTrungBinh)
+                                </div>
+                            }
+                            @if (room.IsDuyet)
+                            {
+                                <div style="position: absolute; top: 15px; left: 15px; background: #48bb78; color: white; padding: 4px 10px; border-radius: 15px; font-size: 11px; font-weight: bold;">
+                                    ✓ Đã Duyệt
                                 </div>
                             }
                         </div>
@@ -279,15 +282,15 @@
                                 @string.Format("{0:N0}", room.GiaTien)đ <span>/tháng</span>
                             </div>
                             <div style="display: flex; gap: 15px; font-size: 13px; color: #718096;">
-                                <span><i class="fa fa-expand"></i> @room.DienTich m²</span>
-                                <span><i class="fa fa-users"></i> @room.SoNguoiToiDa người</span>
+                                <span><i class="fa fa-expand"></i> @(room.DienTich.HasValue ? room.DienTich.Value.ToString("N0") : "0") m²</span>
+                                <span><i class="fa fa-users"></i> @(room.SoNguoiToiDa ?? 1) người</span>
                             </div>
                         </div>
                     </a>
                 }
             </div>
             <div class="view-all-container">
-                <a href="@Url.Action("DanhSachPhong", "Guest")" class="view-all-btn">
+                <a href="@Url.Action("DanhSachPhong", "KhachThue")" class="view-all-btn">
                     Xem Tất Cả Phòng <i class="fa fa-arrow-right"></i>
                 </a>
             </div>

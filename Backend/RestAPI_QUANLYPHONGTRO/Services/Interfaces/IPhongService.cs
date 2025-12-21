@@ -13,6 +13,9 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Interfaces
             int pageIndex,
             int pageSize);
 
+        // Public: Lấy ảnh phòng (thumbnail + danh sách) theo danh sách PhongId
+        Task<Dictionary<Guid, (string? Thumbnail, List<string> All)>> GetRoomImagesAsync(List<Guid> phongIds);
+
         // Admin: Lấy danh sách phòng chờ duyệt (phân trang)
         Task<(IEnumerable<Phong> Data, int TotalCount)> GetPendingRoomsAsync(
             int pageIndex,

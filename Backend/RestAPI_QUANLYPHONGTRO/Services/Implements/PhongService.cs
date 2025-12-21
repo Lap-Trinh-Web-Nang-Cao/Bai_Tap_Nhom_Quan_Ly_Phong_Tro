@@ -23,7 +23,7 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
             int pageSize)
         {
             // Backward-compatible overload: approved-only
-            return await GetPublicRoomsInternalAsync(nhaTroId, minPrice, maxPrice, pageIndex, pageSize, includeUnapproved:false);
+            return await GetPublicRoomsInternalAsync(nhaTroId, minPrice, maxPrice, pageIndex, pageSize, includeUnapproved: false);
         }
 
         public async Task<(IEnumerable<Phong> Data, int TotalCount)> GetPublicRoomsInternalAsync(
@@ -64,7 +64,9 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
 
         public async Task<Phong?> GetByIdAsync(Guid id)
         {
-            return await _context.Phongs.FindAsync(id);
+            return await _context.Phongs
+                .Include(p => p.NhaTro)
+                .FirstOrDefaultAsync(p => p.PhongId == id);
         }
 
         public async Task<Phong> CreateAsync(CreatePhongRequest request, Guid userId)
@@ -206,6 +208,82 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
                 System.Diagnostics.Debug.WriteLine($"❌ GetPendingRoomsAsync Error: {ex.Message}");
                 throw;
             }
+        }
+
+        public async Task<Dictionary<Guid, (string? Thumbnail, List<string> All)>> GetRoomImagesAsync(List<Guid> phongIds)
+        {
+            if (phongIds == null || phongIds.Count == 0)
+            {
+                return new Dictionary<Guid, (string?, List<string>)>();
+            }
+
+            List<PhongHinhAnh> images;
+            try
+            {
+                images = await _context.PhongHinhAnhs
+                    .Where(x => phongIds.Contains(x.PhongId))
+                    .OrderByDescending(x => x.LaThumbnail)
+                    .ThenBy(x => x.ThuTu)
+                    .ToListAsync();
+            }
+            catch (Microsoft.Data.SqlClient.SqlException ex) when (ex.Number == 208) // Invalid object name
+            {
+                // DB chưa có bảng PhongHinhAnh -> fallback schema PhongAnh + TapTin
+                try
+                {
+                    var alt = await _context.PhongAnhs
+                        .Where(pa => phongIds.Contains(pa.PhongId))
+                        .Join(_context.TapTins,
+                        pa => pa.TapTinId,
+                        tt => tt.TapTinId,
+                        (pa, tt) => new { pa.PhongId, pa.ThuTu, DuongDan = tt.DuongDan })
+                        .OrderBy(x => x.ThuTu)
+                        .ToListAsync();
+
+                    var groupedAlt = alt
+                        .GroupBy(x => x.PhongId)
+                        .ToDictionary(g => g.Key, g =>
+                        {
+                            var list = g.Select(x => x.DuongDan).Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
+                            var thumb = list.FirstOrDefault();
+                            return (thumb, list);
+                        });
+
+                    foreach (var id in phongIds)
+                    {
+                        if (!groupedAlt.ContainsKey(id))
+                            groupedAlt[id] = (null, new List<string>());
+                    }
+
+                    return groupedAlt;
+                }
+                catch (Microsoft.Data.SqlClient.SqlException ex2) when (ex2.Number == 208)
+                {
+                    // DB cũng chưa có PhongAnh -> không fail API
+                    return phongIds.ToDictionary(id => id, id => ((string?)null, new List<string>()));
+                }
+            }
+
+            var grouped = images
+                .GroupBy(x => x.PhongId)
+                .ToDictionary(
+                    g => g.Key,
+                    g =>
+                    {
+                        var list = g.Select(x => x.DuongDanAnh).Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
+                        var thumb = g.Where(x => x.LaThumbnail).Select(x => x.DuongDanAnh).FirstOrDefault();
+                        if (string.IsNullOrWhiteSpace(thumb)) thumb = list.FirstOrDefault();
+                        return (thumb, list);
+                    });
+
+            // đảm bảo key tồn tại cho mọi phongId (dù không có ảnh)
+            foreach (var id in phongIds)
+            {
+                if (!grouped.ContainsKey(id))
+                    grouped[id] = (null, new List<string>());
+            }
+
+            return grouped;
         }
     }
 }

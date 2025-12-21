@@ -35,65 +35,29 @@ namespace USER_QUANLYPHONGTRO.Controllers
         {
             try
             {
-                // Lấy 6 phòng (tạm thời không filter theo rating vì API chưa hỗ trợ)
+                // Lấy 6 phòng
                 var response = await _apiClient.GetAsync<dynamic>("/api/phong?pageSize=6");
 
-                // ApiClient wraps response in ApiResponse<dynamic>
-                // response.Data contains the actual API response: { Data: [...], TotalCount: 15 }
                 if (response != null && response.Success && response.Data != null)
                 {
-                    // DEBUG: Serialize to see structure
-                    var jsonDebug = Newtonsoft.Json.JsonConvert.SerializeObject(response.Data);
-                    ViewBag.DebugResponseData = jsonDebug;
-
-                    // Parse - response.Data is JObject, use indexer
                     var jData = response.Data as Newtonsoft.Json.Linq.JObject;
                     if (jData != null)
                     {
-                        var dataArrayToken = jData["Data"];
-                        var totalCount = (int)(jData["TotalCount"] ?? 0);
+                        var dataArrayToken = jData["Data"] ?? jData["data"];
+                        var totalCountToken = jData["TotalCount"] ?? jData["totalCount"];
+                        var totalCount = (int)(totalCountToken ?? 0);
 
                         if (dataArrayToken != null)
                         {
                             ViewBag.TotalRooms = totalCount;
                             ViewBag.ApiSuccess = true;
 
-                            // Convert JArray to List<PhongDto>
                             var roomsList = new List<PhongDto>();
-                            // Danh sách ảnh mặc định
-                            var defaultImages = new[] {
-                                "/images/banner-login.png",
-                                "/images/banner-register-host.png",
-                                "/images/banner-register-tenant.png",
-                                "/images/Background_vien.jpg"
-                            };
                             int imageIndex = 0;
 
                             foreach (var item in dataArrayToken)
                             {
-                                roomsList.Add(new PhongDto
-                                {
-                                    PhongId = Guid.Parse(item["PhongId"].ToString()),
-                                    NhaTroId = Guid.Parse(item["NhaTroId"].ToString()),
-                                    TieuDe = item["TieuDe"]?.ToString() ?? "",
-                                    DienTich = item["DienTich"] != null ? (decimal?)Convert.ToDecimal(item["DienTich"]) : null,
-                                    GiaTien = (long)item["GiaTien"],
-                                    TienCoc = item["TienCoc"] != null ? (long?)Convert.ToInt64(item["TienCoc"]) : null,
-                                    SoNguoiToiDa = (int)item["SoNguoiToiDa"],
-                                    TrangThai = item["TrangThai"]?.ToString() ?? "",
-                                    DiemTrungBinh = item["DiemTrungBinh"] != null ? (double?)Convert.ToDouble(item["DiemTrungBinh"]) : null,
-                                    SoLuongDanhGia = item["SoLuongDanhGia"] != null ? (int)item["SoLuongDanhGia"] : 0,
-                                    IsDuyet = item["IsDuyet"] != null ? (bool)item["IsDuyet"] : false,
-                                    IsBiKhoa = item["IsBiKhoa"] != null ? (bool)item["IsBiKhoa"] : false,
-                                    CreatedAt = DateTimeOffset.Parse(item["CreatedAt"].ToString()),
-                                    HinhAnhDaiDien = defaultImages[imageIndex % defaultImages.Length], // Rotate images
-                                    NhaTro = item["NhaTro"] != null ? new NhaTroDto
-                                    {
-                                        NhaTroId = Guid.Parse(item["NhaTro"]["NhaTroId"].ToString()),
-                                        TieuDe = item["NhaTro"]["TieuDe"]?.ToString() ?? "",
-                                        DiaChi = item["NhaTro"]["DiaChi"]?.ToString()
-                                    } : null
-                                });
+                                roomsList.Add(MapToPhongDto(item, imageIndex));
                                 imageIndex++;
                             }
 
@@ -104,7 +68,7 @@ namespace USER_QUANLYPHONGTRO.Controllers
 
                 ViewBag.TotalRooms = 0;
                 ViewBag.ApiSuccess = false;
-                ViewBag.ErrorMessage = "Không nhận được dữ liệu từ hệ thống. Vui lòng kiểm tra lại kết nối.";
+                ViewBag.ErrorMessage = response?.Message ?? "Không nhận được dữ liệu từ hệ thống. Vui lòng kiểm tra lại kết nối.";
                 return View(new List<PhongDto>());
             }
             catch (Exception ex)
@@ -144,36 +108,25 @@ namespace USER_QUANLYPHONGTRO.Controllers
 
                 if (response.Success && response.Data != null)
                 {
-                    // Parse JObject
                     var jData = response.Data as Newtonsoft.Json.Linq.JObject;
                     if (jData != null)
                     {
-                        var dataArrayToken = jData["Data"];
-                        var totalCount = (int)(jData["TotalCount"] ?? 0);
-                        var totalPages = (int)(jData["TotalPages"] ?? 1);
+                        var dataArrayToken = jData["Data"] ?? jData["data"];
+                        var totalCountToken = jData["TotalCount"] ?? jData["totalCount"];
+                        var totalPagesToken = jData["TotalPages"] ?? jData["totalPages"];
+
+                        var totalCount = (int)(totalCountToken ?? 0);
+                        var totalPages = (int)(totalPagesToken ?? 1);
 
                         // Convert JArray to List<PhongDto>
                         var roomsList = new List<PhongDto>();
+                        int imageIndex = 0;
                         if (dataArrayToken != null)
                         {
                             foreach (var item in dataArrayToken)
                             {
-                                roomsList.Add(new PhongDto
-                                {
-                                    PhongId = Guid.Parse(item["PhongId"].ToString()),
-                                    NhaTroId = Guid.Parse(item["NhaTroId"].ToString()),
-                                    TieuDe = item["TieuDe"]?.ToString() ?? "",
-                                    GiaTien = (long)item["GiaTien"],
-                                    TrangThai = item["TrangThai"]?.ToString() ?? "",
-                                    IsDuyet = item["IsDuyet"] != null ? (bool)item["IsDuyet"] : false,
-                                    IsBiKhoa = item["IsBiKhoa"] != null ? (bool)item["IsBiKhoa"] : false,
-                                    NhaTro = item["NhaTro"] != null ? new NhaTroDto
-                                    {
-                                        NhaTroId = Guid.Parse(item["NhaTro"]["NhaTroId"].ToString()),
-                                        TieuDe = item["NhaTro"]["TieuDe"]?.ToString() ?? "",
-                                        DiaChi = item["NhaTro"]["DiaChi"]?.ToString()
-                                    } : null
-                                });
+                                roomsList.Add(MapToPhongDto(item, imageIndex));
+                                imageIndex++;
                             }
                         }
 
@@ -188,11 +141,10 @@ namespace USER_QUANLYPHONGTRO.Controllers
                         ViewBag.TotalItems = totalCount;
                         ViewBag.PageSize = pageSize;
 
-
                         return View(roomsList);
                     }
 
-                    ViewBag.ErrorMessage = "Invalid API data format";
+                    ViewBag.ErrorMessage = "Định dạng dữ liệu API không đúng";
                     return View(new List<PhongDto>());
                 }
                 else
@@ -223,11 +175,12 @@ namespace USER_QUANLYPHONGTRO.Controllers
             try
             {
                 // Gọi API để lấy chi tiết phòng
-                var response = await _apiClient.GetAsync<PhongDto>($"/api/phong/{id.Value}");
+                var response = await _apiClient.GetAsync<dynamic>($"/api/phong/{id.Value}");
 
                 if (response.Success && response.Data != null)
                 {
-                    var phong = response.Data;
+                    // Map từ JToken sang PhongDto bằng helper đã có
+                    var phong = MapToPhongDto(response.Data as Newtonsoft.Json.Linq.JToken, 0);
 
                     // Ẩn thông tin liên hệ cho khách vãng lai
                     ViewBag.ShowContactPrompt = true;
@@ -269,24 +222,168 @@ namespace USER_QUANLYPHONGTRO.Controllers
         {
             try
             {
-                // Lấy phòng (tạm thời không filter vì API chưa hỗ trợ)
+                // Gọi API lấy 6 phòng cho featured
                 var response = await _apiClient.GetAsync<dynamic>("/api/phong?pageSize=6");
 
                 if (response.Success && response.Data != null)
                 {
-                    var rooms = response.Data.Data ?? new List<PhongDto>();
-                    return View(rooms);
+                    var jData = response.Data as Newtonsoft.Json.Linq.JObject;
+                    if (jData != null)
+                    {
+                        var dataArrayToken = jData["Data"] ?? jData["data"];
+                        var roomsList = new List<PhongDto>();
+                        int imageIndex = 0;
+
+                        if (dataArrayToken != null)
+                        {
+                            foreach (var item in dataArrayToken)
+                            {
+                                roomsList.Add(MapToPhongDto(item, imageIndex));
+                                imageIndex++;
+                            }
+                        }
+                        return PartialView(roomsList);
+                    }
                 }
-                else
-                {
-                    return View(new List<PhongDto>());
-                }
+
+                return PartialView(new List<PhongDto>());
             }
             catch (Exception)
             {
-                return View(new List<PhongDto>());
+                return PartialView(new List<PhongDto>());
             }
         }
+
+        #region Helper Methods
+
+        /// <summary>
+        /// Rút trích giá trị từ JToken an toàn
+        /// </summary>
+        private T GetValue<T>(Newtonsoft.Json.Linq.JToken token, T defaultValue = default)
+        {
+            if (token == null || token.Type == Newtonsoft.Json.Linq.JTokenType.Null)
+                return defaultValue;
+            try
+            {
+                if (token.Type == Newtonsoft.Json.Linq.JTokenType.String && string.IsNullOrWhiteSpace(token.ToString()))
+                {
+                    return defaultValue;
+                }
+                return token.ToObject<T>();
+            }
+            catch
+            {
+                return defaultValue;
+            }
+        }
+
+        /// <summary>
+        /// Map dynamic JToken from API to PhongDto
+        /// </summary>
+        private PhongDto MapToPhongDto(Newtonsoft.Json.Linq.JToken item, int imageIndex)
+        {
+            var defaultImages = new[] {
+                "~/images/banner-login.png",
+                "~/images/banner-register-host.png",
+                "~/images/banner-register-tenant.png",
+                "~/images/Background_vien.jpg"
+            };
+
+            string apiBaseUrl = System.Configuration.ConfigurationManager.AppSettings["ApiBaseUrl"] ?? "http://localhost:7039";
+            var hinhAnhToken = item["HinhAnhDaiDien"] ?? item["hinhAnhDaiDien"];
+            var hinhAnhFromApi = hinhAnhToken?.ToString();
+            string finalImagePath;
+
+            if (string.IsNullOrEmpty(hinhAnhFromApi) || hinhAnhFromApi == "string")
+            {
+                finalImagePath = defaultImages[imageIndex % defaultImages.Length];
+            }
+            else if (hinhAnhFromApi.StartsWith("http") || hinhAnhFromApi.StartsWith("~"))
+            {
+                finalImagePath = hinhAnhFromApi;
+            }
+            else if (hinhAnhFromApi.StartsWith("/"))
+            {
+                finalImagePath = apiBaseUrl.TrimEnd('/') + hinhAnhFromApi;
+            }
+            else
+            {
+                finalImagePath = apiBaseUrl.TrimEnd('/') + "/uploads/" + hinhAnhFromApi;
+            }
+
+            var phong = new PhongDto
+            {
+                PhongId = GetValue<Guid>(item["PhongId"] ?? item["phongId"], Guid.Empty),
+                NhaTroId = GetValue<Guid>(item["NhaTroId"] ?? item["nhaTroId"], Guid.Empty),
+                TieuDe = GetValue<string>(item["TieuDe"] ?? item["tieuDe"], "Không có tiêu đề"),
+                DienTich = GetValue<decimal?>(item["DienTich"] ?? item["dienTich"], null),
+                GiaTien = GetValue<long>(item["GiaTien"] ?? item["giaTien"], 0),
+                TienCoc = GetValue<long?>(item["TienCoc"] ?? item["tienCoc"], null),
+                SoNguoiToiDa = GetValue<int>(item["SoNguoiToiDa"] ?? item["soNguoiToiDa"], 1),
+                TrangThai = GetValue<string>(item["TrangThai"] ?? item["trangThai"], ""),
+                DiemTrungBinh = GetValue<double?>(item["DiemTrungBinh"] ?? item["diemTrungBinh"], null),
+                SoLuongDanhGia = GetValue<int>(item["SoLuongDanhGia"] ?? item["soLuongDanhGia"], 0),
+                IsDuyet = GetValue<bool>(item["IsDuyet"] ?? item["isDuyet"], false),
+                IsBiKhoa = GetValue<bool>(item["IsBiKhoa"] ?? item["isBiKhoa"], false),
+                HinhAnhDaiDien = finalImagePath,
+                MoTa = GetValue<string>(item["MoTa"] ?? item["moTa"], "")
+            };
+
+            // Map tiện ích
+            var tienIchsToken = item["TienIchs"] ?? item["tienIchs"] ?? item["TienIchList"] ?? item["tienIchList"];
+            if (tienIchsToken != null && tienIchsToken.Type == Newtonsoft.Json.Linq.JTokenType.Array)
+            {
+                foreach (var ti in tienIchsToken)
+                {
+                    phong.TienIchs.Add(new TienIchDto
+                    {
+                        TienIchId = GetValue<int>(ti["TienIchId"] ?? ti["tienIchId"], 0),
+                        Ten = GetValue<string>(ti["Ten"] ?? ti["ten"], "")
+                    });
+                }
+            }
+
+            // Map danh sách hình ảnh
+            var hinhAnhsToken = item["DanhSachHinhAnh"] ?? item["danhSachHinhAnh"];
+            if (hinhAnhsToken != null && hinhAnhsToken.Type == Newtonsoft.Json.Linq.JTokenType.Array)
+            {
+                foreach (var img in hinhAnhsToken)
+                {
+                    string imgStr = img.ToString();
+                    if (imgStr.StartsWith("http") || imgStr.StartsWith("~"))
+                        phong.DanhSachHinhAnh.Add(imgStr);
+                    else if (imgStr.StartsWith("/"))
+                        phong.DanhSachHinhAnh.Add(apiBaseUrl.TrimEnd('/') + imgStr);
+                    else
+                        phong.DanhSachHinhAnh.Add(apiBaseUrl.TrimEnd('/') + "/uploads/" + imgStr);
+                }
+            }
+
+            var createdAtToken = item["CreatedAt"] ?? item["createdAt"];
+            if (createdAtToken != null && createdAtToken.Type != Newtonsoft.Json.Linq.JTokenType.Null)
+            {
+                try
+                {
+                    phong.CreatedAt = DateTimeOffset.Parse(createdAtToken.ToString());
+                }
+                catch { }
+            }
+
+            var nhaTroToken = item["NhaTro"] ?? item["nhaTro"];
+            if (nhaTroToken != null && nhaTroToken.Type != Newtonsoft.Json.Linq.JTokenType.Null)
+            {
+                phong.NhaTro = new NhaTroDto
+                {
+                    NhaTroId = GetValue<Guid>(nhaTroToken["NhaTroId"] ?? nhaTroToken["nhaTroId"], Guid.Empty),
+                    TieuDe = GetValue<string>(nhaTroToken["TieuDe"] ?? nhaTroToken["tieuDe"], ""),
+                    DiaChi = GetValue<string>(nhaTroToken["DiaChi"] ?? nhaTroToken["diaChi"], "")
+                };
+            }
+
+            return phong;
+        }
+
+        #endregion
 
         // ===== LỌC THEO KHU VỰC =====
         [HttpGet]
@@ -316,12 +413,13 @@ namespace USER_QUANLYPHONGTRO.Controllers
         {
             try
             {
-                // Có thể tạo thêm API endpoint cho thống kê
-                var response = await _apiClient.GetAsync<dynamic>("/api/phong?pageSize=100");
+                var response = await _apiClient.GetAsync<dynamic>("/api/phong?pageSize=1");
 
                 if (response.Success && response.Data != null)
                 {
-                    ViewBag.TotalRooms = response.Data.TotalCount ?? 0;
+                    var jData = response.Data as Newtonsoft.Json.Linq.JObject;
+                    var totalCountToken = jData?["TotalCount"] ?? jData?["totalCount"];
+                    ViewBag.TotalRooms = (int)(totalCountToken ?? 0);
                     return View();
                 }
                 else

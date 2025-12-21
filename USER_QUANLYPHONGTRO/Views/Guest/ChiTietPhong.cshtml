@@ -3,6 +3,7 @@
 @{
     ViewBag.Title = "Chi Tiết Phòng Trọ - " + (Model != null ? Model.TieuDe : "TimTro.vn");
     Layout = "~/Views/Shared/_Layout.cshtml";
+    bool isLoggedIn = Session["UserName"] != null;
 }
 
 @section styles {
@@ -10,28 +11,43 @@
         .room-detail-container { padding: 40px 0; background-color: #f4f7f6; }
         .back-btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: #fff; color: #333; text-decoration: none; border-radius: 8px; font-weight: 600; margin-bottom: 25px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: all 0.3s; }
         .back-btn:hover { background: #667eea; color: white; transform: translateX(-5px); }
+        
         .room-main-card { background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.08); display: grid; grid-template-columns: 1fr 400px; }
         @@media (max-width: 992px) { .room-main-card { grid-template-columns: 1fr; } }
-        .room-gallery { position: relative; height: 500px; background-color: #eee; }
-        .room-img-main { width: 100%; height: 100%; object-fit: cover; }
-        .room-sidebar { padding: 35px; border-left: 1px solid #f0f0f0; background-color: #fff; }
-        .room-badge { display: inline-block; padding: 6px 15px; background: #e6fffa; color: #38a169; border-radius: 20px; font-size: 13px; font-weight: 700; margin-bottom: 15px; }
-        .room-title-h1 { font-size: 28px; font-weight: 800; color: #1a202c; margin-bottom: 15px; line-height: 1.3; }
-        .room-price-tag { font-size: 32px; font-weight: 900; color: #e53e3e; margin-bottom: 25px; }
+        
+        /* Gallery Styles */
+        .room-gallery { position: relative; height: 500px; background-color: #f0f0f0; overflow: hidden; }
+        .room-img-main { width: 100%; height: 100%; object-fit: cover; transition: opacity 0.5s; }
+        .gallery-thumbs { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 12px; backdrop-filter: blur(5px); }
+        .thumb-item { width: 60px; height: 60px; border-radius: 8px; cursor: pointer; border: 2px solid transparent; overflow: hidden; opacity: 0.7; transition: 0.3s; }
+        .thumb-item.active { border-color: white; opacity: 1; }
+        .thumb-item img { width: 100%; height: 100%; object-fit: cover; }
+
+        .room-sidebar { padding: 35px; border-left: 1px solid #f0f0f0; background-color: #fff; display: flex; flex-direction: column; }
+        .room-badge { display: inline-block; padding: 6px 15px; background: #e6fffa; color: #38a169; border-radius: 20px; font-size: 13px; font-weight: 700; margin-bottom: 15px; width: fit-content; }
+        .room-title-h1 { font-size: 26px; font-weight: 800; color: #1a202c; margin-bottom: 15px; line-height: 1.3; }
+        .room-price-tag { font-size: 30px; font-weight: 900; color: #e53e3e; margin-bottom: 25px; }
+        
         .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px; }
         .info-box { padding: 15px; background: #f8fafc; border-radius: 12px; text-align: center; border: 1px solid #edf2f7; }
-        .info-box i { font-size: 20px; color: #667eea; margin-bottom: 8px; display: block; }
-        .info-box label { font-size: 12px; color: #718096; display: block; margin-bottom: 4px; }
-        .info-box span { font-size: 16px; font-weight: 700; color: #2d3748; }
+        .info-box i { font-size: 18px; color: #667eea; margin-bottom: 8px; display: block; }
+        .info-box label { font-size: 11px; color: #718096; display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .info-box span { font-size: 15px; font-weight: 700; color: #2d3748; }
+        
         .contact-section { margin-top: auto; padding-top: 25px; border-top: 2px dashed #edf2f7; }
-        .btn-call { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 12px; font-weight: 700; font-size: 18px; text-decoration: none; transition: 0.3s; }
+        .btn-call { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 12px; font-weight: 700; font-size: 17px; text-decoration: none; transition: 0.3s; margin-bottom: 12px; }
         .btn-call:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(102,126,234,0.4); color: white; }
+        
+        .btn-booking { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 16px; background: #fff; color: #48bb78; border: 2px solid #48bb78; border-radius: 12px; font-weight: 700; font-size: 17px; text-decoration: none; transition: 0.3s; }
+        .btn-booking:hover { background: #f0fff4; transform: translateY(-3px); box-shadow: 0 8px 20px rgba(72,187,120,0.2); color: #38a169; }
+
         .room-description-section { margin-top: 30px; background: white; border-radius: 20px; padding: 35px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
         .section-h3 { font-size: 20px; font-weight: 700; color: #2d3748; margin-bottom: 20px; padding-left: 15px; border-left: 5px solid #667eea; }
         .utility-list { display: flex; flex-wrap: wrap; gap: 12px; list-style: none; padding: 0; }
         .utility-item { padding: 8px 18px; background: #edf2f7; border-radius: 30px; font-size: 14px; color: #4a5568; display: flex; align-items: center; gap: 8px; }
         .utility-item i { color: #48bb78; }
-        .location-box { background: #f7fafc; padding: 20px; border-radius: 12px; display: flex; align-items: start; gap: 15px; margin-top: 15px; }
+        
+        .location-box { background: #f7fafc; padding: 20px; border-radius: 12px; display: flex; align-items: start; gap: 15px; margin-top: 15px; border: 1px solid #edf2f7; }
         .location-box i { color: #e53e3e; font-size: 22px; margin-top: 3px; }
     </style>
 }
@@ -39,7 +55,7 @@
 <div class="room-detail-container">
     <div class="container">
         <a href="@Url.Action("DanhSachPhong", "Guest")" class="back-btn">
-            <i class="fa fa-arrow-left"></i> Quay l&#7841;i danh s&#225;ch
+            <i class="fa fa-arrow-left"></i> Quay lại danh sách
         </a>
 
         @if (Model != null)
@@ -47,59 +63,79 @@
             <div class="room-main-card">
                 <!-- Gallery Section -->
                 <div class="room-gallery">
-                    <img src="@(Model.HinhAnhDaiDien != null ? Model.HinhAnhDaiDien : "/images/banner-login.png")" class="room-img-main" alt="@Model.TieuDe" />
+                    <img id="mainImage" src="@Url.Content(Model.HinhAnhDaiDien ?? "/images/banner-login.png")" class="room-img-main" alt="@Model.TieuDe" />
+                    
                     @if (Model.IsDuyet)
                     {
-                        <div style="position: absolute; top: 20px; left: 20px; background: #48bb78; color: white; padding: 5px 15px; border-radius: 5px; font-weight: bold;">
-                            &#10003; &#272;&#227; x&#225;c minh
+                        <div style="position: absolute; top: 20px; left: 20px; background: #48bb78; color: white; padding: 6px 15px; border-radius: 8px; font-weight: 800; font-size: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); z-index: 5;">
+                            ✓ ĐÃ XÁC MINH
+                        </div>
+                    }
+
+                    @if (Model.DanhSachHinhAnh != null && Model.DanhSachHinhAnh.Count > 1)
+                    {
+                        <div class="gallery-thumbs">
+                            <div class="thumb-item active" onclick="changeImage('@Url.Content(Model.HinhAnhDaiDien ?? "/images/banner-login.png")', this)">
+                                <img src="@Url.Content(Model.HinhAnhDaiDien ?? "/images/banner-login.png")" alt="Thumb" />
+                            </div>
+                            @foreach (var img in Model.DanhSachHinhAnh.Take(4))
+                            {
+                                if (img != Model.HinhAnhDaiDien)
+                                {
+                                    <div class="thumb-item" onclick="changeImage('@Url.Content(img)', this)">
+                                        <img src="@Url.Content(img)" alt="Thumb" />
+                                    </div>
+                                }
+                            }
                         </div>
                     }
                 </div>
 
                 <!-- Sidebar Info Section -->
                 <div class="room-sidebar">
-                    <span class="room-badge">ID: @Model.PhongId.ToString().Substring(0, 8).ToUpper()</span>
+                    <span class="room-badge">MÃ PHÒNG: @Model.PhongId.ToString().Substring(0, 8).ToUpper()</span>
                     <h1 class="room-title-h1">@Model.TieuDe</h1>
                     
                     <div class="room-price-tag">
-                        @Model.GiaTien.ToString("N0")&#273; <small style="font-size: 14px; color: #718096; font-weight: normal;">/th&#225;ng</small>
+                        @Model.GiaTien.ToString("N0")đ <small style="font-size: 14px; color: #718096; font-weight: normal;">/tháng</small>
                     </div>
 
                     <div class="info-grid">
                         <div class="info-box">
                             <i class="fa fa-expand"></i>
-                            <label>Di&#7879;n t&#237;ch</label>
-                            <span>@Model.DienTich.GetValueOrDefault() m&#178;</span>
+                            <label>Diện tích</label>
+                            <span>@Model.DienTich.GetValueOrDefault().ToString("N0") m²</span>
                         </div>
                         <div class="info-box">
                             <i class="fa fa-users"></i>
-                            <label>S&#7913;c ch&#7913;a</label>
-                            <span>@Model.SoNguoiToiDa Ng&#432;&#7901;i</span>
+                            <label>Sức chứa</label>
+                            <span>@Model.SoNguoiToiDa Người</span>
                         </div>
                         <div class="info-box">
                             <i class="fa fa-shield"></i>
-                            <label>Ti&#7873;n c&#7885;c</label>
-                            <span>@Model.TienCoc.GetValueOrDefault().ToString("N0")&#273;</span>
+                            <label>Tiền cọc</label>
+                            <span>@Model.TienCoc.GetValueOrDefault().ToString("N0")đ</span>
                         </div>
                         <div class="info-box">
                             <i class="fa fa-tag"></i>
-                            <label>Tr&#7841;ng th&#225;i</label>
+                            <label>Trạng thái</label>
                             <span>@Model.TrangThai</span>
                         </div>
                     </div>
 
                     <div class="contact-section">
-                        @if (ViewBag.ShowContactPrompt == true)
-                        {
-                            <div style="text-align: center; background: #fff5f5; border: 1px solid #feb2b2; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
-                                <p style="color: #c53030; margin-bottom: 10px; font-weight: 600;">@ViewBag.ContactMessage</p>
-                                <a href="@Url.Action("Login", "Auth")" style="color: #3182ce; font-weight: bold; text-decoration: underline;">&#272;&#259;ng nh&#7853;p ngay</a>
-                            </div>
-                        }
-                        
                         <a href="tel:0909123456" class="btn-call">
-                            <i class="fa fa-phone"></i> G&#7885;i cho ch&#7911; tr&#7885;
+                            <i class="fa fa-phone"></i> Gọi cho chủ trọ
                         </a>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
+                            <a href="@Url.Action("Login", "Auth", new { returnUrl = Request.Url.PathAndQuery })" class="btn-booking" style="background: var(--primary-gradient); color: white; border: none; padding: 12px;">
+                                <i class="fa fa-key"></i> Đặt phòng
+                            </a>
+                            <a href="@Url.Action("Login", "Auth", new { returnUrl = Request.Url.PathAndQuery })" class="btn-booking" style="padding: 12px; font-size: 14px;">
+                                <i class="fa fa-calendar-plus-o"></i> Đặt lịch xem
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -107,9 +143,9 @@
             <div class="room-description-section">
                 <div class="row">
                     <div class="col-md-8">
-                        <h3 class="section-h3">&#272;&#7883;a &#273;i&#7875;m</h3>
+                        <h3 class="section-h3">Địa điểm</h3>
                         <div class="location-box">
-                            <i class="fa fa-map-marker-alt"></i>
+                            <i class="fa fa-map-marker"></i>
                             <div>
                                 @if (Model.NhaTro != null)
                                 {
@@ -118,16 +154,16 @@
                                 }
                                 else
                                 {
-                                    <span style="color: #a0aec0;">&#272;ang c&#7853;p nh&#7853;t &#273;&#7883;a ch&#7913;...</span>
+                                    <span style="color: #a0aec0;">Đang cập nhật địa chỉ...</span>
                                 }
                             </div>
                         </div>
 
-                        <h3 class="section-h3" style="margin-top: 40px;">Ti&#7879;n &#237;ch ph&#242;ng tr&#7885;</h3>
-                        @if (Model.TienIchList != null && Model.TienIchList.Any())
+                        <h3 class="section-h3" style="margin-top: 40px;">Tiện ích phòng trọ</h3>
+                        @if (Model.TienIchs != null && Model.TienIchs.Any())
                         {
                             <ul class="utility-list">
-                                @foreach (var item in Model.TienIchList)
+                                @foreach (var item in Model.TienIchs)
                                 {
                                     <li class="utility-item">
                                         <i class="fa fa-check-circle"></i> @item.Ten
@@ -137,9 +173,10 @@
                         }
                         else
                         {
-                            <p style="color: #a0aec0; font-style: italic;">Ch&#432;a c&#243; th&#244;ng tin ti&#7879;n &#237;ch cho ph&#242;ng n&#224;y.</p>
+                            <p style="color: #a0aec0; font-style: italic;">Chưa có thông tin tiện ích cho phòng này.</p>
                         }
-                        <h3 class="section-h3" style="margin-top: 40px;">M&#244; t&#7843; chi ti&#7871;t</h3>
+
+                        <h3 class="section-h3" style="margin-top: 40px;">Mô tả chi tiết</h3>
                         <div style="background: #fff; padding: 25px; border-radius: 12px; border: 1px solid #edf2f7; line-height: 1.8; color: #4a5568; margin-bottom: 20px;">
                             @if (!string.IsNullOrEmpty(Model.MoTa))
                             {
@@ -147,7 +184,7 @@
                             }
                             else
                             {
-                                <p style="color: #a0aec0; font-style: italic;">Ch&#432;a c&#243; m&#244; t&#7843; chi ti&#7871;t cho ph&#242;ng n&#224;y.</p>
+                                <p style="color: #a0aec0; font-style: italic;">Chưa có mô tả chi tiết cho phòng này.</p>
                             }
                         </div>
                     </div>
@@ -158,9 +195,9 @@
         {
             <div style="text-align: center; padding: 100px; background: white; border-radius: 20px;">
                 <i class="fa fa-frown-o" style="font-size: 80px; color: #cbd5e0; margin-bottom: 20px;"></i>
-                <h2 style="color: #4a5568;">R&#7845;t ti&#7871;c!</h2>
-                <p style="color: #718096;">Kh&#244;ng t&#236;m th&#7845;y th&#7845;y th&#244;ng tin chi ti&#7871;t cho ph&#242;ng tr&#7885; n&#224;y.</p>
-                <a href="@Url.Action("DanhSachPhong", "Guest")" class="back-btn" style="margin-top: 20px;">Quay l&#7841;i danh s&#225;ch</a>
+                <h2 style="color: #4a5568;">Rất tiếc!</h2>
+                <p style="color: #718096;">Không tìm thấy thông tin chi tiết cho phòng trọ này.</p>
+                <a href="@Url.Action("DanhSachPhong", "Guest")" class="back-btn" style="margin-top: 20px;">Quay lại danh sách</a>
             </div>
         }
     </div>
@@ -168,16 +205,17 @@
 
 @section scripts {
     <script>
-        $(document).ready(function() {
-            // Đảm bảo nút back hoạt động tốt
-            $('.back-btn').on('click', function(e) {
-                if (document.referrer.indexOf(window.location.host) !== -1) {
-                    // Nếu trang trước đó cùng domain, quay lại lịch sử cho nhanh
-                    // e.preventDefault();
-                    // window.history.back();
-                }
-            });
-        });
+        function changeImage(src, thumb) {
+            const mainImg = document.getElementById('mainImage');
+            mainImg.style.opacity = '0.3';
+            setTimeout(() => {
+                mainImg.src = src;
+                mainImg.style.opacity = '1';
+            }, 200);
+            
+            // Update active state
+            document.querySelectorAll('.thumb-item').forEach(item => item.classList.remove('active'));
+            thumb.classList.add('active');
+        }
     </script>
 }
-

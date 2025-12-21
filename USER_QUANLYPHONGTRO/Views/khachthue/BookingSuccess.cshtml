@@ -1,0 +1,131 @@
+@{
+    ViewBag.Title = "Thành Công";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    string type = ViewBag.Type as string;
+}
+
+@section styles {
+<style>
+    .success-page {
+        padding: 80px 20px;
+        text-align: center;
+        background: #f7fafc;
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .success-card {
+        background: white;
+        padding: 50px;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        max-width: 600px;
+        width: 100%;
+    }
+
+    .success-icon {
+        width: 100px;
+        height: 100px;
+        background: #f0fff4;
+        color: #48bb78;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 50px;
+        margin: 0 auto 30px;
+        animation: scaleIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @@keyframes scaleIn {
+        from { transform: scale(0); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+
+    .success-title {
+        font-size: 32px;
+        font-weight: 800;
+        color: #1a202c;
+        margin-bottom: 15px;
+    }
+
+    .success-message {
+        color: #718096;
+        font-size: 18px;
+        line-height: 1.6;
+        margin-bottom: 40px;
+    }
+
+    .action-buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+
+    .btn-action {
+        padding: 15px 25px;
+        border-radius: 12px;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all 0.3s;
+    }
+
+    .btn-home {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .btn-home:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        color: white;
+    }
+
+    .btn-list {
+        background: white;
+        color: #4a5568;
+        border: 2px solid #e2e8f0;
+    }
+
+    .btn-list:hover {
+        background: #f7fafc;
+        border-color: #cbd5e0;
+    }
+</style>
+}
+
+<div class="success-page">
+    <div class="success-card">
+        <div class="success-icon">
+            <i class="fa fa-check"></i>
+        </div>
+
+        @if (type == "booking")
+        {
+            <h1 class="success-title">Đặt Phòng Thành Công!</h1>
+            <p class="success-message">
+                Yêu cầu đặt thuê phòng của bạn đã được gửi tới chủ trọ. 
+                Chúng tôi sẽ liên hệ với bạn trong vòng 24 giờ tới để hoàn tất thủ tục hợp đồng.
+            </p>
+        }
+        else
+        {
+            <h1 class="success-title">Đã Đặt Lịch Xem!</h1>
+            <p class="success-message">
+                Lịch hẹn xem phòng của bạn đã được ghi nhận. 
+                Chủ trọ sẽ sớm xác nhận thời gian chính xác với bạn qua số điện thoại đã cung cấp.
+            </p>
+        }
+
+        <div class="action-buttons">
+            <a href="@Url.Action("Index", "KhachThue")" class="btn-action btn-home">
+                <i class="fa fa-home"></i> Về Trang Chủ
+            </a>
+            <a href="@Url.Action("LichDaDat", "KhachThue")" class="btn-action btn-list">
+                <i class="fa fa-list-alt"></i> Xem Lịch Đã Đặt
+            </a>
+        </div>
+    </div>
+</div>

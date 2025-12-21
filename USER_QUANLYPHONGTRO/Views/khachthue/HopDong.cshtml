@@ -1,261 +1,195 @@
-﻿@model USER_QUANLYPHONGTRO.Models.ViewModels.KhachThue.TenantContractViewModel
-
-@{
-    ViewBag.Title = "Hợp Đồng Của Tôi";
+﻿@{
+    ViewBag.Title = "Điều Khoản Hợp Đồng";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 @section styles {
-    <style>
-        .contract-page {
-            padding: 30px 0;
-            background: #f5f7fa;
-            min-height: 100vh;
-        }
+<style>
+    .contract-page {
+        padding: 50px 20px;
+        background: #f8fafc;
+        min-height: 100vh;
+    }
 
-        .page-header {
-            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
-            color: white;
-            padding: 40px 30px;
-            border-radius: 15px;
-            margin-bottom: 30px;
-        }
+    .contract-container {
+        background: white;
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 60px;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+        position: relative;
+        overflow: hidden;
+    }
 
-        .page-header h1 {
-            font-size: 32px;
-            font-weight: 700;
-            margin-bottom: 10px;
-        }
+    .contract-container::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 8px;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+    }
 
-        .contract-card {
-            background: white;
-            border-radius: 15px;
-            padding: 40px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-            margin-bottom: 25px;
-        }
+    .contract-header {
+        text-align: center;
+        margin-bottom: 50px;
+    }
 
-        .contract-header {
-            text-align: center;
-            padding-bottom: 30px;
-            border-bottom: 3px solid #e2e8f0;
-            margin-bottom: 30px;
-        }
+    .contract-header h1 {
+        font-size: 32px;
+        font-weight: 800;
+        color: #1a202c;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
 
-        .contract-title {
-            font-size: 28px;
-            font-weight: 800;
-            color: #2d3748;
-            margin-bottom: 15px;
-        }
+    .contract-header p {
+        color: #718096;
+        font-weight: 500;
+        margin-top: 5px;
+    }
 
-        .contract-id {
-            color: #718096;
-            font-size: 14px;
-        }
+    .contract-section {
+        margin-bottom: 35px;
+    }
 
-        .contract-details {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 30px;
-            margin-bottom: 30px;
-        }
+    .section-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
 
-        .detail-group {
-            padding: 20px;
-            background: #f7fafc;
-            border-radius: 10px;
-            border-left: 4px solid #48bb78;
-        }
+    .section-title span {
+        background: #ebf4ff;
+        color: #3182ce;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+    }
 
-        .detail-label {
-            font-size: 13px;
-            color: #718096;
-            font-weight: 600;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-        }
+    .section-content {
+        color: #4a5568;
+        line-height: 1.8;
+        padding-left: 40px;
+    }
 
-        .detail-value {
-            font-size: 18px;
-            color: #2d3748;
-            font-weight: 700;
-        }
+    .section-content ul {
+        list-style: none;
+        padding-left: 0;
+    }
 
-        .detail-value.price {
-            font-size: 32px;
-            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
+    .section-content li {
+        margin-bottom: 10px;
+        display: flex;
+        gap: 10px;
+    }
 
-        .contract-terms {
-            background: #f7fafc;
-            padding: 25px;
-            border-radius: 10px;
-            margin-top: 30px;
-        }
+    .section-content li::before {
+        content: "•";
+        color: #667eea;
+        font-weight: bold;
+    }
 
-        .contract-terms h3 {
-            color: #2d3748;
-            margin-bottom: 20px;
-            font-size: 20px;
-        }
+    .contract-footer {
+        margin-top: 60px;
+        padding-top: 30px;
+        border-top: 2px solid #edf2f7;
+        text-align: center;
+    }
 
-        .contract-terms ul {
-            list-style: none;
-            padding: 0;
-        }
+    .btn-download {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 15px 30px;
+        background: #2d3748;
+        color: white;
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 700;
+        transition: all 0.3s;
+    }
 
-        .contract-terms li {
-            padding: 12px 0;
-            border-bottom: 1px solid #e2e8f0;
-            color: #4a5568;
-        }
-
-        .contract-terms li:last-child {
-            border-bottom: none;
-        }
-
-        .contract-terms li i {
-            color: #48bb78;
-            margin-right: 10px;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 100px 20px;
-        }
-
-        .empty-state i {
-            font-size: 100px;
-            color: #e2e8f0;
-            margin-bottom: 30px;
-        }
-
-        .empty-state h3 {
-            color: #718096;
-            margin-bottom: 20px;
-            font-size: 24px;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 14px 30px;
-            border-radius: 10px;
-            text-decoration: none;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            transition: all 0.3s;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
-            text-decoration: none;
-            color: white;
-        }
-
-        .badge {
-            padding: 10px 20px;
-            border-radius: 25px;
-            font-size: 14px;
-            font-weight: 700;
-            display: inline-block;
-        }
-
-        .badge-success {
-            background: rgba(72, 187, 120, 0.15);
-            color: #48bb78;
-        }
-    </style>
+    .btn-download:hover {
+        background: #1a202c;
+        transform: translateY(-2px);
+        color: white;
+    }
+</style>
 }
 
 <div class="contract-page">
-    <div class="container">
-        <div class="page-header">
-            <h1><i class="fa fa-file-contract"></i> Hợp Đồng Của Tôi</h1>
-            <p>Quản lý hợp đồng thuê phòng trọ</p>
+    <div class="contract-container">
+        <div class="contract-header">
+            <h1>Hợp Đồng Thuê Phòng Trọ</h1>
+            <p>Phiên bản mẫu chuẩn - Áp dụng cho các giao dịch trên hệ thống</p>
         </div>
 
-        <div class="contract-card">
-            @if (Model != null)
-            {
-                <div class="contract-header">
-                    <div class="contract-title">@Model.TieuDePhong</div>
-                    <div class="contract-id">Mã HĐ: #HD@(Model.NgayBatDau.ToString("yyyyMMdd"))</div>
-                    <div style="margin-top: 15px;">
-                        <span class="badge badge-success">
-                            <i class="fa fa-check-circle"></i> Đang hiệu lực
-                        </span>
-                    </div>
-                </div>
+        <div class="contract-section">
+            <h3 class="section-title"><span>1</span> ĐỐI TƯỢNG HỢP ĐỒNG</h3>
+            <div class="section-content">
+                Hợp đồng này quy định việc cho thuê bất động sản (phòng trọ/căn hộ mini) giữa Bên Cho Thuê (Chủ trọ) và Bên Thuê (Người dùng đã xác thực trên hệ thống).
+            </div>
+        </div>
 
-                <div class="contract-details">
-                    <div class="detail-group">
-                        <div class="detail-label">Giá thuê</div>
-                        <div class="detail-value price">@Model.GiaThue.ToString("N0")đ</div>
-                        <div style="color: #718096; font-size: 13px; margin-top: 5px;">/tháng</div>
-                    </div>
+        <div class="contract-section">
+            <h3 class="section-title"><span>2</span> GIÁ THUÊ VÀ ĐẶT CỌC</h3>
+            <div class="section-content">
+                <ul>
+                    <li>Giá thuê được niêm yết công khai trên hệ thống tại thời điểm đặt phòng.</li>
+                    <li>Tiền đặt cọc thông thường tương đương 01 tháng tiền thuê (trừ khi có thỏa thuận khác).</li>
+                    <li>Tiền thuê nhà được thanh toán định kỳ vào ngày 01 đến ngày 05 hàng tháng.</li>
+                </ul>
+            </div>
+        </div>
 
-                    <div class="detail-group">
-                        <div class="detail-label">Ngày bắt đầu</div>
-                        <div class="detail-value">@Model.NgayBatDau.ToString("dd/MM/yyyy")</div>
-                    </div>
+        <div class="contract-section">
+            <h3 class="section-title"><span>3</span> QUYỀN VÀ NGHĨA VỤ CỦA BÊN THUÊ</h3>
+            <div class="section-content">
+                <ul>
+                    <li>Sử dụng phòng đúng mục đích để ở, không kinh doanh hàng cấm.</li>
+                    <li>Giữ gìn vệ sinh chung và an ninh trật tự khu phố.</li>
+                    <li>Thanh toán đầy đủ các loại hóa đơn (Điện, Nước, Dịch vụ) hàng tháng.</li>
+                    <li>Không được tự ý sửa chữa cấu trúc phòng khi chưa có sự đồng ý của chủ trọ.</li>
+                </ul>
+            </div>
+        </div>
 
-                    <div class="detail-group">
-                        <div class="detail-label">Ngày kết thúc</div>
-                        <div class="detail-value">@Model.NgayKetThuc.ToString("dd/MM/yyyy")</div>
-                    </div>
+        <div class="contract-section">
+            <h3 class="section-title"><span>4</span> QUYỀN VÀ NGHĨA VỤ CỦA CHỦ TRỌ</h3>
+            <div class="section-content">
+                <ul>
+                    <li>Bàn giao phòng sạch sẽ, các thiết bị điện nước hoạt động tốt.</li>
+                    <li>Đảm bảo an ninh, an toàn phòng cháy chữa cháy cho khu trọ.</li>
+                    <li>Thông báo trước ít nhất 30 ngày nếu có thay đổi về giá thuê.</li>
+                </ul>
+            </div>
+        </div>
 
-                    <div class="detail-group">
-                        <div class="detail-label">Thời hạn</div>
-                        <div class="detail-value">
-                            @((Model.NgayKetThuc - Model.NgayBatDau).Days / 30) tháng
-                        </div>
-                    </div>
-                </div>
+        <div class="contract-section">
+            <h3 class="section-title"><span>5</span> KẾT THÚC HỢP ĐỒNG</h3>
+            <div class="section-content">
+                Bên thuê muốn trả phòng phải thông báo trước ít nhất 30 ngày. Nếu trả phòng trước thời hạn hoặc không thông báo đúng hạn sẽ bị mất tiền cọc theo quy định.
+            </div>
+        </div>
 
-                <div class="contract-terms">
-                    <h3>📜 Điều khoản hợp đồng</h3>
-                    <ul>
-                        <li><i class="fa fa-check"></i> Thanh toán tiền thuê vào ngày 05 hàng tháng</li>
-                        <li><i class="fa fa-check"></i> Tiền cọc: @(Model.GiaThue.ToString("N0"))đ (hoàn trả khi kết thúc hợp đồng)</li>
-                        <li><i class="fa fa-check"></i> Tiền điện: Theo đồng hồ (đơn giá 3,500đ/kWh)</li>
-                        <li><i class="fa fa-check"></i> Tiền nước: 100,000đ/người/tháng</li>
-                        <li><i class="fa fa-check"></i> Không được chuyển nhượng phòng khi chưa có sự đồng ý của chủ trọ</li>
-                        <li><i class="fa fa-check"></i> Giữ gìn vệ sinh, trật tự trong phòng và khu vực chung</li>
-                        <li><i class="fa fa-check"></i> Thanh toán đầy đủ các khoản phí phát sinh trong thời gian thuê</li>
-                        <li><i class="fa fa-check"></i> Báo trước ít nhất 1 tháng khi muốn chấm dứt hợp đồng</li>
-                    </ul>
-                </div>
-
-                <div style="margin-top: 30px; padding-top: 30px; border-top: 2px solid #e2e8f0; text-align: center;">
-                    <p style="color: #718096; margin-bottom: 20px;">
-                        <i class="fa fa-info-circle"></i> 
-                        Nếu có thắc mắc về hợp đồng, vui lòng liên hệ chủ trọ hoặc bộ phận hỗ trợ
-                    </p>
-                    <a href="@Url.Action("Dashboard", "KhachThue")" class="btn-primary">
-                        <i class="fa fa-arrow-left"></i> Quay lại Dashboard
-                    </a>
-                </div>
-            }
-            else
-            {
-                <div class="empty-state">
-                    <i class="fa fa-file-signature"></i>
-                    <h3>Chưa có hợp đồng nào</h3>
-                    <p style="color: #718096; margin-bottom: 30px;">
-                        Sau khi đặt phòng thành công, hợp đồng sẽ được hiển thị tại đây
-                    </p>
-                    <a href="@Url.Action("DanhSachPhong", "Guest")" class="btn-primary">
-                        <i class="fa fa-search"></i> Tìm Phòng Ngay
-                    </a>
-                </div>
-            }
+        <div class="contract-footer">
+            <p style="font-style: italic; color: #a0aec0; margin-bottom: 25px;">
+                * Đây là bản tóm tắt các điều khoản cơ bản. Hợp đồng chi tiết sẽ được ký kết điện tử giữa hai bên sau khi chủ trọ xác nhận đặt phòng thành công.
+            </p>
+            <a href="#" class="btn-download">
+                <i class="fa fa-file-pdf-o"></i> Tải File Hợp Đồng Mẫu (.pdf)
+            </a>
         </div>
     </div>
 </div>
