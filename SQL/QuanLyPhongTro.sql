@@ -2,13 +2,18 @@
 -- 0. TẠO DATABASE 
 ------------------------------------------------------------
 USE master;
-IF NOT EXISTS (SELECT 1 FROM sys.databases WHERE name = N'QuanLyPhongTro')
-BEGIN
-    CREATE DATABASE QuanLyPhongTro;
-END;
 GO
 
-USE QuanLyPhongTro;
+ALTER DATABASE QuanLyPhongTro SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+GO
+
+DROP DATABASE IF EXISTS QuanLyPhongTro
+GO
+
+CREATE DATABASE QuanLyPhongTro
+GO
+
+USE QuanLyPhongTro
 GO
 
 ------------------------------------------------------------
@@ -1760,7 +1765,33 @@ GO
 
 PRINT N'Đã tạo xong các SP phân quyền: sp_User_RegisterNguoiThue, sp_User_RegisterChuTro, sp_User_UpgradeToChuTro.';
 GO
+-- Check if column exists
+IF NOT EXISTS (
+    SELECT 1 
+    FROM INFORMATION_SCHEMA.COLUMNS 
+    WHERE TABLE_NAME = 'Phong' 
+    AND COLUMN_NAME = 'IsDeleted'
+)
+BEGIN
+    -- Add IsDeleted column
+    ALTER TABLE Phong
+    ADD IsDeleted BIT NOT NULL DEFAULT 0;
+    
+    PRINT '✅ Column IsDeleted added to Phong table';
+END
+ELSE
+BEGIN
+    PRINT '⚠️ Column IsDeleted already exists in Phong table';
+END
+GO
 
+-- Update existing records to ensure they have IsDeleted = 0
+UPDATE Phong 
+SET IsDeleted = 0 
+WHERE IsDeleted IS NULL;
+
+PRINT '✅ All existing Phong records updated with IsDeleted = 0';
+GO
 
 
 /* ==========================================================
@@ -1902,10 +1933,15 @@ WHERE NOT EXISTS (SELECT 1 FROM PhongTienIch PT WHERE PT.PhongId = P.PhongId AND
 DECLARE @DatId UNIQUEIDENTIFIER = 'dddd1111-dddd-1111-dddd-111111111111';
 DECLARE @BienLai UNIQUEIDENTIFIER = 'eeee1111-eeee-1111-eeee-111111111111';
 
-INSERT INTO DatPhong (DatPhongId, PhongId, NguoiThueId, ChuTroId, Loai, BatDau, TrangThaiId)
-SELECT @DatId, (SELECT TOP 1 PhongId FROM Phong), @NguoiThue1, @ChuTro1, N'giucho', SYSDATETIMEOFFSET(), (SELECT TOP 1 TrangThaiId FROM TrangThaiDatPhong WHERE TenTrangThai=N'ChoXacNhan')
+INSERT INTO DatPhong (DatPhongId, PhongId, NguoiThueId, Loai, BatDau, TrangThaiId)
+SELECT 
+    @DatId, 
+    (SELECT TOP 1 PhongId FROM Phong), 
+    @NguoiThue1, 
+    N'giucho', 
+    SYSDATETIMEOFFSET(), 
+    (SELECT TOP 1 TrangThaiId FROM TrangThaiDatPhong WHERE TenTrangThai=N'ChoXacNhan')
 WHERE NOT EXISTS (SELECT 1 FROM DatPhong WHERE DatPhongId=@DatId);
-
 -- Insert Biên Lai (Lúc này TapTinId NULL đã được phép nhờ lệnh ALTER ở đầu)
 INSERT INTO BienLai (BienLaiId, DatPhongId, NguoiTai, TapTinId, SoTien)
 SELECT @BienLai, @DatId, @NguoiThue1, NULL, 500000
@@ -1958,3 +1994,371 @@ VALUES (@Id_ChoDuyet2, N'Phạm Thị Mới Mẻ', '1998-12-12', N'CCCD: 0010980
 
 PRINT N'Hoàn tất thêm dữ liệu test Đà Nẵng, Phòng mẫu và Chủ trọ!';
 GO
+
+
+/* ==========================================================
+   PHẦN 1: BỔ SUNG 15 NGƯỜI THUÊ (RENTERS)
+   ========================================================== */
+DECLARE @DanhSachNguoiThue TABLE (HoTen NVARCHAR(100), Email NVARCHAR(100), SoDienThoai NVARCHAR(20));
+
+INSERT INTO @DanhSachNguoiThue (HoTen, Email, SoDienThoai) VALUES
+(N'Nguyễn Thị Lan', 'lan.nguyen@test.com', '0905000101'), (N'Trần Văn Hùng', 'hung.tran@test.com', '0905000102'),
+(N'Lê Minh Tuấn', 'tuan.le@test.com', '0905000103'), (N'Phạm Thị Mai', 'mai.pham@test.com', '0905000104'),
+(N'Hoàng Văn Long', 'long.hoang@test.com', '0905000105'), (N'Đặng Thị Thảo', 'thao.dang@test.com', '0905000106'),
+(N'Bùi Văn Dũng', 'dung.bui@test.com', '0905000107'), (N'Đỗ Thị Hằng', 'hang.do@test.com', '0905000108'),
+(N'Hồ Văn Nam', 'nam.ho@test.com', '0905000109'), (N'Ngô Thị Tuyết', 'tuyet.ngo@test.com', '0905000110'),
+(N'Vũ Văn Kiên', 'kien.vu@test.com', '0905000111'), (N'Dương Thị Yến', 'yen.duong@test.com', '0905000112'),
+(N'Lý Văn Phúc', 'phuc.ly@test.com', '0905000113'), (N'Mai Thị Ngọc', 'ngoc.mai@test.com', '0905000114'),
+(N'Trương Văn Tài', 'tai.truong@test.com', '0905000115');
+
+DECLARE @RoleThueId INT = (SELECT TOP 1 VaiTroId FROM dbo.VaiTro WHERE TenVaiTro = N'NguoiThue');
+
+IF @RoleThueId IS NOT NULL
+BEGIN
+    DECLARE @Ten NVARCHAR(100), @Mail NVARCHAR(100), @Sdt NVARCHAR(20);
+    DECLARE @NewId UNIQUEIDENTIFIER;
+
+    DECLARE cur CURSOR FOR SELECT HoTen, Email, SoDienThoai FROM @DanhSachNguoiThue;
+    OPEN cur;
+    FETCH NEXT FROM cur INTO @Ten, @Mail, @Sdt;
+
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        IF NOT EXISTS (SELECT 1 FROM dbo.NguoiDung WHERE Email = @Mail)
+        BEGIN
+            SET @NewId = NEWID();
+            INSERT INTO dbo.NguoiDung (NguoiDungId, Email, DienThoai, PasswordHash, VaiTroId, IsKhoa, IsEmailXacThuc)
+            VALUES (@NewId, @Mail, @Sdt, 'hash123', @RoleThueId, 0, 1);
+
+            INSERT INTO dbo.HoSoNguoiDung (NguoiDungId, HoTen, NgaySinh, LoaiGiayTo, GhiChu)
+            VALUES (@NewId, @Ten, DATEADD(DAY, -CAST(RAND()*10000 AS INT), GETDATE()), N'CCCD: ' + @Sdt, N'Auto Generated');
+
+            INSERT INTO dbo.NguoiDungVaiTro (NguoiDungId, VaiTroId) VALUES (@NewId, @RoleThueId);
+        END
+        FETCH NEXT FROM cur INTO @Ten, @Mail, @Sdt;
+    END;
+    CLOSE cur; DEALLOCATE cur;
+    PRINT N'> Đã thêm xong 15 người thuê.';
+END
+
+/* ==========================================================
+   PHẦN 2: BỔ SUNG DỮ LIỆU TEST ADMIN (CHỜ DUYỆT, KHÓA)
+   ========================================================== */
+DECLARE @NhaTroTest UNIQUEIDENTIFIER = (SELECT TOP 1 NhaTroId FROM dbo.NhaTro);
+IF @NhaTroTest IS NOT NULL
+BEGIN
+    -- Tạo 5 phòng chờ duyệt
+    INSERT INTO dbo.Phong (PhongId, NhaTroId, TieuDe, DienTich, GiaTien, TrangThai, IsDuyet, IsBiKhoa, CreatedAt)
+    SELECT NEWID(), @NhaTroTest, N'Phòng chờ duyệt A1', 25, 1500000, N'con_trong', 0, 0, DATEADD(MINUTE, -10, SYSDATETIMEOFFSET())
+    WHERE NOT EXISTS (SELECT 1 FROM Phong WHERE TieuDe = N'Phòng chờ duyệt A1');
+    
+    INSERT INTO dbo.Phong (PhongId, NhaTroId, TieuDe, DienTich, GiaTien, TrangThai, IsDuyet, IsBiKhoa, CreatedAt)
+    SELECT NEWID(), @NhaTroTest, N'Phòng chờ duyệt A2', 20, 1200000, N'con_trong', 0, 0, DATEADD(MINUTE, -30, SYSDATETIMEOFFSET())
+    WHERE NOT EXISTS (SELECT 1 FROM Phong WHERE TieuDe = N'Phòng chờ duyệt A2');
+
+    INSERT INTO dbo.Phong (PhongId, NhaTroId, TieuDe, DienTich, GiaTien, TrangThai, IsDuyet, IsBiKhoa, CreatedAt)
+    SELECT NEWID(), @NhaTroTest, N'Phòng chờ duyệt A3 (Cao cấp)', 40, 5000000, N'con_trong', 0, 0, DATEADD(HOUR, -1, SYSDATETIMEOFFSET())
+    WHERE NOT EXISTS (SELECT 1 FROM Phong WHERE TieuDe = N'Phòng chờ duyệt A3 (Cao cấp)');
+    
+    INSERT INTO dbo.Phong (PhongId, NhaTroId, TieuDe, DienTich, GiaTien, TrangThai, IsDuyet, IsBiKhoa, CreatedAt)
+    SELECT NEWID(), @NhaTroTest, N'Phòng chờ duyệt A4', 18, 1800000, N'con_trong', 0, 0, DATEADD(HOUR, -2, SYSDATETIMEOFFSET())
+    WHERE NOT EXISTS (SELECT 1 FROM Phong WHERE TieuDe = N'Phòng chờ duyệt A4');
+    
+    INSERT INTO dbo.Phong (PhongId, NhaTroId, TieuDe, DienTich, GiaTien, TrangThai, IsDuyet, IsBiKhoa, CreatedAt)
+    SELECT NEWID(), @NhaTroTest, N'Phòng chờ duyệt A5', 30, 3500000, N'con_trong', 0, 0, DATEADD(DAY, -1, SYSDATETIMEOFFSET())
+    WHERE NOT EXISTS (SELECT 1 FROM Phong WHERE TieuDe = N'Phòng chờ duyệt A5');
+
+    -- Tạo 3 phòng bị khóa
+    INSERT INTO dbo.Phong (PhongId, NhaTroId, TieuDe, DienTich, GiaTien, TrangThai, IsDuyet, IsBiKhoa, CreatedAt)
+    SELECT NEWID(), @NhaTroTest, N'Phòng vi phạm (Bị khóa)', 15, 500000, N'con_trong', 0, 1, DATEADD(DAY, -5, SYSDATETIMEOFFSET())
+    WHERE NOT EXISTS (SELECT 1 FROM Phong WHERE TieuDe = N'Phòng vi phạm (Bị khóa)');
+
+    INSERT INTO dbo.Phong (PhongId, NhaTroId, TieuDe, DienTich, GiaTien, TrangThai, IsDuyet, IsBiKhoa, CreatedAt)
+    SELECT NEWID(), @NhaTroTest, N'Phòng tin rác (Bị khóa)', 100, 100000, N'con_trong', 0, 1, DATEADD(DAY, -4, SYSDATETIMEOFFSET())
+    WHERE NOT EXISTS (SELECT 1 FROM Phong WHERE TieuDe = N'Phòng tin rác (Bị khóa)');
+
+    INSERT INTO dbo.Phong (PhongId, NhaTroId, TieuDe, DienTich, GiaTien, TrangThai, IsDuyet, IsBiKhoa, CreatedAt)
+    SELECT NEWID(), @NhaTroTest, N'Phòng lừa đảo (Bị khóa)', 25, 9000000, N'con_trong', 0, 1, DATEADD(DAY, -3, SYSDATETIMEOFFSET())
+    WHERE NOT EXISTS (SELECT 1 FROM Phong WHERE TieuDe = N'Phòng lừa đảo (Bị khóa)');
+
+    PRINT N'> Đã thêm xong 5 phòng chờ duyệt và 3 phòng bị khóa.';
+END
+GO
+
+/* ==========================================================
+   PHẦN 3: CÁC LỆNH SELECT KIỂM TRA DỮ LIỆU
+   ========================================================== */
+PRINT N'';
+PRINT N'--- 1. KIỂM TRA DANH SÁCH NGƯỜI DÙNG MỚI (TOP 10) ---';
+SELECT TOP 10 hs.HoTen, u.Email, u.DienThoai, vt.TenVaiTro, u.CreatedAt
+FROM dbo.NguoiDung u
+JOIN dbo.HoSoNguoiDung hs ON u.NguoiDungId = hs.NguoiDungId
+JOIN dbo.VaiTro vt ON u.VaiTroId = vt.VaiTroId
+WHERE vt.TenVaiTro = N'NguoiThue'
+ORDER BY u.CreatedAt DESC;
+
+PRINT N'';
+PRINT N'--- 2. KIỂM TRA PHÒNG CHỜ DUYỆT (CHO ADMIN) ---';
+SELECT TieuDe, GiaTien, DienTich, CreatedAt 
+FROM dbo.Phong 
+WHERE IsDuyet = 0 AND IsBiKhoa = 0
+ORDER BY CreatedAt DESC;
+
+PRINT N'';
+PRINT N'--- 3. KIỂM TRA PHÒNG BỊ KHÓA (CHO ADMIN) ---';
+SELECT TieuDe, GiaTien, DienTich, CreatedAt 
+FROM dbo.Phong 
+WHERE IsBiKhoa = 1
+ORDER BY CreatedAt DESC;
+
+PRINT N'';
+PRINT N'--- 4. THỐNG KÊ TỔNG QUAN HỆ THỐNG ---';
+SELECT 
+    (SELECT COUNT(*) FROM dbo.NguoiDung) AS TongUser,
+    (SELECT COUNT(*) FROM dbo.Phong) AS TongPhong,
+    (SELECT COUNT(*) FROM dbo.Phong WHERE IsDuyet = 0 AND IsBiKhoa = 0) AS ChoDuyet,
+    (SELECT COUNT(*) FROM dbo.Phong WHERE IsBiKhoa = 1) AS DaKhoa,
+    (SELECT COUNT(*) FROM dbo.DatPhong) AS DonDatPhong;
+GO
+
+-- 1. BỔ SUNG THÊM LOẠI HỖ TRỢ (CATEGORY)
+-- Hiện tại mới chỉ có SuaChua, VeSinh. Thêm các loại phổ biến khác:
+INSERT INTO dbo.LoaiHoTro (TenLoai) SELECT N'AnNinh' WHERE NOT EXISTS (SELECT 1 FROM LoaiHoTro WHERE TenLoai = N'AnNinh');
+INSERT INTO dbo.LoaiHoTro (TenLoai) SELECT N'ThanhToan' WHERE NOT EXISTS (SELECT 1 FROM LoaiHoTro WHERE TenLoai = N'ThanhToan');
+INSERT INTO dbo.LoaiHoTro (TenLoai) SELECT N'Khac' WHERE NOT EXISTS (SELECT 1 FROM LoaiHoTro WHERE TenLoai = N'Khac');
+
+-- 2. LẤY ID CẦN THIẾT ĐỂ INSERT
+-- Lấy ID các loại hỗ trợ
+DECLARE @L_SuaChua INT = (SELECT TOP 1 LoaiHoTroId FROM LoaiHoTro WHERE TenLoai = N'SuaChua');
+DECLARE @L_VeSinh INT = (SELECT TOP 1 LoaiHoTroId FROM LoaiHoTro WHERE TenLoai = N'VeSinh');
+DECLARE @L_AnNinh INT = (SELECT TOP 1 LoaiHoTroId FROM LoaiHoTro WHERE TenLoai = N'AnNinh');
+DECLARE @L_ThanhToan INT = (SELECT TOP 1 LoaiHoTroId FROM LoaiHoTro WHERE TenLoai = N'ThanhToan');
+
+-- Lấy ID Người thuê và Phòng mẫu (Lấy ngẫu nhiên từ data đã có)
+DECLARE @User1 UNIQUEIDENTIFIER = (SELECT TOP 1 NguoiDungId FROM NguoiDung u JOIN VaiTro vt ON u.VaiTroId = vt.VaiTroId WHERE vt.TenVaiTro = N'NguoiThue');
+DECLARE @User2 UNIQUEIDENTIFIER = (SELECT TOP 1 NguoiDungId FROM NguoiDung u JOIN VaiTro vt ON u.VaiTroId = vt.VaiTroId WHERE vt.TenVaiTro = N'NguoiThue' ORDER BY u.CreatedAt DESC);
+DECLARE @PhongTest UNIQUEIDENTIFIER = (SELECT TOP 1 PhongId FROM Phong);
+
+-- 3. INSERT CÁC TICKET MẪU VỚI CÁC TRẠNG THÁI KHÁC NHAU
+
+-- Ticket 1: Yêu cầu sửa chữa (TRẠNG THÁI: MỚI)
+-- Tình huống: Máy lạnh không mát
+INSERT INTO dbo.YeuCauHoTro (HoTroId, PhongId, NguoiYeuCau, LoaiHoTroId, TieuDe, MoTa, TrangThai, ThoiGianTao)
+SELECT 
+    NEWID(), 
+    @PhongTest, 
+    @User1, 
+    @L_SuaChua, 
+    N'Máy lạnh phòng 101 không mát', 
+    N'Máy lạnh bật 18 độ nhưng vẫn rất nóng, có tiếng kêu lạ ở cục nóng. Nhờ chủ trọ kiểm tra giúp.', 
+    N'Moi', 
+    SYSDATETIMEOFFSET()
+WHERE NOT EXISTS (SELECT 1 FROM YeuCauHoTro WHERE TieuDe LIKE N'%Máy lạnh%');
+
+-- Ticket 2: Vấn đề an ninh (TRẠNG THÁI: ĐANG XỬ LÝ)
+-- Tình huống: Hàng xóm ồn ào
+INSERT INTO dbo.YeuCauHoTro (HoTroId, PhongId, NguoiYeuCau, LoaiHoTroId, TieuDe, MoTa, TrangThai, ThoiGianTao)
+SELECT 
+    NEWID(), 
+    @PhongTest, 
+    @User2, 
+    @L_AnNinh, 
+    N'Phản ánh tiếng ồn sau 10h đêm', 
+    N'Phòng bên cạnh thường xuyên tụ tập hát karaoke rất to sau 10 giờ đêm làm ảnh hưởng đến mọi người.', 
+    N'DangXuLy', 
+    DATEADD(HOUR, -5, SYSDATETIMEOFFSET())
+WHERE NOT EXISTS (SELECT 1 FROM YeuCauHoTro WHERE TieuDe LIKE N'%tiếng ồn%');
+
+-- Ticket 3: Vấn đề thanh toán (TRẠNG THÁI: ĐÃ XONG)
+-- Tình huống: Thắc mắc tiền điện
+INSERT INTO dbo.YeuCauHoTro (HoTroId, PhongId, NguoiYeuCau, LoaiHoTroId, TieuDe, MoTa, TrangThai, ThoiGianTao)
+SELECT 
+    NEWID(), 
+    @PhongTest, 
+    @User1, 
+    @L_ThanhToan, 
+    N'Thắc mắc về chỉ số điện tháng này', 
+    N'Tháng này tôi về quê 2 tuần sao tiền điện lại cao hơn tháng trước? Nhờ admin check lại công tơ.', 
+    N'DaXong', 
+    DATEADD(DAY, -3, SYSDATETIMEOFFSET())
+WHERE NOT EXISTS (SELECT 1 FROM YeuCauHoTro WHERE TieuDe LIKE N'%chỉ số điện%');
+
+-- Ticket 4: Yêu cầu vệ sinh (TRẠNG THÁI: MỚI)
+INSERT INTO dbo.YeuCauHoTro (HoTroId, PhongId, NguoiYeuCau, LoaiHoTroId, TieuDe, MoTa, TrangThai, ThoiGianTao)
+SELECT 
+    NEWID(), 
+    @PhongTest, 
+    @User2, 
+    @L_VeSinh, 
+    N'Đăng ký dọn vệ sinh cuối tuần', 
+    N'Tôi muốn đăng ký dịch vụ dọn phòng vào sáng Chủ Nhật tuần này (Gói cơ bản).', 
+    N'Moi', 
+    DATEADD(MINUTE, -30, SYSDATETIMEOFFSET())
+WHERE NOT EXISTS (SELECT 1 FROM YeuCauHoTro WHERE TieuDe LIKE N'%dọn vệ sinh%');
+
+-- Ticket 5: Hư hỏng thiết bị nước (TRẠNG THÁI: ĐANG XỬ LÝ)
+INSERT INTO dbo.YeuCauHoTro (HoTroId, PhongId, NguoiYeuCau, LoaiHoTroId, TieuDe, MoTa, TrangThai, ThoiGianTao)
+SELECT 
+    NEWID(), 
+    @PhongTest, 
+    @User1, 
+    @L_SuaChua, 
+    N'Vòi nước bồn rửa mặt bị rò rỉ', 
+    N'Nước chảy nhỏ giọt suốt đêm gây lãng phí và ẩm mốc.', 
+    N'DangXuLy', 
+    DATEADD(DAY, -1, SYSDATETIMEOFFSET())
+WHERE NOT EXISTS (SELECT 1 FROM YeuCauHoTro WHERE TieuDe LIKE N'%Vòi nước%');
+
+PRINT N'=== ĐÃ TẠO XONG 5 TICKET MẪU ===';
+GO
+
+-- KIỂM TRA LẠI DỮ LIỆU VỪA TẠO
+SELECT 
+    t.TieuDe,
+    l.TenLoai AS [LoaiHoTro],
+    u.Email AS [NguoiGui],
+    t.TrangThai,
+    t.ThoiGianTao
+FROM dbo.YeuCauHoTro t
+JOIN dbo.LoaiHoTro l ON t.LoaiHoTroId = l.LoaiHoTroId
+JOIN dbo.NguoiDung u ON t.NguoiYeuCau = u.NguoiDungId
+ORDER BY t.ThoiGianTao DESC;
+
+Go
+CREATE PROCEDURE dbo.sp_Admin_CreateUser
+    @AdminId        UNIQUEIDENTIFIER, -- ID của người thực hiện (để log lịch sử)
+    @Email          NVARCHAR(255),
+    @PasswordHash   NVARCHAR(512),
+    @TenVaiTro      NVARCHAR(50),     -- 'Admin', 'ChuTro', hoặc 'NguoiThue'
+    @HoTen          NVARCHAR(200),
+    @DienThoai      NVARCHAR(50) = NULL,
+    @IsActive       BIT = 1,          -- Mặc định tạo xong kích hoạt luôn
+    @NewUserId      UNIQUEIDENTIFIER OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRY
+        BEGIN TRAN;
+
+        -- 1. Kiểm tra quyền của người gọi (Optional: Có thể bỏ qua nếu check ở code C#)
+        -- Đảm bảo ông @AdminId này phải là Admin xịn
+        IF NOT EXISTS (
+            SELECT 1 FROM dbo.NguoiDung u 
+            JOIN dbo.VaiTro vt ON u.VaiTroId = vt.VaiTroId 
+            WHERE u.NguoiDungId = @AdminId AND vt.TenVaiTro = N'Admin'
+        )
+        BEGIN
+            RAISERROR(N'Bạn không có quyền thực hiện chức năng này.', 16, 1);
+            ROLLBACK TRAN;
+            RETURN;
+        END
+
+        -- 2. Lấy ID của Vai trò muốn tạo
+        DECLARE @TargetRoleId INT;
+        SELECT @TargetRoleId = VaiTroId FROM dbo.VaiTro WHERE TenVaiTro = @TenVaiTro;
+
+        IF @TargetRoleId IS NULL
+        BEGIN
+            RAISERROR(N'Vai trò không hợp lệ (Phải là Admin, ChuTro, NguoiThue).', 16, 1);
+            ROLLBACK TRAN;
+            RETURN;
+        END
+
+        -- 3. Kiểm tra trùng Email
+        IF EXISTS (SELECT 1 FROM dbo.NguoiDung WHERE Email = @Email)
+        BEGIN
+            RAISERROR(N'Email này đã tồn tại trong hệ thống.', 16, 1);
+            ROLLBACK TRAN;
+            RETURN;
+        END
+
+        -- 4. Tạo User
+        SET @NewUserId = NEWID();
+
+        INSERT INTO dbo.NguoiDung (
+            NguoiDungId, Email, DienThoai, PasswordHash, VaiTroId, 
+            IsKhoa, IsEmailXacThuc, CreatedAt
+        )
+        VALUES (
+            @NewUserId, @Email, @DienThoai, @PasswordHash, @TargetRoleId, 
+            CASE WHEN @IsActive = 1 THEN 0 ELSE 1 END, -- IsKhoa (0 là mở, 1 là khóa)
+            1, -- Admin tạo thì mặc định coi như đã xác thực Email
+            SYSDATETIMEOFFSET()
+        );
+
+        -- 5. Tạo Hồ sơ cơ bản
+        INSERT INTO dbo.HoSoNguoiDung (NguoiDungId, HoTen, GhiChu)
+        VALUES (@NewUserId, @HoTen, N'Tạo bởi Admin');
+
+        -- 6. Gán quyền vào bảng phân quyền
+        INSERT INTO dbo.NguoiDungVaiTro (NguoiDungId, VaiTroId, NgayBatDau)
+        VALUES (@NewUserId, @TargetRoleId, SYSDATETIMEOFFSET());
+
+        -- Nếu tạo Chủ Trọ, cần tạo thêm bảng pháp lý rỗng để họ tự cập nhật sau (tránh lỗi code)
+        IF @TenVaiTro = N'ChuTro'
+        BEGIN
+             INSERT INTO dbo.ChuTroThongTinPhapLy (
+                NguoiDungId, CCCD, DiaChiThuongTru, TrangThaiXacThuc
+            )
+            VALUES (@NewUserId, N'Updating', N'Updating', N'DaDuyet'); -- Admin tạo thì cho Duyệt luôn hoặc ChoDuyet tùy ý
+        END
+
+        -- 7. Ghi Log hành động Admin
+        INSERT INTO dbo.HanhDongAdmin (AdminId, HanhDong, MucTieuBang, BanGhiId, ChiTiet)
+        VALUES (@AdminId, N'Tạo tài khoản mới', N'NguoiDung', CAST(@NewUserId AS NVARCHAR(50)), N'Tạo role: ' + @TenVaiTro);
+
+        COMMIT TRAN;
+    END TRY
+    BEGIN CATCH
+        IF XACT_STATE() <> 0 ROLLBACK TRAN;
+        DECLARE @Err NVARCHAR(4000) = ERROR_MESSAGE();
+        RAISERROR(@Err, 16, 1);
+    END CATCH
+END;
+GO
+
+-- Create SystemSettings table
+IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='SystemSettings' and xtype='U')
+BEGIN
+    CREATE TABLE [SystemSettings] (
+        [SettingId] UNIQUEIDENTIFIER NOT NULL DEFAULT (NEWID()),
+        [SettingKey] NVARCHAR(255) NOT NULL,
+        [SettingValue] NVARCHAR(MAX) NOT NULL,
+        [DataType] NVARCHAR(50) NULL,
+        [Description] NVARCHAR(500) NULL,
+        [GroupName] NVARCHAR(100) NULL,
+        [IsVisible] BIT NOT NULL DEFAULT 1,
+        [CreatedAt] DATETIMEOFFSET NOT NULL DEFAULT (SYSDATETIMEOFFSET()),
+        [UpdatedAt] DATETIMEOFFSET NULL,
+        PRIMARY KEY ([SettingId]),
+        UNIQUE ([SettingKey])
+    );
+    
+    -- Create index for better query performance
+    CREATE INDEX [IX_SystemSettings_GroupName] ON [SystemSettings] ([GroupName]);
+    CREATE INDEX [IX_SystemSettings_SettingKey] ON [SystemSettings] ([SettingKey]);
+END
+
+-- Insert default system settings if they don't exist
+IF NOT EXISTS (SELECT 1 FROM [SystemSettings] WHERE [SettingKey] = 'app.name')
+BEGIN
+    INSERT INTO [SystemSettings] ([SettingKey], [SettingValue], [DataType], [Description], [GroupName], [IsVisible])
+    VALUES 
+        ('app.name', 'Quản Lý Phòng Trọ', 'string', 'Tên ứng dụng', 'general', 1),
+        ('app.description', 'Ứng dụng quản lý phòng trọ toàn diện', 'string', 'Mô tả ứng dụng', 'general', 1),
+        ('app.url', 'https://example.com', 'string', 'URL ứng dụng', 'general', 1),
+        ('support.hotline', '0123 456 789', 'string', 'Hotline hỗ trợ', 'contact', 1),
+        ('support.email', 'support@example.com', 'string', 'Email hỗ trợ', 'contact', 1),
+        ('company.address', '123 Đường ABC, Q.1, TP.HCM', 'string', 'Địa chỉ công ty', 'contact', 1),
+        ('service.post_fee', '10000', 'decimal', 'Phí đăng tin', 'service', 1),
+        ('service.boost_fee', '50000', 'decimal', 'Phí đẩy bài', 'service', 1),
+        ('service.verify_fee', '100000', 'decimal', 'Phí xác minh', 'service', 1),
+        ('policy.auto_approve', 'false', 'boolean', 'Tự động duyệt bài', 'policy', 1),
+        ('policy.review_timeout_hours', '24', 'integer', 'Thời gian duyệt tối đa (giờ)', 'policy', 1),
+        ('security.require_email_verify', 'true', 'boolean', 'Yêu cầu xác minh email', 'security', 1),
+        ('security.require_phone_verify', 'false', 'boolean', 'Yêu cầu xác minh điện thoại', 'security', 1),
+        ('security.blocked_ips', '', 'string', 'Danh sách IP bị chặn', 'security', 1),
+        ('appearance.theme_color', 'blue', 'string', 'Màu chủ đề', 'appearance', 1),
+        ('appearance.logo_url', '/Content/img/logo.png', 'string', 'URL logo', 'appearance', 1),
+        ('appearance.language', 'vi', 'string', 'Ngôn ngữ mặc định', 'appearance', 1);
+END
