@@ -687,8 +687,10 @@ namespace USER_QUANLYPHONGTRO.Controllers
             switch (id)
             {
                 case 1: return "ChoXacNhan";
-                case 2: return "DaXacNhan"; // Đã duyệt
-                case 3: return "DaHuy";     // Đã hủy/Từ chối
+                case 2: return "DaXacNhan";   // Đã cọc
+                case 3: return "DaThanhToan"; // Hợp đồng chính thức (SỬA LẠI DÒNG NÀY)
+                case 4: return "HoanThanh";   // Kết thúc
+                case 5: return "DaHuy";       // Đã hủy (SỬA LẠI DÒNG NÀY)
                 default: return "Khac";
             }
         }
@@ -755,38 +757,82 @@ namespace USER_QUANLYPHONGTRO.Controllers
             };
             return View(model);
         }
-        public ActionResult HopDong()
+        public async Task<ActionResult> HopDong()
         {
-            var model = new LandlordHopDongViewModel
+            if (Session["UserId"] == null) return RedirectToAction("Login", "Auth");
+            var userId = Guid.Parse(Session["UserId"].ToString());
+
+            var model = new LandlordHopDongViewModel { DanhSachHopDong = new List<HopDongItemViewModel>() };
+
+            try
             {
-                TongHopDongHieuLuc = 2,
-                HopDongSapHetHan = 1,
-                DanhSachHopDong = new List<HopDongItemViewModel>
-        {
-            new HopDongItemViewModel {
-                HopDongId = Guid.NewGuid(),
-                SoHopDong = "HD-2025-001",
-                TenPhong = "Phòng 101",
-                TenNguoiThue = "Nguyễn Văn A",
-                NgayBatDau = new DateTime(2025, 1, 1),
-                NgayKetThuc = new DateTime(2025, 12, 31),
-                GiaThue = 3500000,
-                TienCoc = 3500000,
-                TrangThai = "DangHieuLuc"
-            },
-            new HopDongItemViewModel {
-                HopDongId = Guid.NewGuid(),
-                SoHopDong = "HD-2024-015",
-                TenPhong = "Phòng 202",
-                TenNguoiThue = "Trần Thị B",
-                NgayBatDau = new DateTime(2024, 6, 15),
-                NgayKetThuc = new DateTime(2025, 2, 15), // Sắp hết hạn
-                GiaThue = 4000000,
-                TienCoc = 4000000,
-                TrangThai = "SapHetHan"
+                using (var client = new HttpClient())
+                {
+                    client.BaseAddress = new Uri("http://localhost:5101/");
+                    var response = await client.GetAsync($"api/datphong/contracts?userId={userId}");
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var json = await response.Content.ReadAsStringAsync();
+                        var dataRaw = Newtonsoft.Json.JsonConvert.DeserializeObject<List<dynamic>>(json);
+
+                        foreach (var item in dataRaw)
+                        {
+                            // (Logic lấy tên khách giữ nguyên như cũ) ...
+                            string tenKhach = "Khách vãng lai";
+                            if (item.nguoiThue != null)
+                            { /* ... code cũ ... */
+                                if (item.nguoiThue.hoSoNguoiDung != null && item.nguoiThue.hoSoNguoiDung.hoTen != null) tenKhach = (string)item.nguoiThue.hoSoNguoiDung.hoTen;
+                                else if (item.nguoiThue.hoTen != null) tenKhach = (string)item.nguoiThue.hoTen;
+                                else if (item.nguoiThue.email != null) tenKhach = (string)item.nguoiThue.email;
+                            }
+
+                            DateTime batDau = (DateTime)item.batDau;
+                            DateTime ketThuc = item.ketThuc != null ? (DateTime)item.ketThuc : batDau.AddMonths(6);
+
+                            // --- LOGIC TRẠNG THÁI MỚI ---
+                            int statusId = (int)item.trangThaiId;
+                            string trangThaiHienThi = "DangHieuLuc";
+
+                            if (statusId == 2)
+                            {
+                                trangThaiHienThi = "DaCoc"; // Mới nhận cọc
+                            }
+                            else if (statusId == 4 || DateTime.Now > ketThuc)
+                            {
+                                trangThaiHienThi = "DaHetHan";
+                            }
+                            else if (statusId == 3 && (ketThuc - DateTime.Now).TotalDays <= 30)
+                            {
+                                trangThaiHienThi = "SapHetHan";
+                            }
+                            else
+                            {
+                                trangThaiHienThi = "DangHieuLuc"; // Status 3 bình thường
+                            }
+
+                            model.DanhSachHopDong.Add(new HopDongItemViewModel
+                            {
+                                HopDongId = item.datPhongId,
+                                SoHopDong = "HD-" + item.soDatPhong,
+                                TenPhong = (item.phong != null) ? item.phong.tieuDe : "Phòng đã xóa",
+                                TenNguoiThue = tenKhach,
+                                NgayBatDau = batDau,
+                                NgayKetThuc = ketThuc,
+                                GiaThue = (item.phong != null) ? (decimal)item.phong.giaTien : 0,
+                                TienCoc = (item.phong != null) ? (decimal)item.phong.tienCoc : 0,
+                                TrangThai = trangThaiHienThi
+                            });
+                        }
+
+                        // Thống kê: Tính cả "Đã Cọc" vào tổng hợp đồng đang chạy
+                        model.TongHopDongHieuLuc = model.DanhSachHopDong.Count(x => x.TrangThai == "DangHieuLuc" || x.TrangThai == "SapHetHan" || x.TrangThai == "DaCoc");
+                        model.HopDongSapHetHan = model.DanhSachHopDong.Count(x => x.TrangThai == "SapHetHan");
+                    }
+                }
             }
-        }
-            };
+            catch { }
+
             return View(model);
         }
         public ActionResult HoaDon()
