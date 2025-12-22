@@ -126,13 +126,109 @@ namespace USER_QUANLYPHONGTRO.Controllers
             };
             return View(model);
         }
-        public ActionResult DonDatPhong()
+        public async Task<ActionResult> DonDatPhong()
         {
-            // Trong thực tế, bạn sẽ truy vấn từ bảng DatPhong
-            // Hiện tại khởi tạo danh sách rỗng để hiển thị giao diện mặc định
-            var model = new List<DonDatPhongViewModel>();
+            if (Session["UserId"] == null) return RedirectToAction("Login", "Auth");
+            var userId = Guid.Parse(Session["UserId"].ToString());
 
-            return View(model);
+            try
+            {
+                using (var client = new HttpClient())
+                {
+                    client.BaseAddress = new Uri("http://localhost:5101/");
+
+                    // Gọi API lấy danh sách (truyền userId trực tiếp)
+                    var response = await client.GetAsync($"api/datphong/landlord-requests?userId={userId}");
+                    string json = await response.Content.ReadAsStringAsync();
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var dataRaw = Newtonsoft.Json.JsonConvert.DeserializeObject<List<dynamic>>(json);
+                        var model = new List<DonDatPhongViewModel>();
+
+                        foreach (var item in dataRaw)
+                        {
+                            // 1. Xử lý Tên Khách Hàng (Logic giống Lịch Hẹn)
+                            string tenKhach = "Khách vãng lai";
+                            if (item.nguoiThue != null)
+                            {
+                                if (item.nguoiThue.hoSoNguoiDung != null && item.nguoiThue.hoSoNguoiDung.hoTen != null)
+                                    tenKhach = (string)item.nguoiThue.hoSoNguoiDung.hoTen;
+                                else if (item.nguoiThue.hoTen != null)
+                                    tenKhach = (string)item.nguoiThue.hoTen;
+                                else if (item.nguoiThue.email != null)
+                                    tenKhach = (string)item.nguoiThue.email;
+                            }
+
+                            // 2. Map dữ liệu
+                            model.Add(new DonDatPhongViewModel
+                            {
+                                DatPhongId = item.datPhongId,
+                                SoDatPhong = (int)item.soDatPhong,
+                                TenKhachHang = tenKhach,
+                                TenPhong = (item.phong != null) ? item.phong.tieuDe : "Phòng đã xóa",
+                                LoaiDatPhong = item.loai, // Ngay/Thang
+                                NgayBatDau = (DateTime)item.batDau,
+                                NgayKetThuc = item.ketThuc != null ? (DateTime)item.ketThuc : (DateTime?)null,
+                                GiaTien = (item.phong != null) ? (long)item.phong.giaTien : 0,
+                                TrangThai = MapTrangThaiDatPhong((int)item.trangThaiId),
+                                ThoiGianTao = (DateTime)item.thoiGianTao
+                            });
+                        }
+                        return View(model);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ViewBag.Error = "Lỗi: " + ex.Message;
+            }
+            return View(new List<DonDatPhongViewModel>());
+        }
+
+        // Action: Duyệt đơn (Sửa trạng thái)
+        public async Task<ActionResult> DuyetDon(Guid id, int status)
+        {
+            // status: 2 = Duyệt, 3 = Hủy/Từ chối
+            if (Session["UserId"] == null) return RedirectToAction("Login", "Auth");
+            var userId = Guid.Parse(Session["UserId"].ToString());
+
+            try
+            {
+                using (var client = new HttpClient())
+                {
+                    client.BaseAddress = new Uri("http://localhost:5101/");
+                    var response = await client.PutAsync($"api/datphong/status/{id}?status={status}&userId={userId}", null);
+
+                    if (response.IsSuccessStatusCode)
+                        TempData["SuccessMessage"] = (status == 2) ? "Đã duyệt đơn thành công!" : "Đã từ chối đơn!";
+                    else
+                        TempData["ErrorMessage"] = "Lỗi cập nhật trạng thái.";
+                }
+            }
+            catch { }
+            return RedirectToAction("DonDatPhong");
+        }
+
+        // Action: Xóa đơn vĩnh viễn
+        public async Task<ActionResult> XoaDon(Guid id)
+        {
+            if (Session["UserId"] == null) return RedirectToAction("Login", "Auth");
+            var userId = Guid.Parse(Session["UserId"].ToString());
+
+            try
+            {
+                using (var client = new HttpClient())
+                {
+                    client.BaseAddress = new Uri("http://localhost:5101/");
+                    var response = await client.DeleteAsync($"api/datphong/{id}?userId={userId}");
+
+                    if (response.IsSuccessStatusCode) TempData["SuccessMessage"] = "Đã xóa đơn đặt phòng.";
+                    else TempData["ErrorMessage"] = "Không thể xóa đơn này.";
+                }
+            }
+            catch { }
+            return RedirectToAction("DonDatPhong");
         }
         // GET: ChuTro/YeuCauHoTro
         public ActionResult YeuCauHoTro()
