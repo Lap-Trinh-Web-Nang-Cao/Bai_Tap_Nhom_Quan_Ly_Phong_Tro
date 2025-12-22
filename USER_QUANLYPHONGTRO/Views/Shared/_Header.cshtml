@@ -18,7 +18,7 @@
     string act = currentAction.ToUpper();
 
     // Flags cho navigation
-    bool isTenantContext = isLoggedIn || ctrl == "KHACHTHUE";   
+    bool isTenantContext = isLoggedIn || ctrl == "KHACHTHUE";
     string homeUrl = isTenantContext ? Url.Action("Index", "KhachThue") : Url.Action("Index", "Guest");
     string roomsUrl = isTenantContext ? Url.Action("DanhSachPhong", "KhachThue") : Url.Action("DanhSachPhong", "Guest");
 }
@@ -227,6 +227,10 @@
                             class="navbar-item @(currentAction == "HoaDon" ? "active" : "")">
                             <i class="fa fa-credit-card"></i> Hóa đơn
                         </a>
+                        <a href="@Url.Action("YeuThich", "KhachThue")"
+                            class="navbar-item @(currentAction == "YeuThich" ? "active" : "")">
+                            <i class="fa fa-heart-o"></i> Yêu thích
+                        </a>
                     }
                 </div>
             </div>
@@ -293,16 +297,16 @@
                     const unreadClass = item.isRead ? '' : 'unread';
                     const timeStr = formatTime(item.time);
                     const html = `
-                                <a href="${item.url || '#'}" class="notification-item ${unreadClass}" data-id="${item.id}">
-                                    <div class="item-icon ${iconClass}">
-                                        <i class="fa ${icon}"></i>
-                                    </div>
-                                    <div class="item-content">
-                                        <p class="noti-title"><strong>${item.title}</strong></p>
-                                        <p class="noti-text">${item.content}</p>
-                                        <span class="item-time">${timeStr}</span>
-                                    </div>
-                                </a>`;
+                                    <a href="${item.url || '#'}" class="notification-item ${unreadClass}" data-id="${item.id}">
+                                        <div class="item-icon ${iconClass}">
+                                            <i class="fa ${icon}"></i>
+                                        </div>
+                                        <div class="item-content">
+                                            <p class="noti-title"><strong>${item.title}</strong></p>
+                                            <p class="noti-text">${item.content}</p>
+                                            <span class="item-time">${timeStr}</span>
+                                        </div>
+                                    </a>`;
                     $list.append(html);
                 });
 

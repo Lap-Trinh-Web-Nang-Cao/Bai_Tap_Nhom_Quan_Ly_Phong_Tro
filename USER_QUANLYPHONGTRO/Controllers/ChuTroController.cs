@@ -15,7 +15,7 @@ namespace USER_QUANLYPHONGTRO.Controllers
     /// Yêu cầu: UserRole = "ChuTro"
     /// Sử dụng API thật từ backend
     /// </summary>
-    [Authorize]
+    [AllowAnonymous]
     public class ChuTroController : Controller
     {
         private readonly ApiClient _apiClient;

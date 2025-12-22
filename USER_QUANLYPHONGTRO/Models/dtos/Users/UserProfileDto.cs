@@ -20,5 +20,6 @@ namespace USER_QUANLYPHONGTRO.Models.Dtos.Users
         public string LoaiGiayTo { get; set; }
         public string GhiChu { get; set; }
         public string DiaChi { get; set; }
+        public string AvatarUrl { get; set; }
     }
 }

@@ -21,6 +21,12 @@ namespace USER_QUANLYPHONGTRO
             );
 
             routes.MapRoute(
+                name: "ChuTro_Dashboard",
+                url: "ChuTro/Dashboard",
+                defaults: new { controller = "ChuTro", action = "Dashboard" }
+            );
+
+            routes.MapRoute(
                 name: "Default",
                 url: "{controller}/{action}/{id}",
                 defaults: new { controller = "Guest", action = "Index", id = UrlParameter.Optional }

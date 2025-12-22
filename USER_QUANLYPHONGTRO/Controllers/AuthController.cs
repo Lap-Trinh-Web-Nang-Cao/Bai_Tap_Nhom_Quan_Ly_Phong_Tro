@@ -32,8 +32,9 @@ namespace USER_QUANLYPHONGTRO.Controllers
                     Session["IsVerified"] = true;
                     Session["NotificationCount"] = 5;
                     Session["MessageCount"] = 3;
+                    Session["UserId"] = Guid.NewGuid();
 
-                    // REDIRECT ĐẾN TRANG CHỦ TRỌ (SELLER CENTER)
+                    System.Diagnostics.Debug.WriteLine($"✅ Login Success as ChuTro: {model.Email}");
                     return RedirectToAction("Dashboard", "ChuTro");
                 }
                 else
@@ -45,14 +46,14 @@ namespace USER_QUANLYPHONGTRO.Controllers
                     Session["IsVerified"] = true;
                     Session["NotificationCount"] = 2;
                     Session["MessageCount"] = 1;
-                    // DB new uses GUID NguoiThueId; set to tenant GUID from DB for testing
                     Session["UserId"] = Guid.Parse("11111111-1111-1111-1111-111111111111");
 
-                    // REDIRECT VỀ TRANG CHỦ NGƯỜI THUÊ
+                    System.Diagnostics.Debug.WriteLine($"✅ Login Success as KhachThue: {model.Email}");
                     return RedirectToAction("Index", "KhachThue");
                 }
             }
 
+            System.Diagnostics.Debug.WriteLine("❌ Login Failed: Model state invalid");
             ViewBag.ErrorMessage = "Email hoặc mật khẩu không chính xác";
             ViewBag.UserType = userType;
             return View(model);

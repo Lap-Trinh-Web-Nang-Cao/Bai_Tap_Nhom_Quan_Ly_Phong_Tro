@@ -1,4 +1,4 @@
-    /**********************************************************************
+﻿    /**********************************************************************
     Fixed full init script for DB "QuanLyPhongTro"
     - Ensure admin-related columns exist BEFORE creating stored procedures
     - Idempotent: checks existence before CREATE / ALTER
@@ -848,6 +848,7 @@ IF OBJECT_ID(N'dbo.sp_Admin_DuyetBaiDang', N'P') IS NOT NULL DROP PROCEDURE dbo.
 IF OBJECT_ID(N'dbo.sp_Admin_KhoaBaiDang', N'P') IS NOT NULL DROP PROCEDURE dbo.sp_Admin_KhoaBaiDang;
 IF OBJECT_ID(N'dbo.sp_TaoBaoCaoViPham', N'P') IS NOT NULL DROP PROCEDURE dbo.sp_TaoBaoCaoViPham;
 IF OBJECT_ID(N'dbo.sp_Admin_XuLyBaoCao', N'P') IS NOT NULL DROP PROCEDURE dbo.sp_Admin_XuLyBaoCao;
+IF OBJECT_ID(N'dbo.sp_Admin_CreateUser', N'P') IS NOT NULL DROP PROCEDURE dbo.sp_Admin_CreateUser;
 GO
 
 -- Tạo SP đặt phòng
@@ -1411,6 +1412,98 @@ BEGIN
             CAST(@BaoCaoId AS NVARCHAR(50)),
             ISNULL(@KetQua, N'')
         );
+
+        COMMIT TRAN;
+    END TRY
+    BEGIN CATCH
+        IF XACT_STATE() <> 0 ROLLBACK TRAN;
+        DECLARE @Err NVARCHAR(4000) = ERROR_MESSAGE();
+        RAISERROR(@Err, 16, 1);
+    END CATCH
+END;
+GO
+
+-- Admin: Tạo tài khoản mới (Admin, ChuTro, NguoiThue)
+CREATE PROCEDURE dbo.sp_Admin_CreateUser
+    @AdminId        UNIQUEIDENTIFIER, -- ID của người thực hiện (để log lịch sử)
+    @Email          NVARCHAR(255),
+    @PasswordHash   NVARCHAR(512),
+    @TenVaiTro      NVARCHAR(50),     -- 'Admin', 'ChuTro', hoặc 'NguoiThue'
+    @HoTen          NVARCHAR(200),
+    @DienThoai      NVARCHAR(50) = NULL,
+    @IsActive       BIT = 1,          -- Mặc định tạo xong kích hoạt luôn
+    @NewUserId      UNIQUEIDENTIFIER OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRY
+        BEGIN TRAN;
+
+        -- 1. Kiểm tra quyền của người gọi
+        IF NOT EXISTS (
+            SELECT 1 FROM dbo.NguoiDung u 
+            JOIN dbo.VaiTro vt ON u.VaiTroId = vt.VaiTroId 
+            WHERE u.NguoiDungId = @AdminId AND vt.TenVaiTro = N'Admin'
+        )
+        BEGIN
+            RAISERROR(N'Bạn không có quyền thực hiện chức năng này.', 16, 1);
+            ROLLBACK TRAN;
+            RETURN;
+        END
+
+        -- 2. Lấy ID của Vai trò muốn tạo
+        DECLARE @TargetRoleId INT;
+        SELECT @TargetRoleId = VaiTroId FROM dbo.VaiTro WHERE TenVaiTro = @TenVaiTro;
+
+        IF @TargetRoleId IS NULL
+        BEGIN
+            RAISERROR(N'Vai trò không hợp lệ (Phải là Admin, ChuTro, NguoiThue).', 16, 1);
+            ROLLBACK TRAN;
+            RETURN;
+        END
+
+        -- 3. Kiểm tra trùng Email
+        IF EXISTS (SELECT 1 FROM dbo.NguoiDung WHERE Email = @Email)
+        BEGIN
+            RAISERROR(N'Email này đã tồn tại trong hệ thống.', 16, 1);
+            ROLLBACK TRAN;
+            RETURN;
+        END
+
+        -- 4. Tạo User
+        SET @NewUserId = NEWID();
+
+        INSERT INTO dbo.NguoiDung (
+            NguoiDungId, Email, DienThoai, PasswordHash, VaiTroId, 
+            IsKhoa, IsEmailXacThuc, CreatedAt
+        )
+        VALUES (
+            @NewUserId, @Email, @DienThoai, @PasswordHash, @TargetRoleId, 
+            CASE WHEN @IsActive = 1 THEN 0 ELSE 1 END, -- IsKhoa (0 là mở, 1 là khóa)
+            1, -- Admin tạo thì mặc định coi như đã xác thực Email
+            SYSDATETIMEOFFSET()
+        );
+
+        -- 5. Tạo Hồ sơ cơ bản
+        INSERT INTO dbo.HoSoNguoiDung (NguoiDungId, HoTen, GhiChu)
+        VALUES (@NewUserId, @HoTen, N'Tạo bởi Admin');
+
+        -- 6. Gán quyền vào bảng phân quyền
+        INSERT INTO dbo.NguoiDungVaiTro (NguoiDungId, VaiTroId, NgayBatDau)
+        VALUES (@NewUserId, @TargetRoleId, SYSDATETIMEOFFSET());
+
+        -- Nếu tạo Chủ Trọ, cần tạo thêm bảng pháp lý rỗng để họ tự cập nhật sau (tránh lỗi code)
+        IF @TenVaiTro = N'ChuTro'
+        BEGIN
+             INSERT INTO dbo.ChuTroThongTinPhapLy (
+                NguoiDungId, CCCD, DiaChiThuongTru, TrangThaiXacThuc
+            )
+            VALUES (@NewUserId, N'Updating', N'Updating', N'DaDuyet'); -- Admin tạo thì cho Duyệt luôn hoặc ChoDuyet tùy ý
+        END
+
+        -- 7. Ghi Log hành động Admin
+        INSERT INTO dbo.HanhDongAdmin (AdminId, HanhDong, MucTieuBang, BanGhiId, ChiTiet)
+        VALUES (@AdminId, N'Tạo tài khoản mới', N'NguoiDung', CAST(@NewUserId AS NVARCHAR(50)), N'Tạo role: ' + @TenVaiTro);
 
         COMMIT TRAN;
     END TRY
@@ -2511,8 +2604,8 @@ INSERT INTO dbo.ThongBao (ThongBaoId, NguoiDungId, TieuDe, NoiDung, Loai, ThoiGi
 VALUES 
 (NEWID(), @TenantDemoId_N, N'Đã xác nhận lịch hẹn', N'Chủ trọ đã đồng ý lịch xem phòng vào 9h sáng mai.', 'success', SYSDATETIMEOFFSET(), 0),
 (NEWID(), @TenantDemoId_N, N'Yêu cầu thanh toán', N'Đã có hóa đơn tiền điện nước tháng 12, vui lòng thanh toán đúng hạn.', 'warning', DATEADD(HOUR, -5, SYSDATETIMEOFFSET()), 0);
-<<<<<<< HEAD
 GO
+/*
 -- AGENT: Ensure all rooms have descriptions and utilities
 PRINT N'--- CẬP NHẬT MÔ TẢ VÀ TIỆN ÍCH CHO TẤT CẢ PHÒNG ---';
 
@@ -2523,13 +2616,13 @@ BEGIN
 END
 
 -- 2. Cập nhật mô tả mẫu cho các phòng chưa có
-UPDATE dbo.Phong
+/*UPDATE dbo.Phong
 SET MoTa = CASE 
     WHEN DienTich > 30 THEN N'Phòng trọ cao cấp, không gian rộng rãi, thoáng mát, đầy đủ tiện nghi. Tọa lạc tại vị trí đắc địa, giao thông thuận tiện, an ninh đảm bảo 24/7. Phù hợp cho hộ gia đình hoặc nhóm bạn ở từ 3-4 người.'
     WHEN GiaTien > 3000000 THEN N'Phòng trọ studio hiện đại, thiết kế tinh tế, tối ưu diện tích. Nội thất đầy đủ bao gồm giường, tủ, máy lạnh. Khu vực yên tĩnh, dân trí cao, gần chợ và các trường đại học.'
     ELSE N'Phòng trọ giá rẻ, sạch sẽ, an ninh tốt. Điện nước tính theo giá nhà nước, chủ nhà thân thiện. Rất phù hợp cho sinh viên và người lao động muốn tiết kiệm chi phí mà vẫn đảm bảo chất lượng sống.'
 END
-WHERE MoTa IS NULL OR MoTa = '';
+WHERE MoTa IS NULL OR MoTa = '';*/
 
 -- 3. Đảm bảo mỗi phòng có ít nhất 3 tiện ích ngẫu nhiên
 INSERT INTO dbo.PhongTienIch (PhongId, TienIchId)
@@ -2544,6 +2637,52 @@ AND ti.TienIchId IN (
 );
 
 PRINT N'✅ Đã cập nhật xong dữ liệu mô tả và tiện ích.';
-=======
->>>>>>> c7dd3e1b831874e4c737fdc6c23ddcd8444bc33f
+*/
+GO
+
+-- Create SystemSettings table
+IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='SystemSettings' and xtype='U')
+BEGIN
+    CREATE TABLE [SystemSettings] (
+        [SettingId] UNIQUEIDENTIFIER NOT NULL DEFAULT (NEWID()),
+        [SettingKey] NVARCHAR(255) NOT NULL,
+        [SettingValue] NVARCHAR(MAX) NOT NULL,
+        [DataType] NVARCHAR(50) NULL,
+        [Description] NVARCHAR(500) NULL,
+        [GroupName] NVARCHAR(100) NULL,
+        [IsVisible] BIT NOT NULL DEFAULT 1,
+        [CreatedAt] DATETIMEOFFSET NOT NULL DEFAULT (SYSDATETIMEOFFSET()),
+        [UpdatedAt] DATETIMEOFFSET NULL,
+        PRIMARY KEY ([SettingId]),
+        UNIQUE ([SettingKey])
+    );
+    
+    -- Create index for better query performance
+    CREATE INDEX [IX_SystemSettings_GroupName] ON [SystemSettings] ([GroupName]);
+    CREATE INDEX [IX_SystemSettings_SettingKey] ON [SystemSettings] ([SettingKey]);
+END
+
+-- Insert default system settings if they don't exist
+IF NOT EXISTS (SELECT 1 FROM [SystemSettings] WHERE [SettingKey] = 'app.name')
+BEGIN
+    INSERT INTO [SystemSettings] ([SettingKey], [SettingValue], [DataType], [Description], [GroupName], [IsVisible])
+    VALUES 
+        ('app.name', 'Quản Lý Phòng Trọ', 'string', 'Tên ứng dụng', 'general', 1),
+        ('app.description', 'Ứng dụng quản lý phòng trọ toàn diện', 'string', 'Mô tả ứng dụng', 'general', 1),
+        ('app.url', 'https://example.com', 'string', 'URL ứng dụng', 'general', 1),
+        ('support.hotline', '0123 456 789', 'string', 'Hotline hỗ trợ', 'contact', 1),
+        ('support.email', 'support@example.com', 'string', 'Email hỗ trợ', 'contact', 1),
+        ('company.address', '123 Đường ABC, Q.1, TP.HCM', 'string', 'Địa chỉ công ty', 'contact', 1),
+        ('service.post_fee', '10000', 'decimal', 'Phí đăng tin', 'service', 1),
+        ('service.boost_fee', '50000', 'decimal', 'Phí đẩy bài', 'service', 1),
+        ('service.verify_fee', '100000', 'decimal', 'Phí xác minh', 'service', 1),
+        ('policy.auto_approve', 'false', 'boolean', 'Tự động duyệt bài', 'policy', 1),
+        ('policy.review_timeout_hours', '24', 'integer', 'Thời gian duyệt tối đa (giờ)', 'policy', 1),
+        ('security.require_email_verify', 'true', 'boolean', 'Yêu cầu xác minh email', 'security', 1),
+        ('security.require_phone_verify', 'false', 'boolean', 'Yêu cầu xác minh điện thoại', 'security', 1),
+        ('security.blocked_ips', '', 'string', 'Danh sách IP bị chặn', 'security', 1),
+        ('appearance.theme_color', 'blue', 'string', 'Màu chủ đề', 'appearance', 1),
+        ('appearance.logo_url', '/Content/img/logo.png', 'string', 'URL logo', 'appearance', 1),
+        ('appearance.language', 'vi', 'string', 'Ngôn ngữ mặc định', 'appearance', 1);
+END
 GO

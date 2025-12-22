@@ -9,7 +9,6 @@ using USER_QUANLYPHONGTRO.Models.Dtos;
 using USER_QUANLYPHONGTRO.Models.Dtos.Bookings;
 using USER_QUANLYPHONGTRO.Models.ViewModels.KhachThue;
 using USER_QUANLYPHONGTRO.Services;
-using USER_QUANLYPHONGTRO.Services;
 
 namespace USER_QUANLYPHONGTRO.Controllers
 {
@@ -579,5 +578,74 @@ namespace USER_QUANLYPHONGTRO.Controllers
                 return View(new List<Models.ViewModels.KhachThue.TenantInvoiceViewModel>());
             }
         }
+
+        // GET: KhachThue/ThongTinCaNhan
+        public async Task<ActionResult> ThongTinCaNhan()
+        {
+            try
+            {
+                var userIdObj = Session["UserId"];
+                if (userIdObj == null || !Guid.TryParse(userIdObj.ToString(), out var userId))
+                {
+                    return RedirectToAction("Login", "Auth");
+                }
+
+                // Giả lập hoặc lấy từ API nếu có
+                var profile = new Models.Dtos.Users.UserProfileDto
+                {
+                    HoTen = Session["HoTen"] as string,
+                    Email = Session["UserName"] as string,
+                    DienThoai = Session["Sdt"] as string ?? "0909123456",
+                    AvatarUrl = Session["AvatarUrl"] as string ?? "/images/default-avatar.png",
+                    DiaChi = "TP. Hồ Chí Minh",
+                    NgaySinh = DateTime.Now.AddYears(-20)
+                };
+
+                return View(profile);
+            }
+            catch (Exception ex)
+            {
+                ViewBag.ErrorMessage = ex.Message;
+                return View();
+            }
+        }
+
+        // GET: KhachThue/YeuThich
+        public async Task<ActionResult> YeuThich()
+        {
+            try
+            {
+                // Gọi API lấy danh sách phòng (giả lập là danh sách yêu thích)
+                // Trong thực tế sẽ gọi /api/phong/favorites
+                var response = await _apiClient.GetAsync<dynamic>("/api/phong?pageSize=4");
+                var roomsList = new List<PhongDto>();
+
+                if (response != null && response.Success && response.Data != null)
+                {
+                    var jData = response.Data as Newtonsoft.Json.Linq.JObject;
+                    if (jData != null)
+                    {
+                        var dataArrayToken = jData["Data"] ?? jData["data"];
+                        int imageIndex = 0;
+                        if (dataArrayToken != null)
+                        {
+                            foreach (var item in dataArrayToken)
+                            {
+                                roomsList.Add(MapToPhongDto(item, imageIndex));
+                                imageIndex++;
+                            }
+                        }
+                    }
+                }
+
+                return View(roomsList);
+            }
+            catch (Exception ex)
+            {
+                ViewBag.ErrorMessage = ex.Message;
+                return View(new List<PhongDto>());
+            }
+        }
+
     }
 }

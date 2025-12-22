@@ -1,7 +1,117 @@
-﻿
+﻿@model USER_QUANLYPHONGTRO.Models.Dtos.Users.UserProfileDto
 @{
-    ViewBag.Title = "ThongTinCaNhan";
+    ViewBag.Title = "Thông Tin Cá Nhân";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>ThongTinCaNhan</h2>
+<div class="profile-container py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-4">
+                <!-- Profile Sidebar Card -->
+                <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
+                    <div class="card-body text-center p-5" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <div class="position-relative d-inline-block mb-3">
+                            <img src="@(Model != null && !string.IsNullOrEmpty(Model.AvatarUrl) ? Model.AvatarUrl : "/images/default-avatar.png")" 
+                                 class="rounded-circle border border-4 border-white shadow-lg" 
+                                 style="width: 140px; height: 140px; object-fit: cover;" alt="Avatar">
+                            <button class="btn btn-light btn-sm position-absolute bottom-0 end-0 rounded-circle shadow-sm" style="width: 35px; height: 35px;">
+                                <i class="fa fa-camera"></i>
+                            </button>
+                        </div>
+                        <h4 class="text-white fw-bold mb-1">@(Model != null && !string.IsNullOrEmpty(Model.HoTen) ? Model.HoTen : "Người dùng")</h4>
+                        <p class="text-white text-opacity-75 mb-0">Thành viên từ 2025</p>
+                    </div>
+                    <div class="card-body p-4 bg-white">
+                        <div class="list-group list-group-flush">
+                            <a href="#" class="list-group-item list-group-item-action border-0 py-3 rounded-3 mb-2 active" style="background: #f0f3ff; color: #667eea !important; font-weight: 600;">
+                                <i class="fa fa-user me-3"></i> Hồ sơ cá nhân
+                            </a>
+                            <a href="@Url.Action("LichDaDat", "KhachThue")" class="list-group-item list-group-item-action border-0 py-3 rounded-3 mb-2">
+                                <i class="fa fa-calendar me-3"></i> Lịch hẹn của bạn
+                            </a>
+                            <a href="@Url.Action("YeuThich", "KhachThue")" class="list-group-item list-group-item-action border-0 py-3 rounded-3 mb-2">
+                                <i class="fa fa-heart me-3"></i> Phòng trọ yêu thích
+                            </a>
+                            <a href="#" class="list-group-item list-group-item-action border-0 py-3 rounded-3 mb-2 text-danger">
+                                <i class="fa fa-sign-out me-3"></i> Đăng xuất
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
+            <div class="col-lg-8">
+                <!-- Personal Info Form -->
+                <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5">
+                    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+                        <h3 class="fw-bold mb-0" style="color: #2d3748;">Thiết lập hồ sơ</h3>
+                        <button class="btn btn-outline-primary rounded-pill px-4">
+                            <i class="fa fa-edit me-2"></i> Chỉnh sửa
+                        </button>
+                    </div>
+
+                    <form>
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold text-muted small text-uppercase">Họ và Tên</label>
+                                <input type="text" class="form-control form-control-lg bg-light border-0 px-4" value="@Model.HoTen" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold text-muted small text-uppercase">Email</label>
+                                <input type="email" class="form-control form-control-lg bg-light border-0 px-4" value="@Model.Email" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold text-muted small text-uppercase">Số điện thoại</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-0"><i class="fa fa-phone"></i></span>
+                                    <input type="text" class="form-control form-control-lg bg-light border-0" value="@Model.DienThoai" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold text-muted small text-uppercase">Ngày sinh</label>
+                                <input type="date" class="form-control form-control-lg bg-light border-0 px-4" value="@(Model.NgaySinh.HasValue ? Model.NgaySinh.Value.ToString("yyyy-MM-dd") : "")" readonly>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-semibold text-muted small text-uppercase">Địa chỉ liên hệ</label>
+                                <textarea class="form-control form-control-lg bg-light border-0 px-4" rows="3" readonly>@Model.DiaChi</textarea>
+                            </div>
+                        </div>
+
+                        <div class="mt-5 pt-4 border-top">
+                            <h5 class="fw-bold mb-4" style="color: #2d3748;">Bảo mật tài khoản</h5>
+                            <div class="d-flex align-items-center justify-content-between p-4 rounded-4" style="background: #fff8f8; border: 1px dashed #feb2b2;">
+                                <div>
+                                    <h6 class="fw-bold mb-1" style="color: #c53030;">Thay đổi mật khẩu</h6>
+                                    <p class="text-muted mb-0 small">Bạn nên thay đổi mật khẩu định kỳ để bảo mật tài khoản.</p>
+                                </div>
+                                <button type="button" class="btn btn-danger rounded-pill px-4">Đổi mật khẩu</button>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 text-end">
+                            <button type="button" class="btn btn-primary btn-lg rounded-pill px-5 shadow-sm" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">
+                                Lưu thay đổi
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .profile-container {
+        background-color: #f8fafc;
+        min-height: 100vh;
+    }
+    .form-control:focus {
+        box-shadow: none;
+        background-color: #f1f5f9 !important;
+    }
+    .list-group-item-action:hover {
+        background-color: #f8fafc;
+        color: #667eea !important;
+    }
+</style>
