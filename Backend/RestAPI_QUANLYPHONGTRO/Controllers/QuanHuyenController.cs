@@ -17,12 +17,14 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous] // Allow anyone to view districts list
         public async Task<IActionResult> GetAll()
         {
             return Ok(await _service.GetAllAsync());
         }
 
         [HttpGet("{id}")]
+        [AllowAnonymous] // Allow anyone to view district details
         public async Task<IActionResult> GetById(int id)
         {
             var result = await _service.GetByIdAsync(id);

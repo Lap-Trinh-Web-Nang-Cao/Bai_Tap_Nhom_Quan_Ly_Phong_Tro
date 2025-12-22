@@ -308,6 +308,7 @@
     <Content Include="Content\fonts\summernote\summernote.eot" />
     <Content Include="Content\fonts\summernote\summernote.ttf" />
     <Content Include="Content\fonts\summernote\summernote.woff" />
+    <Content Include="Content\css\bootstrap.min.css.map" />
     <None Include="packages.config" />
     <Content Include="Views\Shared\_Sidebar.cshtml" />
     <Content Include="Views\Shared\_Scripts.cshtml" />

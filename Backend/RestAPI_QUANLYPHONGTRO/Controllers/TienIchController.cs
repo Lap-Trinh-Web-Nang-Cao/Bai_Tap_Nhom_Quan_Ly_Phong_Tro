@@ -17,7 +17,7 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
         }
 
         [HttpGet]
-        // [Authorize]  // ⚠️ TEMPORARILY DISABLED FOR TESTING
+        [AllowAnonymous] // Allow anyone to view amenities list
         public async Task<IActionResult> GetAll()
         {
             try
@@ -32,7 +32,7 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
         }
 
         [HttpGet("{id}")]
-        // [Authorize]  // ⚠️ TEMPORARILY DISABLED FOR TESTING
+        [AllowAnonymous] // Allow anyone to view amenity details
         public async Task<IActionResult> GetById(int id)
         {
             try
@@ -49,7 +49,7 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
         }
 
         [HttpPost]
-        // [Authorize]  // ⚠️ TEMPORARILY DISABLED FOR TESTING
+        [Authorize(Policy = "AdminOnly")] // Only admin can create amenities
         public async Task<IActionResult> Create([FromBody] TienIchRequest request)
         {
             if (!ModelState.IsValid)
@@ -69,7 +69,7 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
         }
 
         [HttpPut("{id}")]
-        // [Authorize]  // ⚠️ TEMPORARILY DISABLED FOR TESTING
+        [Authorize(Policy = "AdminOnly")] // Only admin can update amenities
         public async Task<IActionResult> Update(int id, [FromBody] TienIchRequest request)
         {
             if (!ModelState.IsValid)
@@ -89,7 +89,7 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
         }
 
         [HttpDelete("{id}")]
-        // [Authorize]  // ⚠️ TEMPORARILY DISABLED FOR TESTING
+        [Authorize(Policy = "AdminOnly")] // Only admin can delete amenities
         public async Task<IActionResult> Delete(int id)
         {
             try

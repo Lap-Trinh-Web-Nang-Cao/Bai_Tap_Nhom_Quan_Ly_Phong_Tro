@@ -143,43 +143,73 @@ namespace USER_QUANLYPHONGTRO.Controllers
         #endregion
 
         // GET: KhachThue
+        [AllowAnonymous]
         public async Task<ActionResult> Index()
         {
             try
             {
-                // Gọi API lấy 6 phòng nổi bật
+                System.Diagnostics.Debug.WriteLine($"🔵 KhachThue.Index - Starting");
+                
+                // ✅ ApiClient tự động lấy token từ Session nếu có
                 var response = await _apiClient.GetAsync<dynamic>("/api/phong?pageSize=6");
+
+                System.Diagnostics.Debug.WriteLine($"📡 Response Success: {response?.Success}");
+                System.Diagnostics.Debug.WriteLine($"📡 Response Data Type: {response?.Data?.GetType()}");
 
                 if (response != null && response.Success && response.Data != null)
                 {
-                    var jData = response.Data as Newtonsoft.Json.Linq.JObject;
-                    if (jData != null)
+                    // response.Data might be:
+                    // 1. JArray directly (if API returns array)
+                    // 2. JObject with "data" or "Data" property (if API returns wrapped response)
+                    
+                    var dataArray = response.Data as Newtonsoft.Json.Linq.JArray;
+                    
+                    if (dataArray == null)
                     {
-                        var dataArrayToken = jData["Data"] ?? jData["data"] ?? jData["Data"]?["Data"] ?? jData["data"]?["data"];
+                        // Try to get from wrapped response
+                        var jData = response.Data as Newtonsoft.Json.Linq.JObject;
+                        if (jData != null)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"📦 JObject keys: {string.Join(", ", jData.Properties().Select(p => p.Name))}");
+                            
+                            // Try multiple possible field names for data (case-insensitive)
+                            dataArray = jData["data"] as Newtonsoft.Json.Linq.JArray 
+                                     ?? jData["Data"] as Newtonsoft.Json.Linq.JArray;
+                        }
+                    }
+                    
+                    if (dataArray == null)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"⚠️ Could not extract data array from response!");
+                        System.Diagnostics.Debug.WriteLine($"📦 Full response Data: {response.Data.ToString()}");
+                    }
+                    else
+                    {
                         var roomsList = new List<PhongDto>();
                         int imageIndex = 0;
-                        if (dataArrayToken != null)
+                        
+                        foreach (var item in dataArray)
                         {
-                            foreach (var item in dataArrayToken)
-                            {
-                                roomsList.Add(MapToPhongDto(item, imageIndex));
-                                imageIndex++;
-                            }
+                            roomsList.Add(MapToPhongDto(item, imageIndex));
+                            imageIndex++;
                         }
+                        
+                        System.Diagnostics.Debug.WriteLine($"✅ Mapped {roomsList.Count} rooms");
                         return View(roomsList);
                     }
                 }
 
-                System.Diagnostics.Debug.WriteLine($"⚠️ KhachThue Index - API did not return expected data: {response.Message}");
+                System.Diagnostics.Debug.WriteLine($"⚠️ Response success but no data or null");
                 return View(new List<PhongDto>());
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ KhachThue Index Error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"❌ KhachThue Index Error: {ex.Message}\n{ex.StackTrace}");
                 return View(new List<PhongDto>());
             }
         }
 
+        [AllowAnonymous]
         public async Task<ActionResult> DanhSachPhong(
             int page = 1,
             int pageSize = 12,
@@ -189,6 +219,8 @@ namespace USER_QUANLYPHONGTRO.Controllers
         {
             try
             {
+                System.Diagnostics.Debug.WriteLine($"🔵 DanhSachPhong - Starting (page={page}, pageSize={pageSize})");
+                
                 long? minPrice = null, maxPrice = null;
                 if (!string.IsNullOrEmpty(priceRange))
                 {
@@ -200,77 +232,170 @@ namespace USER_QUANLYPHONGTRO.Controllers
                     }
                 }
 
+                // ✅ ApiClient tự động lấy token từ Session nếu có
                 var apiUrl = $"/api/phong?page={page}&pageSize={pageSize}";
                 if (minPrice.HasValue) apiUrl += $"&minPrice={minPrice}";
                 if (maxPrice.HasValue) apiUrl += $"&maxPrice={maxPrice}";
 
+                System.Diagnostics.Debug.WriteLine($"📡 Calling API: {apiUrl}");
                 var response = await _apiClient.GetAsync<dynamic>(apiUrl);
+
+                System.Diagnostics.Debug.WriteLine($"📡 Response Success: {response?.Success}");
+                if (response?.Data != null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"📡 Response Data Type: {response.Data.GetType().Name}");
+                }
 
                 if (response != null && response.Success && response.Data != null)
                 {
-                    var jData = response.Data as Newtonsoft.Json.Linq.JObject;
-                    if (jData != null)
+                    // Try to extract data array - handle multiple response formats
+                    Newtonsoft.Json.Linq.JArray dataArray = null;
+                    int totalCount = 0;
+                    int totalPages = 1;
+                    
+                    // Case 1: response.Data is JArray directly
+                    dataArray = response.Data as Newtonsoft.Json.Linq.JArray;
+                    
+                    if (dataArray != null)
                     {
-                        var dataArrayToken = jData["Data"] ?? jData["data"] ?? jData["Data"]?["Data"] ?? jData["data"]?["data"];
-                        var totalCountToken = jData["TotalCount"] ?? jData["totalCount"] ?? jData["Data"]?["TotalCount"] ?? jData["data"]?["totalCount"];
-                        var totalPagesToken = jData["TotalPages"] ?? jData["totalPages"] ?? jData["Data"]?["TotalPages"] ?? jData["data"]?["totalPages"];
-
-                        var totalCount = (int)(totalCountToken ?? 0);
-                        var totalPages = (int)(totalPagesToken ?? 1);
-
-                        var roomsList = new List<PhongDto>();
-                        int imageIndex = 0;
-                        if (dataArrayToken != null)
+                        System.Diagnostics.Debug.WriteLine($"📦 Case 1: Data is JArray directly with {dataArray.Count} items");
+                        totalCount = dataArray.Count;
+                        totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+                    }
+                    else
+                    {
+                        // Case 2: response.Data is JObject with nested structure
+                        var jData = response.Data as Newtonsoft.Json.Linq.JObject;
+                        if (jData != null)
                         {
-                            foreach (var item in dataArrayToken)
+                            var keys = string.Join(", ", jData.Properties().Select(p => p.Name));
+                            System.Diagnostics.Debug.WriteLine($"📦 Case 2: Data is JObject with keys: {keys}");
+                            
+                            // Try all possible variations (case-insensitive)
+                            dataArray = jData["data"] as Newtonsoft.Json.Linq.JArray 
+                                     ?? jData["Data"] as Newtonsoft.Json.Linq.JArray
+                                     ?? jData["DATA"] as Newtonsoft.Json.Linq.JArray;
+                            
+                            // Extract metadata
+                            var totalCountToken = jData["totalCount"] ?? jData["TotalCount"] ?? jData["TOTALCOUNT"];
+                            var totalPagesToken = jData["totalPages"] ?? jData["TotalPages"] ?? jData["TOTALPAGES"];
+
+                            if (totalCountToken != null)
+                            {
+                                totalCount = (int)totalCountToken;
+                                System.Diagnostics.Debug.WriteLine($"📊 TotalCount from response: {totalCount}");
+                            }
+                            else if (dataArray != null)
+                            {
+                                totalCount = dataArray.Count;
+                                System.Diagnostics.Debug.WriteLine($"📊 TotalCount from array length: {totalCount}");
+                            }
+                            
+                            if (totalPagesToken != null)
+                            {
+                                totalPages = (int)totalPagesToken;
+                            }
+                            else if (totalCount > 0)
+                            {
+                                totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+                            }
+                            
+                            System.Diagnostics.Debug.WriteLine($"📊 Metadata: totalCount={totalCount}, totalPages={totalPages}");
+                            
+                            if (dataArray == null)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"❌ Could not find data array in JObject!");
+                                System.Diagnostics.Debug.WriteLine($"📦 Full JObject: {jData.ToString().Substring(0, Math.Min(500, jData.ToString().Length))}");
+                            }
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine($"❌ response.Data is neither JArray nor JObject! Type: {response.Data?.GetType().Name}");
+                        }
+                    }
+
+                    // Build rooms list
+                    var roomsList = new List<PhongDto>();
+                    
+                    if (dataArray != null && dataArray.Count > 0)
+                    {
+                        int imageIndex = 0;
+                        foreach (var item in dataArray)
+                        {
+                            try
                             {
                                 roomsList.Add(MapToPhongDto(item, imageIndex));
                                 imageIndex++;
                             }
+                            catch (Exception mapEx)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"⚠️ Error mapping room {imageIndex}: {mapEx.Message}");
+                            }
                         }
-
-                        if (!string.IsNullOrEmpty(keyword))
-                        {
-                            roomsList = roomsList.Where(r =>
-                                (r.TieuDe != null && r.TieuDe.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0) ||
-                                (r.NhaTro != null && r.NhaTro.DiaChi != null && r.NhaTro.DiaChi.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0)
-                            ).ToList();
-                        }
-
-                        ViewBag.CurrentPage = page;
-                        ViewBag.TotalPages = totalPages;
-                        ViewBag.TotalCount = totalCount;
-                        ViewBag.Keyword = keyword;
-                        ViewBag.PriceRange = priceRange;
-                        ViewBag.AreaRange = areaRange;
-                        ViewBag.PageSize = pageSize;
-
-                        return View(roomsList);
+                        System.Diagnostics.Debug.WriteLine($"✅ DanhSachPhong - Mapped {roomsList.Count}/{dataArray.Count} rooms successfully");
                     }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"⚠️ DanhSachPhong - No data array found or empty array");
+                    }
+
+                    // Apply client-side keyword filter if provided
+                    if (!string.IsNullOrEmpty(keyword) && roomsList.Count > 0)
+                    {
+                        var beforeFilter = roomsList.Count;
+                        roomsList = roomsList.Where(r =>
+                            (r.TieuDe != null && r.TieuDe.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                            (r.NhaTro != null && r.NhaTro.DiaChi != null && r.NhaTro.DiaChi.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0)
+                        ).ToList();
+                        System.Diagnostics.Debug.WriteLine($"🔍 Keyword filter: {beforeFilter} → {roomsList.Count} rooms");
+                    }
+
+                    ViewBag.CurrentPage = page;
+                    ViewBag.TotalPages = totalPages;
+                    ViewBag.TotalCount = totalCount;
+                    ViewBag.Keyword = keyword;
+                    ViewBag.PriceRange = priceRange;
+                    ViewBag.AreaRange = areaRange;
+                    ViewBag.PageSize = pageSize;
+
+                    System.Diagnostics.Debug.WriteLine($"✅ DanhSachPhong - Returning {roomsList.Count} rooms to view");
+                    return View(roomsList);
                 }
 
+                System.Diagnostics.Debug.WriteLine($"❌ DanhSachPhong - Invalid response: Success={response?.Success}, HasData={response?.Data != null}");
                 return View(new List<PhongDto>());
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ KhachThue DanhSachPhong Error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"❌ KhachThue DanhSachPhong Error: {ex.Message}\n{ex.StackTrace}");
                 ViewBag.ErrorMessage = "Có lỗi xảy ra: " + ex.Message;
                 return View(new List<PhongDto>());
             }
         }
 
+        [AllowAnonymous]
         public async Task<ActionResult> ChiTietPhong(Guid? id)
         {
             if (id == null) return RedirectToAction("Index");
 
             try
             {
+                // ✅ ApiClient tự động lấy token từ Session nếu có
                 var response = await _apiClient.GetAsync<dynamic>($"/api/phong/{id.Value}");
+
+                System.Diagnostics.Debug.WriteLine($"📡 ChiTietPhong Response Success: {response?.Success}");
 
                 if (response != null && response.Success && response.Data != null)
                 {
-                    var phong = MapToPhongDto(response.Data as Newtonsoft.Json.Linq.JToken, 0);
-                    return View(phong);
+                    var phongData = response.Data;
+                    
+                    // Handle both direct object and wrapped in Data property
+                    var jToken = phongData as Newtonsoft.Json.Linq.JToken;
+                    if (jToken != null)
+                    {
+                        var phong = MapToPhongDto(jToken, 0);
+                        return View(phong);
+                    }
                 }
 
                 ViewBag.ErrorMessage = "Không tìm thấy thông tin phòng trọ.";
@@ -284,6 +409,7 @@ namespace USER_QUANLYPHONGTRO.Controllers
             }
         }
 
+        [AllowAnonymous]
         public async Task<ActionResult> DatPhong(Guid roomId)
         {
             try
@@ -308,6 +434,7 @@ namespace USER_QUANLYPHONGTRO.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [AllowAnonymous]
         public async Task<ActionResult> DatPhong(Guid roomId, string hoTen, string sdt, string email, DateTime ngayXem, string gioXem, string ghiChu)
         {
             try
@@ -337,6 +464,7 @@ namespace USER_QUANLYPHONGTRO.Controllers
                         GhiChu = $"Khách: {hoTen} - SĐT: {sdt}. Ghi chú: {ghiChu}"
                     };
 
+                    // ✅ ApiClient tự động lấy token từ Session nếu có
                     var result = await _apiClient.PostAsync<dynamic, object>("/api/datphong", request);
                     if (result != null && result.Success)
                     {
@@ -354,6 +482,7 @@ namespace USER_QUANLYPHONGTRO.Controllers
             }
         }
 
+        [AllowAnonymous]
         public async Task<ActionResult> DatPhongTrucTiep(Guid roomId)
         {
             try
@@ -379,6 +508,7 @@ namespace USER_QUANLYPHONGTRO.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [AllowAnonymous]
         public async Task<ActionResult> XacNhanDatPhong(Guid roomId, string hoTen, string sdt, string email, DateTime ngayChuyenVao, string ghiChu)
         {
             try
@@ -394,7 +524,9 @@ namespace USER_QUANLYPHONGTRO.Controllers
                         BatDau = ngayChuyenVao,
                         GhiChu = ghiChu
                     };
-                    await _apiClient.PostAsync<object, object>("api/DatPhong", request);
+                    
+                    // ✅ ApiClient tự động lấy token từ Session nếu có
+                    await _apiClient.PostAsync<object, object>("/api/datphong", request);
                 }
                 return RedirectToAction("BookingSuccess", new { type = "booking" });
             }
@@ -404,79 +536,157 @@ namespace USER_QUANLYPHONGTRO.Controllers
             }
         }
 
+        [AllowAnonymous]
         public ActionResult BookingSuccess(string type)
         {
             ViewBag.Type = type;
             return View();
         }
 
+        [AllowAnonymous]
         public ActionResult TinNhan()
         {
             return View();
         }
 
+        // ✅ Những action này cần xác thực nên giữ require login
         public async Task<ActionResult> ThongBao()
         {
-            var response = await _apiClient.GetAsync<List<ThongBaoDto>>("api/ThongBao");
-            return View(response.Data ?? new List<ThongBaoDto>());
+            try
+            {
+                System.Diagnostics.Debug.WriteLine($"🔵 ThongBao - Starting");
+                
+                // ✅ ApiClient tự động lấy token từ Session nếu có
+                var response = await _apiClient.GetAsync<List<ThongBaoDto>>("/api/thongbao");
+                
+                System.Diagnostics.Debug.WriteLine($"📡 Response Success: {response?.Success}");
+                System.Diagnostics.Debug.WriteLine($"📡 Response Data Count: {response?.Data?.Count}");
+                
+                return View(response.Data ?? new List<ThongBaoDto>());
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ ThongBao Error: {ex.Message}");
+                return View(new List<ThongBaoDto>());
+            }
         }
 
         public async Task<ActionResult> GetNotifications()
         {
-            var response = await _apiClient.GetAsync<List<ThongBaoDto>>("api/ThongBao");
-            if (response.Success && response.Data != null)
+            try
             {
-                var list = response.Data.Select(x => new
+                System.Diagnostics.Debug.WriteLine($"🔵 GetNotifications - Starting");
+                
+                // ✅ ApiClient tự động lấy token từ Session nếu có
+                var response = await _apiClient.GetAsync<List<ThongBaoDto>>("/api/thongbao");
+                
+                System.Diagnostics.Debug.WriteLine($"📡 Response Success: {response?.Success}");
+                System.Diagnostics.Debug.WriteLine($"📡 Response Data Count: {response?.Data?.Count}");
+                
+                if (response.Success && response.Data != null)
                 {
-                    id = x.ThongBaoId,
-                    title = x.TieuDe,
-                    content = x.NoiDung,
-                    type = x.Loai,
-                    time = x.ThoiGianTao,
-                    isRead = x.DaXem,
-                    url = x.RedirectUrl
-                }).ToList();
-                return Json(new { success = true, data = list }, JsonRequestBehavior.AllowGet);
+                    var list = response.Data.Select(x => new
+                    {
+                        id = x.ThongBaoId,
+                        title = x.TieuDe,
+                        content = x.NoiDung,
+                        type = x.Loai,
+                        time = x.ThoiGianTao,
+                        isRead = x.DaXem,
+                        url = x.RedirectUrl
+                    }).ToList();
+                    return Json(new { success = true, data = list }, JsonRequestBehavior.AllowGet);
+                }
+                return Json(new { success = false, message = "Không thể lấy thông báo" }, JsonRequestBehavior.AllowGet);
             }
-            return Json(new { success = false, message = "Không thể lấy thông báo" }, JsonRequestBehavior.AllowGet);
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ GetNotifications Error: {ex.Message}");
+                return Json(new { success = false, message = ex.Message }, JsonRequestBehavior.AllowGet);
+            }
         }
 
         [HttpPost]
         public async Task<ActionResult> MarkAsRead(Guid id)
         {
-            var response = await _apiClient.PostAsync<object, object>($"api/ThongBao/mark-as-read/{id}", null);
-            return Json(new { success = response.Success });
+            try
+            {
+                // ✅ ApiClient tự động lấy token từ Session nếu có
+                var response = await _apiClient.PostAsync<object, object>($"/api/thongbao/{id}/mark-as-read", null);
+                return Json(new { success = response.Success });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ MarkAsRead Error: {ex.Message}");
+                return Json(new { success = false });
+            }
         }
 
         public async Task<ActionResult> ClearNotifications()
         {
-            await _apiClient.PostAsync<object, object>("api/ThongBao/mark-all-as-read", null);
-            Session["NotificationCount"] = 0;
-            return Redirect(Request.UrlReferrer?.ToString() ?? "/KhachThue");
+            try
+            {
+                // ✅ ApiClient tự động lấy token từ Session nếu có
+                await _apiClient.PostAsync<object, object>("/api/thongbao/mark-all-as-read", null);
+                Session["NotificationCount"] = 0;
+                return Redirect(Request.UrlReferrer?.ToString() ?? "/KhachThue");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ ClearNotifications Error: {ex.Message}");
+                return Redirect(Request.UrlReferrer?.ToString() ?? "/KhachThue");
+            }
         }
 
         #region CHAT AJAX
 
         public async Task<ActionResult> GetConversations()
         {
-            var response = await _apiClient.GetAsync<List<dynamic>>("api/TinNhan/my-conversations");
-            return Json(new { success = response.Success, data = response.Data }, JsonRequestBehavior.AllowGet);
+            try
+            {
+                // ✅ ApiClient tự động lấy token từ Session nếu có
+                var response = await _apiClient.GetAsync<List<dynamic>>("/api/tinnhan/my-conversations");
+                return Json(new { success = response.Success, data = response.Data }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ GetConversations Error: {ex.Message}");
+                return Json(new { success = false, data = new List<dynamic>() }, JsonRequestBehavior.AllowGet);
+            }
         }
 
         public async Task<ActionResult> GetChatMessages(Guid otherUserId)
         {
-            var response = await _apiClient.GetAsync<List<dynamic>>($"api/TinNhan/conversation/{otherUserId}");
-            // Sau khi lấy tin nhắn, đánh dấu đã đọc luôn
-            await _apiClient.PutAsync<object, object>($"api/TinNhan/read/{otherUserId}", null);
-            return Json(new { success = response.Success, data = response.Data }, JsonRequestBehavior.AllowGet);
+            try
+            {
+                // ✅ ApiClient tự động lấy token từ Session nếu có
+                var response = await _apiClient.GetAsync<List<dynamic>>($"/api/tinnhan/conversation/{otherUserId}");
+                // Sau khi lấy tin nhắn, đánh dấu đã đọc luôn
+                await _apiClient.PutAsync<object, object>($"/api/tinnhan/{otherUserId}/read", null);
+                return Json(new { success = response.Success, data = response.Data }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ GetChatMessages Error: {ex.Message}");
+                return Json(new { success = false, data = new List<dynamic>() }, JsonRequestBehavior.AllowGet);
+            }
         }
 
         [HttpPost]
         public async Task<ActionResult> SendChatMessage(Guid toUserId, string content)
         {
-            var request = new { ToUser = toUserId, NoiDung = content };
-            var response = await _apiClient.PostAsync<object, object>("api/TinNhan", request);
-            return Json(new { success = response.Success, data = response.Data });
+            try
+            {
+                var request = new { ToUser = toUserId, NoiDung = content };
+                // ✅ ApiClient tự động lấy token từ Session nếu có
+                var response = await _apiClient.PostAsync<object, object>("/api/tinnhan", request);
+                return Json(new { success = response.Success, data = response.Data });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ SendChatMessage Error: {ex.Message}");
+                return Json(new { success = false });
+            }
         }
 
         #endregion
@@ -485,6 +695,7 @@ namespace USER_QUANLYPHONGTRO.Controllers
         {
             try
             {
+                // ✅ ApiClient tự động lấy token từ Session nếu có
                 var response = await _apiClient.GetAsync<List<DatPhongDto>>("/api/datphong/my-bookings");
                 var viewModels = new List<TenantScheduleViewModel>();
 
@@ -529,8 +740,8 @@ namespace USER_QUANLYPHONGTRO.Controllers
                     return View(model: null);
                 }
 
-                var bearer = Session["AccessToken"]?.ToString();
-                var apiRes = await _contractsApiService.GetActiveContractByTenantAsync(userId, bearer);
+                // ✅ ApiClient tự động lấy token từ Session nếu có
+                var apiRes = await _contractsApiService.GetActiveContractByTenantAsync(userId, null);
 
                 if (apiRes == null || !apiRes.Success)
                 {
@@ -561,8 +772,8 @@ namespace USER_QUANLYPHONGTRO.Controllers
                     return View(new List<Models.ViewModels.KhachThue.TenantInvoiceViewModel>());
                 }
 
-                var bearer = Session["AccessToken"]?.ToString();
-                var apiRes = await _invoicesApiService.GetInvoicesByTenantAsync(userId, bearer);
+                // ✅ ApiClient tự động lấy token từ Session nếu có
+                var apiRes = await _invoicesApiService.GetInvoicesByTenantAsync(userId, null);
 
                 if (apiRes == null || !apiRes.Success)
                 {
@@ -616,7 +827,8 @@ namespace USER_QUANLYPHONGTRO.Controllers
             try
             {
                 // Gọi API lấy danh sách phòng (giả lập là danh sách yêu thích)
-                // Trong thực tế sẽ gọi /api/phong/favorites
+                // Trong thực tế sẽ gọi /api/yeuthich
+                // ✅ ApiClient tự động lấy token từ Session nếu có
                 var response = await _apiClient.GetAsync<dynamic>("/api/phong?pageSize=4");
                 var roomsList = new List<PhongDto>();
 
@@ -625,15 +837,19 @@ namespace USER_QUANLYPHONGTRO.Controllers
                     var jData = response.Data as Newtonsoft.Json.Linq.JObject;
                     if (jData != null)
                     {
-                        var dataArrayToken = jData["Data"] ?? jData["data"];
-                        int imageIndex = 0;
-                        if (dataArrayToken != null)
+                        // ✅ Extract data array (case-insensitive)
+                        var dataArray = jData["data"] as Newtonsoft.Json.Linq.JArray 
+                                     ?? jData["Data"] as Newtonsoft.Json.Linq.JArray;
+                        
+                        if (dataArray != null)
                         {
-                            foreach (var item in dataArrayToken)
+                            int imageIndex = 0;
+                            foreach (var item in dataArray)
                             {
                                 roomsList.Add(MapToPhongDto(item, imageIndex));
                                 imageIndex++;
                             }
+                            System.Diagnostics.Debug.WriteLine($"✅ YeuThich - Mapped {roomsList.Count} rooms");
                         }
                     }
                 }
@@ -642,6 +858,7 @@ namespace USER_QUANLYPHONGTRO.Controllers
             }
             catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"❌ YeuThich Error: {ex.Message}");
                 ViewBag.ErrorMessage = ex.Message;
                 return View(new List<PhongDto>());
             }

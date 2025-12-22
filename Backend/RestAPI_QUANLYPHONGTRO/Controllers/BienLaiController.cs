@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using RestAPI_QUANLYPHONGTRO.Models;
 using RestAPI_QUANLYPHONGTRO.Services.Interfaces;
 
@@ -16,6 +17,7 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous] // Allow anyone to view receipts
         public async Task<IActionResult> GetAll()
         {
             var result = await _service.GetAllAsync();
@@ -23,6 +25,7 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
         }
 
         [HttpGet("{id}")]
+        [AllowAnonymous] // Allow anyone to view receipt details
         public async Task<IActionResult> GetById(Guid id)
         {
             var result = await _service.GetByIdAsync(id);
@@ -31,6 +34,7 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "AuthenticatedOnly")] // Require login to create
         public async Task<IActionResult> Create([FromBody] BienLai bienLai)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -40,6 +44,7 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Policy = "AuthenticatedOnly")] // Require login to update
         public async Task<IActionResult> Update(Guid id, [FromBody] BienLai bienLai)
         {
             var updatedItem = await _service.UpdateAsync(id, bienLai);
@@ -49,6 +54,7 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Policy = "AdminOnly")] // Only admin can delete
         public async Task<IActionResult> Delete(Guid id)
         {
             var result = await _service.DeleteAsync(id);
@@ -58,6 +64,7 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
         }
 
         [HttpPut("confirm/{id}")]
+        [Authorize(Policy = "AdminOrChuTro")] // Admin or landlord can confirm
         public async Task<IActionResult> Confirm(Guid id, [FromQuery] Guid nguoiXacNhanId)
         {
             // Kiểm tra đầu vào

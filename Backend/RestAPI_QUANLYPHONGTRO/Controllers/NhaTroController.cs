@@ -26,6 +26,7 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
 
         // 1. Lấy danh sách Public (Ai cũng xem được)
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> GetAllPublic()
         {
             var list = await _service.GetAllActiveAsync();
@@ -34,6 +35,7 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
 
         // 2. Xem chi tiết (Ai cũng xem được)
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetDetail(Guid id)
         {
             var item = await _service.GetByIdAsync(id);

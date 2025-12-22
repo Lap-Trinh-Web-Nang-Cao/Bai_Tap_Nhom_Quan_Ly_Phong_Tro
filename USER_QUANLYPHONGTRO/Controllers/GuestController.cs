@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,37 +34,64 @@ namespace USER_QUANLYPHONGTRO.Controllers
         {
             try
             {
+                System.Diagnostics.Debug.WriteLine("🔵 Guest.Index - Starting");
+                
                 // Lấy 6 phòng
                 var response = await _apiClient.GetAsync<dynamic>("/api/phong?pageSize=6");
 
+                System.Diagnostics.Debug.WriteLine($"📡 Guest Response Success: {response?.Success}");
+                System.Diagnostics.Debug.WriteLine($"📡 Guest Response Data Type: {response?.Data?.GetType()}");
+
                 if (response != null && response.Success && response.Data != null)
                 {
-                    var jData = response.Data as Newtonsoft.Json.Linq.JObject;
-                    if (jData != null)
+                    // Handle both JArray and JObject responses
+                    Newtonsoft.Json.Linq.JArray dataArray = null;
+                    int totalCount = 0;
+                    
+                    // Try JArray first
+                    dataArray = response.Data as Newtonsoft.Json.Linq.JArray;
+                    
+                    if (dataArray != null)
                     {
-                        var dataArrayToken = jData["Data"] ?? jData["data"];
-                        var totalCountToken = jData["TotalCount"] ?? jData["totalCount"];
-                        var totalCount = (int)(totalCountToken ?? 0);
-
-                        if (dataArrayToken != null)
+                        System.Diagnostics.Debug.WriteLine($"📦 Guest: Data is JArray with {dataArray.Count} items");
+                        totalCount = dataArray.Count;
+                    }
+                    else
+                    {
+                        // Try JObject
+                        var jData = response.Data as Newtonsoft.Json.Linq.JObject;
+                        if (jData != null)
                         {
-                            ViewBag.TotalRooms = totalCount;
-                            ViewBag.ApiSuccess = true;
-
-                            var roomsList = new List<PhongDto>();
-                            int imageIndex = 0;
-
-                            foreach (var item in dataArrayToken)
-                            {
-                                roomsList.Add(MapToPhongDto(item, imageIndex));
-                                imageIndex++;
-                            }
-
-                            return View(roomsList);
+                            System.Diagnostics.Debug.WriteLine($"📦 Guest: Data is JObject with keys: {string.Join(", ", jData.Properties().Select(p => p.Name))}");
+                            
+                            dataArray = jData["data"] as Newtonsoft.Json.Linq.JArray 
+                                     ?? jData["Data"] as Newtonsoft.Json.Linq.JArray;
+                            
+                            var totalCountToken = jData["totalCount"] ?? jData["TotalCount"];
+                            totalCount = totalCountToken != null ? (int)totalCountToken : (dataArray?.Count ?? 0);
                         }
+                    }
+
+                    if (dataArray != null)
+                    {
+                        var roomsList = new List<PhongDto>();
+                        int imageIndex = 0;
+
+                        foreach (var item in dataArray)
+                        {
+                            roomsList.Add(MapToPhongDto(item, imageIndex));
+                            imageIndex++;
+                        }
+
+                        System.Diagnostics.Debug.WriteLine($"✅ Guest.Index - Mapped {roomsList.Count} rooms");
+                        
+                        ViewBag.TotalRooms = totalCount;
+                        ViewBag.ApiSuccess = true;
+                        return View(roomsList);
                     }
                 }
 
+                System.Diagnostics.Debug.WriteLine("⚠️ Guest.Index - No data");
                 ViewBag.TotalRooms = 0;
                 ViewBag.ApiSuccess = false;
                 ViewBag.ErrorMessage = response?.Message ?? "Không nhận được dữ liệu từ hệ thống. Vui lòng kiểm tra lại kết nối.";
@@ -73,6 +99,7 @@ namespace USER_QUANLYPHONGTRO.Controllers
             }
             catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"❌ Guest.Index Error: {ex.Message}\n{ex.StackTrace}");
                 ViewBag.TotalRooms = 0;
                 ViewBag.ApiSuccess = false;
                 ViewBag.ErrorMessage = "Đã xảy ra lỗi trong quá trình xử lý: " + ex.Message;
@@ -96,6 +123,8 @@ namespace USER_QUANLYPHONGTRO.Controllers
         {
             try
             {
+                System.Diagnostics.Debug.WriteLine($"🔵 Guest.DanhSachPhong - page={page}, pageSize={pageSize}");
+                
                 // Gọi API backend để lấy danh sách phòng
                 var apiUrl = $"/api/phong?page={page}&pageSize={pageSize}";
 
@@ -104,57 +133,89 @@ namespace USER_QUANLYPHONGTRO.Controllers
                 if (maxPrice.HasValue)
                     apiUrl += $"&maxPrice={maxPrice}";
 
+                System.Diagnostics.Debug.WriteLine($"📡 Guest calling: {apiUrl}");
                 var response = await _apiClient.GetAsync<dynamic>(apiUrl);
 
-                if (response.Success && response.Data != null)
+                System.Diagnostics.Debug.WriteLine($"📡 Guest Response Success: {response?.Success}");
+                
+                if (response != null && response.Success && response.Data != null)
                 {
-                    var jData = response.Data as Newtonsoft.Json.Linq.JObject;
-                    if (jData != null)
+                    // Handle both JArray and JObject responses
+                    Newtonsoft.Json.Linq.JArray dataArray = null;
+                    int totalCount = 0;
+                    int totalPages = 1;
+                    
+                    // Try JArray first
+                    dataArray = response.Data as Newtonsoft.Json.Linq.JArray;
+                    
+                    if (dataArray != null)
                     {
-                        var dataArrayToken = jData["Data"] ?? jData["data"];
-                        var totalCountToken = jData["TotalCount"] ?? jData["totalCount"];
-                        var totalPagesToken = jData["TotalPages"] ?? jData["totalPages"];
-
-                        var totalCount = (int)(totalCountToken ?? 0);
-                        var totalPages = (int)(totalPagesToken ?? 1);
-
-                        // Convert JArray to List<PhongDto>
-                        var roomsList = new List<PhongDto>();
-                        int imageIndex = 0;
-                        if (dataArrayToken != null)
+                        System.Diagnostics.Debug.WriteLine($"📦 Guest: Data is JArray with {dataArray.Count} items");
+                        totalCount = dataArray.Count;
+                        totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+                    }
+                    else
+                    {
+                        // Try JObject
+                        var jData = response.Data as Newtonsoft.Json.Linq.JObject;
+                        if (jData != null)
                         {
-                            foreach (var item in dataArrayToken)
+                            System.Diagnostics.Debug.WriteLine($"📦 Guest: Data is JObject with keys: {string.Join(", ", jData.Properties().Select(p => p.Name))}");
+                            
+                            dataArray = jData["data"] as Newtonsoft.Json.Linq.JArray 
+                                     ?? jData["Data"] as Newtonsoft.Json.Linq.JArray;
+                            
+                            var totalCountToken = jData["totalCount"] ?? jData["TotalCount"];
+                            var totalPagesToken = jData["totalPages"] ?? jData["TotalPages"];
+
+                            totalCount = totalCountToken != null ? (int)totalCountToken : (dataArray?.Count ?? 0);
+                            totalPages = totalPagesToken != null ? (int)totalPagesToken : 1;
+                        }
+                    }
+
+                    // Convert JArray to List<PhongDto>
+                    var roomsList = new List<PhongDto>();
+                    
+                    if (dataArray != null && dataArray.Count > 0)
+                    {
+                        int imageIndex = 0;
+                        foreach (var item in dataArray)
+                        {
+                            try
                             {
                                 roomsList.Add(MapToPhongDto(item, imageIndex));
                                 imageIndex++;
                             }
+                            catch (Exception mapEx)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"⚠️ Guest map error: {mapEx.Message}");
+                            }
                         }
-
-                        // ViewBag cho filter và pagination
-                        ViewBag.Keyword = keyword;
-                        ViewBag.District = district;
-                        ViewBag.MinPrice = minPrice;
-                        ViewBag.MaxPrice = maxPrice;
-                        ViewBag.Sort = sort;
-                        ViewBag.CurrentPage = page;
-                        ViewBag.TotalPages = totalPages;
-                        ViewBag.TotalItems = totalCount;
-                        ViewBag.PageSize = pageSize;
-
-                        return View(roomsList);
+                        System.Diagnostics.Debug.WriteLine($"✅ Guest.DanhSachPhong - Mapped {roomsList.Count} rooms");
                     }
 
-                    ViewBag.ErrorMessage = "Định dạng dữ liệu API không đúng";
-                    return View(new List<PhongDto>());
+                    // ViewBag cho filter và pagination
+                    ViewBag.Keyword = keyword;
+                    ViewBag.District = district;
+                    ViewBag.MinPrice = minPrice;
+                    ViewBag.MaxPrice = maxPrice;
+                    ViewBag.Sort = sort;
+                    ViewBag.CurrentPage = page;
+                    ViewBag.TotalPages = totalPages;
+                    ViewBag.TotalItems = totalCount;
+                    ViewBag.PageSize = pageSize;
+
+                    return View(roomsList);
                 }
                 else
                 {
-                    ViewBag.ErrorMessage = response.Message ?? "Không thể tải danh sách phòng";
+                    ViewBag.ErrorMessage = response?.Message ?? "Không thể tải danh sách phòng";
                     return View(new List<PhongDto>());
                 }
             }
             catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"❌ Guest.DanhSachPhong Error: {ex.Message}");
                 ViewBag.ErrorMessage = $"Lỗi: {ex.Message}";
                 return View(new List<PhongDto>());
             }

@@ -18,6 +18,7 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
 
         // 1. Lấy tất cả (ít dùng, thường chỉ dùng cho Admin check data)
         [HttpGet]
+        [AllowAnonymous] // Allow anyone to view all wards
         public async Task<IActionResult> GetAll()
         {
             return Ok(await _service.GetAllAsync());
@@ -26,6 +27,7 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
         // 2. Lấy Phường theo Quận (QUAN TRỌNG: Frontend sẽ gọi API này khi dropdown Quận thay đổi)
         // GET: api/phuong/by-quan/5
         [HttpGet("by-quan/{quanId}")]
+        [AllowAnonymous] // Allow anyone to view wards by district
         public async Task<IActionResult> GetByQuan(int quanId)
         {
             var result = await _service.GetByQuanIdAsync(quanId);
@@ -33,6 +35,7 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
         }
 
         [HttpGet("{id}")]
+        [AllowAnonymous] // Allow anyone to view ward details
         public async Task<IActionResult> GetById(int id)
         {
             var result = await _service.GetByIdAsync(id);

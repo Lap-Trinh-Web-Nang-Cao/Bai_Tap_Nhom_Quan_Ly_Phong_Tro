@@ -27,6 +27,7 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
 
         // 1. Xem đánh giá của phòng (Ai cũng xem được -> Không cần Authorize)
         [HttpGet("phong/{phongId}")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetByPhong(Guid phongId)
         {
             var list = await _service.GetByPhongIdAsync(phongId);

@@ -1,45 +1,82 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Web.Mvc;
-using USER_QUANLYPHONGTRO.Models.ViewModels.Home;          // NEW
-using USER_QUANLYPHONGTRO.Models.ViewModels.KhachThue;     // NEW
+using USER_QUANLYPHONGTRO.Models.Dtos.Rooms;
+using USER_QUANLYPHONGTRO.Services;
 
 namespace USER_QUANLYPHONGTRO.Controllers
 {
     public class HomeController : Controller
     {
-        public ActionResult Index()
-        {
-            // NEW: dùng ViewModel cho trang chủ
-            var model = new HomeIndexViewModel
-            {
-                BannerMessage = "Nền tảng tìm phòng trọ cho sinh viên UTE",
-                Keyword = null,
-                PhongNoiBat = GetMockPhongNoiBat()  // dữ liệu demo
-            };
+        private readonly ApiClient _apiClient;
 
-            return View(model);    // NEW: trước đây là return View();
+        public HomeController()
+        {
+            _apiClient = new ApiClient();
         }
 
-        // NEW: Action danh sách phòng (mock data, sau này nối API)
-        public ActionResult DanhSachPhong(
-            string keyword,
-            string priceRange,
-            string areaRange,
-            string roomType,
-            bool? featured,
-            int? minArea,
-            string sort,
-            bool? verified)
+        [AllowAnonymous]
+        public async Task<ActionResult> Index()
         {
-            // Tạm thời dùng mock data - sau này sẽ thay bằng gọi API + filter theo tham số
-            var rooms = GetMockDanhSachPhong();
+            try
+            {
+                System.Diagnostics.Debug.WriteLine("🔵 Home.Index - Starting");
+                
+                // Check if user just logged in
+                if (TempData["LoginSuccess"] != null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"✅ Login success detected for: {TempData["UserName"]}");
+                    ViewBag.LoginSuccess = true;
+                }
+                
+                // Lấy 6 phòng nổi bật
+                var response = await _apiClient.GetAsync<dynamic>("/api/phong?pageSize=6");
 
-            ViewBag.Keyword = keyword;
-            ViewBag.PriceRange = priceRange;
-            ViewBag.Message = "Danh sách phòng (dữ liệu demo, sẽ nối API sau)";
+                System.Diagnostics.Debug.WriteLine($"📡 Home Response Success: {response?.Success}");
+                
+                if (response != null && response.Success && response.Data != null)
+                {
+                    // Handle both JArray and JObject responses
+                    Newtonsoft.Json.Linq.JArray dataArray = null;
+                    
+                    dataArray = response.Data as Newtonsoft.Json.Linq.JArray;
+                    
+                    if (dataArray == null)
+                    {
+                        var jData = response.Data as Newtonsoft.Json.Linq.JObject;
+                        if (jData != null)
+                        {
+                            dataArray = jData["data"] as Newtonsoft.Json.Linq.JArray 
+                                     ?? jData["Data"] as Newtonsoft.Json.Linq.JArray;
+                        }
+                    }
 
-            return View(rooms);   // NEW: trả về view với model List<PhongTroListItemViewModel>
+                    if (dataArray != null)
+                    {
+                        var roomsList = new List<PhongDto>();
+                        int imageIndex = 0;
+                        
+                        foreach (var item in dataArray)
+                        {
+                            roomsList.Add(MapToPhongDto(item, imageIndex));
+                            imageIndex++;
+                        }
+                        
+                        System.Diagnostics.Debug.WriteLine($"✅ Home.Index - Mapped {roomsList.Count} rooms");
+                        return View(roomsList);
+                    }
+                }
+
+                System.Diagnostics.Debug.WriteLine("⚠️ Home.Index - No data, returning empty list");
+                return View(new List<PhongDto>());
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Home.Index Error: {ex.Message}\n{ex.StackTrace}");
+                return View(new List<PhongDto>());
+            }
         }
 
         public ActionResult About()
@@ -54,72 +91,83 @@ namespace USER_QUANLYPHONGTRO.Controllers
             return View();
         }
 
-        // ================== HELPER MOCK DATA ==================
+        #region Helper Methods
 
-        // NEW: Phòng nổi bật trên trang chủ
-        private List<PhongTroListItemViewModel> GetMockPhongNoiBat()
+        private T GetValue<T>(Newtonsoft.Json.Linq.JToken token, T defaultValue = default)
         {
-            return new List<PhongTroListItemViewModel>
+            if (token == null || token.Type == Newtonsoft.Json.Linq.JTokenType.Null)
+                return defaultValue;
+            try
             {
-                new PhongTroListItemViewModel
+                if (token.Type == Newtonsoft.Json.Linq.JTokenType.String && string.IsNullOrWhiteSpace(token.ToString()))
                 {
-                    PhongId = Guid.NewGuid(),
-                    TieuDe = "Phòng trọ sinh viên gần UTE",
-                    TenNhaTro = "Nhà trọ Hoa Mai",
-                    DiaChi = "123 Lê Văn Việt, Q.9",
-                    DienTich = 18,
-                    GiaTien = 1800000,
-                    DiemTrungBinh = 4.5,
-                    SoLuongDanhGia = 12,
-                    TienIchNganGon = new[] { "Wifi", "Chỗ để xe", "Giờ giấc tự do" }
-                },
-                new PhongTroListItemViewModel
-                {
-                    PhongId = Guid.NewGuid(),
-                    TieuDe = "Phòng trọ mới xây, full nội thất",
-                    TenNhaTro = "Nhà trọ SUNRISE",
-                    DiaChi = "456 Man Thiện, TP Thủ Đức",
-                    DienTich = 22,
-                    GiaTien = 2500000,
-                    DiemTrungBinh = 4.8,
-                    SoLuongDanhGia = 8,
-                    TienIchNganGon = new[] { "Máy lạnh", "Máy nước nóng", "Camera" }
-                },
-                new PhongTroListItemViewModel
-                {
-                    PhongId = Guid.NewGuid(),
-                    TieuDe = "Căn hộ mini 1PN cho sinh viên",
-                    TenNhaTro = "Căn hộ Mini UTE HOME",
-                    DiaChi = "Đường Hoàng Hữu Nam, Q.9",
-                    DienTich = 28,
-                    GiaTien = 3200000,
-                    DiemTrungBinh = 4.2,
-                    SoLuongDanhGia = 5,
-                    TienIchNganGon = new[] { "Thang máy", "Ban công", "Bếp riêng" }
+                    return defaultValue;
                 }
-            };
-        }
-
-        // NEW: Danh sách phòng tổng quát (dùng cho DanhSachPhong)
-        private List<PhongTroListItemViewModel> GetMockDanhSachPhong()
-        {
-            // Dùng lại từ PhongNoiBat + có thể thêm vài phòng khác
-            var list = GetMockPhongNoiBat();
-
-            list.Add(new PhongTroListItemViewModel
+                return token.ToObject<T>();
+            }
+            catch
             {
-                PhongId = Guid.NewGuid(),
-                TieuDe = "Phòng giá rẻ cho sinh viên",
-                TenNhaTro = "Nhà trọ Bình Dân",
-                DiaChi = "Khu phố 6, Linh Trung, Thủ Đức",
-                DienTich = 16,
-                GiaTien = 1300000,
-                DiemTrungBinh = 3.9,
-                SoLuongDanhGia = 20,
-                TienIchNganGon = new[] { "Wifi", "Giờ giấc tự do" }
-            });
-
-            return list;
+                return defaultValue;
+            }
         }
+
+        private PhongDto MapToPhongDto(Newtonsoft.Json.Linq.JToken item, int imageIndex)
+        {
+            const string defaultImage = "/images/banner-login.png";
+            string apiBaseUrl = System.Configuration.ConfigurationManager.AppSettings["ApiBaseUrl"] ?? "http://localhost:7039";
+            var hinhAnhToken = item["HinhAnhDaiDien"] ?? item["hinhAnhDaiDien"];
+            string hinhAnhFromApi = hinhAnhToken?.ToString();
+            string finalImagePath;
+
+            if (string.IsNullOrEmpty(hinhAnhFromApi) || hinhAnhFromApi == "string")
+            {
+                finalImagePath = defaultImage;
+            }
+            else if (hinhAnhFromApi.StartsWith("http") || hinhAnhFromApi.StartsWith("~"))
+            {
+                finalImagePath = hinhAnhFromApi;
+            }
+            else if (hinhAnhFromApi.StartsWith("/"))
+            {
+                finalImagePath = apiBaseUrl.TrimEnd('/') + hinhAnhFromApi;
+            }
+            else
+            {
+                finalImagePath = apiBaseUrl.TrimEnd('/') + "/uploads/" + hinhAnhFromApi;
+            }
+
+            var phong = new PhongDto
+            {
+                PhongId = GetValue<Guid>(item["PhongId"] ?? item["phongId"], Guid.Empty),
+                NhaTroId = GetValue<Guid>(item["NhaTroId"] ?? item["nhaTroId"], Guid.Empty),
+                TieuDe = GetValue<string>(item["TieuDe"] ?? item["tieuDe"], "Không có tiêu đề"),
+                DienTich = GetValue<decimal?>(item["DienTich"] ?? item["dienTich"], null),
+                GiaTien = GetValue<long>(item["GiaTien"] ?? item["giaTien"], 0),
+                TienCoc = GetValue<long?>(item["TienCoc"] ?? item["tienCoc"], null),
+                SoNguoiToiDa = GetValue<int>(item["SoNguoiToiDa"] ?? item["soNguoiToiDa"], 1),
+                TrangThai = GetValue<string>(item["TrangThai"] ?? item["trangThai"], ""),
+                DiemTrungBinh = GetValue<double?>(item["DiemTrungBinh"] ?? item["diemTrungBinh"], null),
+                SoLuongDanhGia = GetValue<int>(item["SoLuongDanhGia"] ?? item["soLuongDanhGia"], 0),
+                IsDuyet = GetValue<bool>(item["IsDuyet"] ?? item["isDuyet"], false),
+                IsBiKhoa = GetValue<bool>(item["IsBiKhoa"] ?? item["isBiKhoa"], false),
+                HinhAnhDaiDien = finalImagePath,
+                MoTa = GetValue<string>(item["MoTa"] ?? item["moTa"], "")
+            };
+
+            var nhaTroToken = item["NhaTro"] ?? item["nhaTro"];
+            if (nhaTroToken != null && nhaTroToken.Type != Newtonsoft.Json.Linq.JTokenType.Null)
+            {
+                phong.NhaTro = new NhaTroDto
+                {
+                    NhaTroId = GetValue<Guid>(nhaTroToken["NhaTroId"] ?? nhaTroToken["nhaTroId"], Guid.Empty),
+                    TieuDe = GetValue<string>(nhaTroToken["TieuDe"] ?? nhaTroToken["tieuDe"], ""),
+                    DiaChi = GetValue<string>(nhaTroToken["DiaChi"] ?? nhaTroToken["diaChi"], "")
+                };
+            }
+
+            return phong;
+        }
+
+        #endregion
     }
 }

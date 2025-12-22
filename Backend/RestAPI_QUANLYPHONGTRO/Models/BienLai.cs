@@ -9,23 +9,18 @@ namespace RestAPI_QUANLYPHONGTRO.Models
         [Key]
         public Guid BienLaiId { get; set; }
 
-        [Required]
-        public Guid DatPhongId { get; set; } // Foreign Key
+        public Guid? DatPhongId { get; set; } // Foreign Key - nullable to handle NULL in DB
 
-        [Required]
-        public Guid NguoiTai { get; set; } // Foreign Key
+        public Guid? NguoiTai { get; set; } // Foreign Key - nullable to handle NULL in DB
 
-        [Required]
-        public Guid TapTinId { get; set; } // Foreign Key
+        public Guid? TapTinId { get; set; } // Foreign Key - nullable to handle NULL in DB
 
         public long? SoTien { get; set; } // bigint -> long
 
         public DateTimeOffset? ThoiGianTai { get; set; }
 
-        [Required]
-        public bool DaXacNhan { get; set; } // bit -> bool
+        public bool DaXacNhan { get; set; } // bit -> bool, default false
 
-        [Required]
         public int SoBienLai { get; set; }
     }
 }

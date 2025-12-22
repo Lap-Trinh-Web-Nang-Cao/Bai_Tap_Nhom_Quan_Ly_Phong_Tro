@@ -296,10 +296,9 @@ namespace ADMIN_QUANLYPHONGTRO.Services
                         }
                     }
                     
-                    // Xóa Cookie sau
+                    // Chỉ xóa AuthToken cookie, không xóa tất cả cookies (để giữ anti-forgery token)
                     try
                     {
-                        // Xóa AuthToken cookie
                         var tokenCookie = new HttpCookie(TOKEN_COOKIE_KEY)
                         {
                             Expires = DateTime.Now.AddDays(-1),
@@ -308,20 +307,6 @@ namespace ADMIN_QUANLYPHONGTRO.Services
                         };
                         HttpContext.Current.Response.Cookies.Add(tokenCookie);
                         System.Diagnostics.Debug.WriteLine("✅ LogoutAdmin: Deleted AuthToken cookie");
-                        
-                        // Xóa tất cả cookies có thể
-                        if (HttpContext.Current.Request.Cookies.Count > 0)
-                        {
-                            foreach (string cookieName in HttpContext.Current.Request.Cookies)
-                            {
-                                var cookie = new HttpCookie(cookieName)
-                                {
-                                    Expires = DateTime.Now.AddDays(-1)
-                                };
-                                HttpContext.Current.Response.Cookies.Add(cookie);
-                            }
-                            System.Diagnostics.Debug.WriteLine(string.Format("✅ LogoutAdmin: Cleared {0} cookies", HttpContext.Current.Request.Cookies.Count));
-                        }
                     }
                     catch (Exception cookieEx)
                     {

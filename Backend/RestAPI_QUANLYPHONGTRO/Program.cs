@@ -117,9 +117,10 @@ builder.Services.AddScoped<RestAPI_QUANLYPHONGTRO.Data.IDbIntrospectionService, 
 var app = builder.Build();
 
 // Middleware order matters!
+app.UseRouting();
+app.UseCors("AllowAdminClient");
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseCors("AllowAdminClient");
 
 // Development only
 if (app.Environment.IsDevelopment())

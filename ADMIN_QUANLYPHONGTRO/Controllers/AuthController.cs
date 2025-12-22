@@ -97,9 +97,36 @@ namespace ADMIN_QUANLYPHONGTRO.Controllers
         [HttpGet]
         public ActionResult Logout()
         {
-            System.Diagnostics.Debug.WriteLine("🔴 AuthController: Logging out admin");
-            _authService.LogoutAdmin();
-            return Redirect("/");
+            try
+            {
+                System.Diagnostics.Debug.WriteLine("🔴 AuthController: Starting logout process");
+                
+                var currentSession = _authService.GetCurrentAdminSession();
+                if (currentSession != null)
+                {
+                    System.Diagnostics.Debug.WriteLine(string.Format("📝 Logging out: {0}", currentSession.UserEmail));
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine("⚠️ No active session found");
+                }
+                
+                _authService.LogoutAdmin();
+                
+                System.Diagnostics.Debug.WriteLine("✅ Logout completed, redirecting to home");
+                
+                // Clear any temp data
+                TempData.Clear();
+                
+                // Redirect to home page (USER project)
+                return Redirect("~/");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(string.Format("❌ Logout Error: {0}\nStackTrace: {1}", ex.Message, ex.StackTrace));
+                // Even if error, try to redirect
+                return Redirect("~/");
+            }
         }
 
         /// <summary>

@@ -3853,13 +3853,6 @@
         "additionalProperties": false
       },
       "BienLai": {
-        "required": [
-          "datPhongId",
-          "daXacNhan",
-          "nguoiTai",
-          "soBienLai",
-          "tapTinId"
-        ],
         "type": "object",
         "properties": {
           "bienLaiId": {
@@ -3868,15 +3861,18 @@
           },
           "datPhongId": {
             "type": "string",
-            "format": "uuid"
+            "format": "uuid",
+            "nullable": true
           },
           "nguoiTai": {
             "type": "string",
-            "format": "uuid"
+            "format": "uuid",
+            "nullable": true
           },
           "tapTinId": {
             "type": "string",
-            "format": "uuid"
+            "format": "uuid",
+            "nullable": true
           },
           "soTien": {
             "type": "integer",

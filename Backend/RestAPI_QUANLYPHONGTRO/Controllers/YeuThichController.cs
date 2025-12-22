@@ -17,6 +17,7 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
 
         // GET /api/yeuthich/nguoithue/{userId}
         [HttpGet("nguoithue/{userId}")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetByTenantId(Guid userId)
         {
     try
@@ -33,6 +34,7 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
 
         // GET /api/yeuthich - L?y t?t c? yêu thích
         [HttpGet]
+        [AllowAnonymous]
     public async Task<IActionResult> GetAll()
         {
             try
@@ -48,6 +50,7 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
 
         // POST /api/yeuthich/toggle
   [HttpPost("toggle")]
+  [AllowAnonymous]
     public async Task<IActionResult> ToggleFavorite([FromBody] ToggleFavoriteRequest request)
      {
         try
@@ -63,6 +66,7 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
 
         // POST /api/yeuthich
         [HttpPost]
+        [AllowAnonymous]
         public async Task<IActionResult> AddFavorite([FromBody] AddFavoriteRequest request)
         {
   try
@@ -78,6 +82,7 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
 
         // DELETE /api/yeuthich/{id}
         [HttpDelete("{id}")]
+        [AllowAnonymous]
      public async Task<IActionResult> RemoveFavorite(Guid id)
         {
     try

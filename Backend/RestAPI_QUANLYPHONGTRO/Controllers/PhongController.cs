@@ -40,8 +40,10 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
         {
             var result = await _service.GetPublicRoomsAsync(nhaTroId, minPrice, maxPrice, page, pageSize);
 
+            // ✅ Return consistent response format with Data (uppercase)
             return Ok(new
             {
+                success = true,
                 Data = result.Data,
                 TotalCount = result.TotalCount,
                 Page = page,
@@ -59,7 +61,13 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
         {
             var result = await _service.GetByIdAsync(id);
             if (result == null) return NotFound();
-            return Ok(result);
+            
+            // ✅ Wrap in success response
+            return Ok(new
+            {
+                success = true,
+                Data = result
+            });
         }
 
         // ===== CHỦ TRỌ ENDPOINTS =====
@@ -120,18 +128,20 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
             {
                 var (data, totalCount) = await _service.GetPendingRoomsAsync(pageIndex, pageSize, keyword);
                 
+                // ✅ Return consistent response format with Data (uppercase)
                 return Ok(new
                 {
-                    data = data,
-                    totalCount = totalCount,
-                    pageIndex = pageIndex,
-                    pageSize = pageSize,
-                    totalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+                    success = true,
+                    Data = data,
+                    TotalCount = totalCount,
+                    PageIndex = pageIndex,
+                    PageSize = pageSize,
+                    TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
                 });
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                return BadRequest(new { success = false, message = ex.Message });
             }
         }
 
