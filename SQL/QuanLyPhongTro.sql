@@ -1,4 +1,4 @@
-﻿    /**********************************************************************
+    /**********************************************************************
     Fixed full init script for DB "QuanLyPhongTro"
     - Ensure admin-related columns exist BEFORE creating stored procedures
     - Idempotent: checks existence before CREATE / ALTER
@@ -2511,6 +2511,7 @@ INSERT INTO dbo.ThongBao (ThongBaoId, NguoiDungId, TieuDe, NoiDung, Loai, ThoiGi
 VALUES 
 (NEWID(), @TenantDemoId_N, N'Đã xác nhận lịch hẹn', N'Chủ trọ đã đồng ý lịch xem phòng vào 9h sáng mai.', 'success', SYSDATETIMEOFFSET(), 0),
 (NEWID(), @TenantDemoId_N, N'Yêu cầu thanh toán', N'Đã có hóa đơn tiền điện nước tháng 12, vui lòng thanh toán đúng hạn.', 'warning', DATEADD(HOUR, -5, SYSDATETIMEOFFSET()), 0);
+<<<<<<< HEAD
 GO
 -- AGENT: Ensure all rooms have descriptions and utilities
 PRINT N'--- CẬP NHẬT MÔ TẢ VÀ TIỆN ÍCH CHO TẤT CẢ PHÒNG ---';
@@ -2543,4 +2544,6 @@ AND ti.TienIchId IN (
 );
 
 PRINT N'✅ Đã cập nhật xong dữ liệu mô tả và tiện ích.';
+=======
+>>>>>>> c7dd3e1b831874e4c737fdc6c23ddcd8444bc33f
 GO
