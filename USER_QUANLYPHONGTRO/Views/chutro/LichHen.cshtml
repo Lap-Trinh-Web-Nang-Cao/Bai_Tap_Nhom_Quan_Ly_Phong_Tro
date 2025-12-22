@@ -1,7 +1,242 @@
-﻿
+﻿@model IEnumerable<USER_QUANLYPHONGTRO.Models.ViewModels.ChuTro.LichHenViewModel>
+
 @{
-    ViewBag.Title = "LichHen";
+    Layout = "~/Views/Shared/_ChutroLayout.cshtml";
+    ViewBag.Title = "Lịch xem phòng";
 }
 
-<h2>LichHen</h2>
+<style>
+    .appointment-card {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        border: 1px solid #eef2f7;
+        margin-bottom: 20px;
+        transition: transform 0.2s, box-shadow 0.2s;
+        overflow: hidden;
+    }
 
+        .appointment-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+        }
+
+    .card-body-custom {
+        padding: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .avatar-circle {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        font-weight: bold;
+    }
+
+    .info-text h5 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #2d3748;
+    }
+
+    .info-text span {
+        font-size: 0.9rem;
+        color: #718096;
+    }
+
+    .room-details {
+        background: #f7fafc;
+        padding: 10px 15px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        color: #4a5568;
+        border-left: 4px solid #4299e1;
+    }
+
+    .time-badge {
+        display: inline-flex;
+        align-items: center;
+        background: #ebf8ff;
+        color: #2b6cb0;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+
+    .actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-action-custom {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none !important;
+    }
+
+    .btn-approve {
+        background: #c6f6d5;
+        color: #22543d;
+    }
+
+        .btn-approve:hover {
+            background: #9ae6b4;
+        }
+
+    .btn-reject {
+        background: #fed7d7;
+        color: #822727;
+    }
+
+        .btn-reject:hover {
+            background: #feb2b2;
+        }
+
+    .btn-call {
+        background: #e2e8f0;
+        color: #2d3748;
+    }
+
+        .btn-call:hover {
+            background: #cbd5e0;
+        }
+
+    /* Trạng thái Label */
+    .status-label {
+        padding: 5px 10px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+
+    .status-pending {
+        background: #feebc8;
+        color: #dd6b20;
+    }
+
+    .status-approved {
+        background: #c6f6d5;
+        color: #276749;
+    }
+
+    .status-cancelled {
+        background: #fed7d7;
+        color: #c53030;
+    }
+</style>
+
+<div class="container-fluid mb-5">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-calendar-alt text-primary mr-2"></i>Lịch xem phòng
+        </h1>
+        <div class="bg-white shadow-sm p-2 rounded">
+            <span class="mr-3 font-weight-bold text-gray-600">Tổng lịch hẹn: <span class="text-primary">@Model.Count()</span></span>
+        </div>
+    </div>
+
+    @if (Model != null && Model.Count() > 0)
+    {
+        <div class="row">
+            @foreach (var item in Model)
+            {
+                <div class="col-lg-12">
+                    <div class="appointment-card">
+                        <div class="card-body-custom">
+
+                            <div class="user-info col-md-3">
+                                <div class="avatar-circle">
+                                    @(item.TenKhachHang?.Substring(0, 1) ?? "K")
+                                </div>
+                                <div class="info-text">
+                                    <h5>@item.TenKhachHang</h5>
+                                    <span><i class="fas fa-phone-alt fa-xs mr-1"></i> @(string.IsNullOrEmpty(item.SoDienThoai) ? "---" : item.SoDienThoai)</span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="room-details mb-1">
+                                    <i class="fas fa-door-open mr-1"></i> <strong>@item.TenPhong</strong>
+                                </div>
+                                @if (!string.IsNullOrEmpty(item.GhiChu))
+                                {
+                                    <small class="text-muted"><i class="fas fa-comment-dots mr-1"></i>"@item.GhiChu"</small>
+                                }
+                            </div>
+
+                            <div class="col-md-3 text-center">
+                                <div class="time-badge mb-2">
+                                    <i class="far fa-clock mr-2"></i>
+                                    @item.GioXem - @item.NgayXem.ToString("dd/MM/yyyy")
+                                </div>
+                                <div>
+                                    @if (item.TrangThai == "ChoXacNhan")
+                                    {<span class="status-label status-pending">Chờ xác nhận</span> }
+                                    else if (item.TrangThai == "DaXacNhan")
+                                    { <span class="status-label status-approved">Đã xác nhận</span> }
+                                    else
+                                    { <span class="status-label status-cancelled">Đã hủy</span>}
+                                </div>
+                            </div>
+
+                            <div class="actions col-md-2 justify-content-end">
+                                @if (item.TrangThai == "ChoXacNhan")
+                                {
+                                    <a href="@Url.Action("XuLyLichHen", "ChuTro", new { id = item.LichHenId, status = 2 })"
+                                       class="btn-action-custom btn-approve" title="Đồng ý">
+                                        <i class="fas fa-check"></i>
+                                    </a>
+                                    <a href="@Url.Action("XuLyLichHen", "ChuTro", new { id = item.LichHenId, status = 3 })"
+                                       class="btn-action-custom btn-reject" title="Từ chối"
+                                       onclick="return confirm('Bạn muốn từ chối lịch này?');">
+                                        <i class="fas fa-times"></i>
+                                    </a>
+                                }
+                                <a href="tel:@item.SoDienThoai" class="btn-action-custom btn-call" title="Gọi điện">
+                                    <i class="fas fa-phone"></i>
+                                </a>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5 bg-white shadow-sm rounded">
+            <img src="https://cdn-icons-png.flaticon.com/512/7486/7486744.png" width="120" class="mb-3 opacity-50" />
+            <h4 class="text-gray-500">Chưa có lịch hẹn nào</h4>
+            <p class="text-muted">Các yêu cầu xem phòng sẽ xuất hiện ở đây.</p>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+}

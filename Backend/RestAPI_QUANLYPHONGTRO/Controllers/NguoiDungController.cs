@@ -17,8 +17,9 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
             _service = service;
         }
 
-        // API Đăng ký (Ai cũng gọi được -> Không cần [Authorize])
+        // API Đăng ký (Ai cũng gọi được)
         [HttpPost("register")]
+        [AllowAnonymous]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -29,8 +30,9 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
             return Ok(new { message = "Đăng ký thành công!" });
         }
 
-        // API Đăng nhập
+        // API Đăng nhập (Ai cũng gọi được)
         [HttpPost("login")]
+        [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
             try
@@ -42,16 +44,15 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message }); // Trả về lỗi nếu bị khóa
+                return BadRequest(new { message = ex.Message });
             }
         }
 
-        // API Lấy thông tin bản thân (Cần đăng nhập -> Có [Authorize])
+        // API Lấy thông tin bản thân
         [HttpGet("me")]
-        [Authorize]
+        [Authorize(Policy = "AuthenticatedOnly")]
         public async Task<IActionResult> GetMyProfile()
         {
-            // Lấy ID từ Token
             var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdStr)) return Unauthorized();
 
@@ -60,18 +61,16 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
 
             if (user == null) return NotFound();
 
-            // Ẩn mật khẩu trước khi trả về
             user.PasswordHash = null;
-
             return Ok(user);
         }
 
-        [HttpPut("me")] // PUT: api/nguoidung/me
-        [Authorize] // Bắt buộc đăng nhập
+        // API Cập nhật hồ sơ bản thân
+        [HttpPut("me")]
+        [Authorize(Policy = "AuthenticatedOnly")]
         public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest request)
         {
-            // Lấy ID từ Token (đảm bảo chỉ sửa của chính mình)
-            var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var userId = Guid.Parse(userIdStr);
 
             var result = await _service.UpdateProfileAsync(userId, request);
@@ -81,8 +80,9 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
             return Ok(new { message = "Cập nhật thông tin thành công!" });
         }
 
+        // API Đổi mật khẩu
         [HttpPut("change-password")]
-        [Authorize]
+        [Authorize(Policy = "AuthenticatedOnly")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);

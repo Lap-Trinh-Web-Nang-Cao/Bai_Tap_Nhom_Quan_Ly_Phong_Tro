@@ -1,4 +1,8 @@
 # Visual Studio
 .vs/
-*.user
-*.suo
+bin/
+obj/
+*.dll
+*.exe
+*.pdb
+

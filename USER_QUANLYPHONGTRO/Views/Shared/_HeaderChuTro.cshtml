@@ -3,14 +3,14 @@
     string username = Session["UserName"]?.ToString();
     string hoTen = Session["HoTen"]?.ToString() ?? username;
     string avatarUrl = Session["AvatarUrl"]?.ToString() ?? "~/images/default-avatar.png";
-    
+
     int notificationCount = Session["NotificationCount"] != null ? (int)Session["NotificationCount"] : 0;
     int messageCount = Session["MessageCount"] != null ? (int)Session["MessageCount"] : 0;
 }
 
 <!-- ===== HEADER CH? TR? - SELLER CENTER STYLE ===== -->
 <header class="seller-header">
-    
+
     <!-- T?NG 1: TOP BAR -->
     <div class="seller-topbar">
         <div class="seller-container">
@@ -60,7 +60,7 @@
                             <i class="fa fa-user"></i>
                             <span>Tài kho?n c?a tôi</span>
                         </a>
-                        
+
                         <a href="@Url.Action("CaiDat", "ChuTro")" class="dropdown-item">
                             <i class="fa fa-cog"></i>
                             <span>Cài ??t</span>

@@ -1,7 +1,198 @@
-﻿
+﻿@model USER_QUANLYPHONGTRO.Models.ViewModels.ChuTro.CapNhatPhongViewModel
+
 @{
-    ViewBag.Title = "SuaPhong";
+    ViewBag.Title = "Cập nhật phòng trọ";
+    Layout = "~/Views/Shared/_ChutroLayout.cshtml";
 }
 
-<h2>SuaPhong</h2>
+<style>
+    .upload-box {
+        border: 2px dashed #d1d3e2;
+        border-radius: 10px;
+        background-color: #f8f9fc;
+        position: relative;
+        text-align: center;
+        padding: 30px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
 
+        .upload-box:hover {
+            border-color: #f6c23e; /* Màu vàng cam cho trang Sửa */
+            background-color: #fffdf5;
+        }
+
+        .upload-box input[type="file"] {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+    .img-preview {
+        max-width: 100%;
+        max-height: 250px;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        margin-top: 15px;
+    }
+
+    .form-control-lg {
+        border-radius: 8px;
+        font-size: 0.95rem;
+    }
+
+    .input-group-text {
+        background-color: #f8f9fc;
+        border-color: #d1d3e2;
+    }
+</style>
+
+<div class="container-fluid mb-5">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-edit text-warning mr-2"></i>Cập nhật thông tin phòng
+        </h1>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-xl-10 col-lg-12">
+            <div class="card shadow-lg border-0 rounded-lg border-left-warning">
+                <div class="card-header py-3 bg-gradient-warning">
+                    <h6 class="m-0 font-weight-bold text-white">Thông tin chi tiết</h6>
+                </div>
+                <div class="card-body p-4">
+                    @using (Html.BeginForm("SuaPhong", "ChuTro", FormMethod.Post, new { enctype = "multipart/form-data", id = "frmSuaPhong" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        @Html.HiddenFor(m => m.PhongId)
+                        @Html.HiddenFor(m => m.AnhHienTai)
+
+                        if (ViewBag.Error != null)
+                        {
+                            <div class="alert alert-danger">
+                                <i class="fas fa-exclamation-triangle mr-2"></i> @ViewBag.Error
+                            </div>
+                        }
+
+                        <div class="row">
+                            <div class="col-md-7 border-right">
+                                <h5 class="text-gray-800 mb-3">Thông tin cơ bản</h5>
+
+                                <div class="form-group mb-4">
+                                    <label class="font-weight-bold">Thuộc Khu trọ <span class="text-danger">*</span></label>
+                                    @Html.DropDownListFor(m => m.NhaTroId, Model.DanhSachNhaTro, "-- Chọn khu trọ --", new { @class = "form-control form-control-lg" })
+                                    @Html.ValidationMessageFor(m => m.NhaTroId, "", new { @class = "text-danger" })
+                                </div>
+
+                                <div class="form-group mb-4">
+                                    <label class="font-weight-bold">Tiêu đề phòng <span class="text-danger">*</span></label>
+                                    @Html.TextBoxFor(m => m.TieuDe, new { @class = "form-control form-control-lg" })
+                                    @Html.ValidationMessageFor(m => m.TieuDe, "", new { @class = "text-danger" })
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group col-md-6 mb-4">
+                                        <label class="font-weight-bold">Giá thuê <span class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            @Html.TextBoxFor(m => m.GiaTien, new { @class = "form-control form-control-lg", type = "number" })
+                                            <div class="input-group-append"><span class="input-group-text">VNĐ</span></div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group col-md-6 mb-4">
+                                        <label class="font-weight-bold">Tiền cọc</label>
+                                        <div class="input-group">
+                                            @Html.TextBoxFor(m => m.TienCoc, new { @class = "form-control form-control-lg", type = "number" })
+                                            <div class="input-group-append"><span class="input-group-text">VNĐ</span></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-5 pl-md-4">
+                                <h5 class="text-gray-800 mb-3">Hình ảnh & Thông số</h5>
+                                <div class="form-row">
+                                    <div class="form-group col-6">
+                                        <label>Diện tích</label>
+                                        @Html.TextBoxFor(m => m.DienTich, new { @class = "form-control", type = "number" })
+                                    </div>
+                                    <div class="form-group col-6">
+                                        <label>Số người</label>
+                                        @Html.TextBoxFor(m => m.SoNguoiToiDa, new { @class = "form-control", type = "number" })
+                                    </div>
+                                </div>
+
+                                <div class="form-group mb-4">
+                                    <label class="font-weight-bold">Ảnh đại diện (Bỏ qua nếu không đổi)</label>
+
+                                    <div class="upload-box">
+                                        <div class="text-muted">
+                                            <i class="fas fa-camera-retro fa-3x mb-2 text-warning"></i>
+                                            <p class="mb-0">Chọn ảnh mới để thay thế</p>
+                                        </div>
+                                        <input type="file" name="HinhAnhUpload" accept="image/*" onchange="previewImage(this)">
+                                    </div>
+
+                                    <div class="text-center mt-3">
+                                        <p class="small text-muted mb-1">Ảnh hiện tại / Xem trước:</p>
+                                        <img id="imgPreview"
+                                             src="@(string.IsNullOrEmpty(Model.AnhHienTai) ? "/images/default-room.jpg" : Model.AnhHienTai)"
+                                             alt="Ảnh phòng"
+                                             class="img-preview"
+                                             style="display: inline-block;" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="d-flex justify-content-end">
+                            <a href="@Url.Action("QuanLyPhong", "ChuTro")" class="btn btn-light btn-lg mr-3">Hủy bỏ</a>
+
+                            <button type="button" onclick="submitForm()" class="btn btn-warning btn-lg px-5 font-weight-bold text-white">
+                                <i class="fas fa-save mr-2"></i>Lưu Cập Nhật
+                            </button>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+
+    <script>
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    var img = document.getElementById('imgPreview');
+                    img.src = e.target.result;
+                }
+                reader.readAsDataURL(input.files[0]);
+                document.querySelector('.upload-box').style.borderColor = '#f6c23e';
+            }
+        }
+
+        function submitForm() {
+            // Validate cơ bản
+            var khuTro = document.getElementById("NhaTroId").value;
+            var tieuDe = document.getElementById("TieuDe").value;
+            var giaTien = document.getElementById("GiaTien").value;
+
+            if (khuTro == "" || tieuDe == "" || giaTien == "") {
+                alert("Vui lòng không để trống các trường bắt buộc!");
+                return;
+            }
+
+            // Force Submit
+            document.getElementById("frmSuaPhong").submit();
+        }
+    </script>
+}

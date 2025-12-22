@@ -1,0 +1,107 @@
+﻿@model USER_QUANLYPHONGTRO.Models.ViewModels.ChuTro.LandlordStatisticsViewModel
+
+@{
+    Layout = "~/Views/Shared/_ChutroLayout.cshtml";
+    ViewBag.Title = "Thống kê chi tiết";
+}
+
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <div>
+            <h1 class="page-title">Báo cáo & Thống kê</h1>
+            <p class="page-subtitle">Phân tích hiệu quả kinh doanh của hệ thống phòng trọ.</p>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <input type="month" class="time-filter" value="@DateTime.Now.ToString("yyyy-MM")" />
+            <button class="btn-action" style="padding: 10px 20px;">Xuất Báo Cáo</button>
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card card-blue">
+            <div class="stat-label">TỔNG DOANH THU NĂM</div>
+            <div class="stat-value">@Model.TongDoanhThuNam.ToString("N0")đ</div>
+            <div class="stat-desc"><span style="color: var(--success);">↑ @Model.TangTruongDoanhThu%</span> so với năm ngoái</div>
+        </div>
+        <div class="stat-card card-green">
+            <div class="stat-label">TỈ LỆ LẤP ĐẦY</div>
+            <div class="stat-value">@Model.TiLeLapDay%</div>
+            <div class="stat-desc">Đang vận hành @Model.SoPhongDaThue</div>
+        </div>
+        <div class="stat-card card-purple">
+            <div class="stat-label">TỔNG HỢP ĐỒNG</div>
+            <div class="stat-value">@Model.TongSoHopDong</div>
+            <div class="stat-desc">Hợp đồng đang còn hiệu lực</div>
+        </div>
+        <div class="stat-card card-orange">
+            <div class="stat-label">PHÒNG ĐANG TRỐNG</div>
+            <div class="stat-value">@Model.SoPhongTrong</div>
+            <div class="stat-desc">Cần đẩy mạnh đăng tin quảng bá</div>
+        </div>
+    </div>
+
+    <div class="charts-section">
+        <div class="chart-card">
+            <div class="chart-header">
+                <h3 class="chart-title">Xu hướng doanh thu theo tháng</h3>
+            </div>
+            <div class="chart-body">
+                <canvas id="mainRevenueChart"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <div class="chart-header">
+                <h3 class="chart-title">Tình trạng hệ thống phòng</h3>
+            </div>
+            <div class="chart-body" style="height: 250px;">
+                <canvas id="roomStatusChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // 1. Biểu đồ Doanh thu (Line Chart)
+            const revCtx = document.getElementById('mainRevenueChart').getContext('2d');
+            new Chart(revCtx, {
+                type: 'line',
+                data: {
+                    labels: @Html.Raw(Json.Encode(Model.NhanThang)),
+                    datasets: [{
+                        label: 'Doanh thu thực tế',
+                        data: @Html.Raw(Json.Encode(Model.DoanhThuTheoThang)),
+                        borderColor: '#6366F1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 3
+                    }]
+                },
+                options: { maintainAspectRatio: false }
+            });
+
+            // 2. Biểu đồ Trạng thái phòng (Doughnut Chart)
+            const roomCtx = document.getElementById('roomStatusChart').getContext('2d');
+            new Chart(roomCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Đã thuê', 'Phòng trống', 'Đang sửa'],
+                    datasets: [{
+                        data: [@Model.SoPhongDaThue, @Model.SoPhongTrong, @Model.SoPhongDangSua],
+                        backgroundColor: ['#10B981', '#F3F4F6', '#F59E0B'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        });
+    </script>
+}

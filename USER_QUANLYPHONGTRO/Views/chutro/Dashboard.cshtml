@@ -5,8 +5,9 @@
     ViewBag.Title = "Tổng quan";
 }
 
+@* Chỉ bắt đầu từ dashboard-container vì layout đã lo phần wrapper bên ngoài *@
 <div class="dashboard-container">
-    <!-- Header -->
+
     <div class="dashboard-header">
         <div>
             <h1 class="page-title">Chào buổi sáng, @(Session["UserName"] ?? "Chủ Trọ")!</h1>
@@ -19,46 +20,33 @@
         </select>
     </div>
 
-    <!-- Stats Grid -->
     <div class="stats-grid">
         <div class="stat-card card-blue">
-            <div class="stat-content">
-                <div class="stat-label">TỔNG SỐ PHÒNG</div>
-                <div class="stat-value">@Model.TotalRooms</div>
-                <div class="stat-desc">Số lượng phòng bạn đang quản lý</div>
-            </div>
+            <div class="stat-label">TỔNG SỐ PHÒNG</div>
+            <div class="stat-value">@Model.TongSoPhong</div> @* Đã sửa sang tiếng Việt *@
+            <div class="stat-desc">Số lượng phòng bạn đang quản lý</div>
         </div>
         <div class="stat-card card-orange">
-            <div class="stat-content">
-                <div class="stat-label">LƯỢT XEM HÔM NAY</div>
-                <div class="stat-value">@Model.ViewsToday</div>
-                <div class="stat-desc">Tổng lượt xem các phòng của bạn</div>
-            </div>
+            <div class="stat-label">LƯỢT XEM HÔM NAY</div>
+            <div class="stat-value">@Model.LuotXemHomNay</div> @* Đã sửa sang tiếng Việt *@
+            <div class="stat-desc">Tổng lượt xem các phòng của bạn</div>
         </div>
         <div class="stat-card card-purple">
-            <div class="stat-content">
-                <div class="stat-label">LỊCH HẸN SẮP TỚI</div>
-                <div class="stat-value">@Model.UpcomingSchedules</div>
-                <div class="stat-desc">Các lịch hẹn xem phòng chưa diễn ra</div>
-            </div>
+            <div class="stat-label">LỊCH HẸN SẮP TỚI</div>
+            <div class="stat-value">@Model.LichHenSapToi</div> @* Đã sửa sang tiếng Việt *@
+            <div class="stat-desc">Các lịch hẹn xem phòng chưa diễn ra</div>
         </div>
         <div class="stat-card card-green">
-            <div class="stat-content">
-                <div class="stat-label">DOANH THU THÁNG NÀY</div>
-                <div class="stat-value">@Model.RevenueThisMonth.ToString("N0")đ</div>
-                <div class="stat-desc">Tổng doanh thu dự kiến</div>
-            </div>
+            <div class="stat-label">DOANH THU THÁNG NÀY</div>
+            <div class="stat-value">@Model.DoanhThuThang.ToString("N0")đ</div> @* Đã sửa sang tiếng Việt *@
+            <div class="stat-desc">Tổng doanh thu dự kiến</div>
         </div>
     </div>
 
-    <!-- Charts Section -->
     <div class="charts-section">
         <div class="chart-card">
             <div class="chart-header">
-                <div>
-                    <h3 class="chart-title">Báo cáo doanh thu</h3>
-                    <p class="chart-subtitle">Dữ liệu được cập nhật hàng ngày</p>
-                </div>
+                <h3 class="chart-title">Báo cáo doanh thu</h3>
                 <div class="chart-filter">
                     <button class="filter-btn active" data-filter="30days">Tháng</button>
                     <button class="filter-btn" data-filter="7days">Tuần</button>
@@ -70,10 +58,7 @@
         </div>
         <div class="chart-card">
             <div class="chart-header">
-                <div>
-                    <h3 class="chart-title">Lượt xem theo phòng</h3>
-                    <p class="chart-subtitle">Top 5 phòng được xem nhiều nhất</p>
-                </div>
+                <h3 class="chart-title">Lượt xem theo phòng</h3>
             </div>
             <div class="chart-body">
                 <canvas id="viewsChart"></canvas>
@@ -81,94 +66,100 @@
         </div>
     </div>
 
-    <!-- Activities Section -->
     <div class="activities-section">
         <div class="activities-row">
             <div class="activity-card">
                 <div class="activity-header">
                     <h3 class="activity-title">Phòng chờ duyệt</h3>
-                    <p class="activity-subtitle">Các phòng bạn mới đăng hoặc cập nhật</p>
                 </div>
                 <div class="activity-list">
-                    @foreach (var room in Model.PendingRooms)
+                    @if (Model.DanhSachPhongCho != null)
                     {
-                        <div class="activity-item">
-                            <div class="item-image"><img src="@Url.Content(!string.IsNullOrEmpty(room.ImageUrl) ? room.ImageUrl : "/images/logo.png")" alt="Room"></div>
-                            <div class="item-content">
-                                <div class="item-name">@room.Name</div>
-                                <div class="item-info">Gửi lúc: @room.SubmitDate.ToString("HH:mm dd/MM/yyyy")</div>
+                        foreach (var room in Model.DanhSachPhongCho)
+                        {
+                            <div class="activity-item">
+                                <div class="item-image">
+                                    <img src="@Url.Content(!string.IsNullOrEmpty(room.HinhAnh) ? room.HinhAnh : "~/images/logo.png")">
+                                </div>
+                                <div class="item-content">
+                                    <div class="item-name">@room.TenPhong</div>
+                                    <div class="item-info">@room.NgayDang.ToString("dd/MM/yyyy")</div>
+                                </div>
+                                <button class="btn-action">Xem</button>
                             </div>
-                            <button class="btn-action">Xem</button>
-                        </div>
+                        }
                     }
                 </div>
-                <button class="btn-view-all">Xem tất cả phòng chờ duyệt</button>
+                <button class="btn-view-all">Xem tất cả</button>
             </div>
 
             <div class="activity-card">
                 <div class="activity-header">
-                    <h3 class="activity-title">Lịch xem phòng hôm nay</h3>
-                    <p class="activity-subtitle">Các lịch hẹn đã được xác nhận cho hôm nay</p>
+                    <h3 class="activity-title">Lịch xem phòng</h3>
                 </div>
                 <div class="activity-list">
-                    @foreach (var schedule in Model.TodaySchedules)
+                    @if (Model.LichHenHomNay != null)
                     {
-                        <div class="activity-item">
-                            <div class="item-avatar"><span class="material-icons">person</span></div>
-                            <div class="item-content">
-                                <div class="item-name">@schedule.TenantName - @schedule.RoomName</div>
-                                <div class="item-info">Thời gian: @schedule.ViewTime</div>
+                        foreach (var schedule in Model.LichHenHomNay)
+                        {
+                            <div class="activity-item">
+                                <div class="item-avatar"><span class="material-icons-round">person</span></div>
+                                <div class="item-content">
+                                    <div class="item-name">@schedule.TenKhach</div>
+                                    <div class="item-info">@schedule.TenPhong - @schedule.ThoiGianXem</div>
+                                </div>
+                                <span class="status-badge @(schedule.TrangThai == "Chờ xác nhận" ? "status-pending" : "status-confirmed")">@schedule.TrangThai</span>
                             </div>
-                            <span class="status-badge @(schedule.Status == "Chờ xác nhận" ? "status-pending" : "status-confirmed")">@schedule.Status</span>
-                        </div>
+                        }
                     }
                 </div>
-                <button class="btn-view-all">Quản lý lịch xem phòng</button>
+                <button class="btn-view-all">Quản lý lịch hẹn</button>
             </div>
         </div>
 
-        <div class="activities-row">
+        <div class="activities-row" style="margin-top: 20px;">
             <div class="activity-card">
                 <div class="activity-header">
-                    <h3 class="activity-title">Tin nhắn gần đây</h3>
-                    <p class="activity-subtitle">Những tin nhắn mới nhất từ người thuê</p>
+                    <h3 class="activity-title">Tin nhắn mới</h3>
                 </div>
                 <div class="activity-list">
-                    @foreach (var message in Model.RecentMessages)
+                    @if (Model.TinNhanGanDay != null)
                     {
-                        <div class="activity-item">
-                            <div class="item-avatar"><img src="@Url.Content(!string.IsNullOrEmpty(message.Avatar) ? message.Avatar : "/images/logo.png")" alt="Avatar"></div>
-                            <div class="item-content">
-                                <div class="item-name">@message.SenderName</div>
-                                <div class="item-message">@message.Content</div>
-                                <div class="item-time">@message.Time</div>
+                        foreach (var msg in Model.TinNhanGanDay)
+                        {
+                            <div class="activity-item">
+                                <div class="item-avatar"><img src="@Url.Content(msg.AnhDaiDien ?? "~/images/logo.png")"></div>
+                                <div class="item-content">
+                                    <div class="item-name">@msg.TenNguoiGui</div>
+                                    <div class="item-message">@msg.NoiDung</div>
+                                </div>
+                                <div class="item-time">@msg.ThoiGian</div>
                             </div>
-                            <button class="btn-action">Trả lời</button>
-                        </div>
+                        }
                     }
                 </div>
-                <button class="btn-view-all">Đi đến hộp thư</button>
             </div>
 
             <div class="activity-card">
                 <div class="activity-header">
                     <h3 class="activity-title">Yêu cầu sửa chữa</h3>
-                    <p class="activity-subtitle">Các yêu cầu mới từ người thuê phòng</p>
                 </div>
                 <div class="activity-list">
-                    @foreach (var request in Model.MaintenanceRequests)
+                    @if (Model.YeuCauSuaChua != null)
                     {
-                        <div class="activity-item">
-                            <div class="item-avatar"><span class="material-icons">build</span></div>
-                            <div class="item-content">
-                                <div class="item-name">@request.Title - @request.RoomName</div>
-                                <div class="item-info">Báo cáo bởi: @request.ReporterName</div>
+                        foreach (var req in Model.YeuCauSuaChua)
+                        {
+                            <div class="activity-item">
+                                <div class="item-avatar"><span class="material-icons-round">build</span></div>
+                                <div class="item-content">
+                                    <div class="item-name">@req.TieuDe</div>
+                                    <div class="item-info">@req.TenPhong - @req.NguoiBaoCao</div>
+                                </div>
+                                <span class="status-badge @(req.MucDoUuTien == "Cao" ? "priority-high" : "status-pending")">@req.MucDoUuTien</span>
                             </div>
-                            <span class="status-badge priority-@request.Priority.ToLower()">@request.Priority</span>
-                        </div>
+                        }
                     }
                 </div>
-                <button class="btn-view-all">Xem tất cả yêu cầu</button>
             </div>
         </div>
     </div>

@@ -1,0 +1,2 @@
+E:\LapTrinhWebNangCao\QuanLyPhongTro\Bai_Tap_Nhom_Quan_Ly_Phong_Tro\ADMIN_QUANLYPHONGTRO\obj\Debug\ADMIN_QUANLYPHONGTRO.csproj.AssemblyReference.cache
+E:\LapTrinhWebNangCao\QuanLyPhongTro\Bai_Tap_Nhom_Quan_Ly_Phong_Tro\ADMIN_QUANLYPHONGTRO\obj\Debug\ADMIN_QUANLYPHONGTRO.csproj.CoreCompileInputs.cache

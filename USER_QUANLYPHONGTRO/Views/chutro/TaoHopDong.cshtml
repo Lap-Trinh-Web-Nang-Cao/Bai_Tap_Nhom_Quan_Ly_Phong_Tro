@@ -1,0 +1,117 @@
+﻿@{
+    Layout = "~/Views/Shared/_ChutroLayout.cshtml";
+    ViewBag.Title = "Tạo hợp đồng mới";
+}
+
+<div class="dashboard-container">
+    <div class="dashboard-header" style="display: flex; align-items: center; gap: 20px; margin-bottom: 30px;">
+        <a href="@Url.Action("HopDong", "ChuTro")" class="btn-back"
+           style="display: flex; align-items: center; justify-content: center; width: 45px; height: 45px; background: white; border: 1px solid var(--gray-200); border-radius: 12px; color: var(--gray-700); text-decoration: none;">
+            <span class="material-icons-round">arrow_back</span>
+        </a>
+        <div>
+            <h1 class="page-title" style="margin: 0; font-size: 1.75rem; font-weight: 800;">Lập hợp đồng mới</h1>
+            <p class="page-subtitle" style="margin: 5px 0 0; color: var(--gray-500);">Vui lòng điền đầy đủ thông tin để khởi tạo hợp đồng thuê phòng.</p>
+        </div>
+    </div>
+
+    @using (Html.BeginForm("LuuHopDong", "ChuTro", FormMethod.Post))
+    {
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 25px;">
+            <div style="display: flex; flex-direction: column; gap: 25px;">
+
+                <div class="activity-card" style="padding: 30px; background: white; border-radius: 16px;">
+                    <h3 style="margin: 0 0 25px 0; font-size: 1.25rem; font-weight: 700; border-bottom: 1px solid var(--gray-100); padding-bottom: 15px;">
+                        <span class="material-icons-round" style="vertical-align: middle; color: var(--primary);">assignment_ind</span> Thông tin cơ bản
+                    </h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div class="form-group">
+                            <label style="display: block; font-weight: 600; margin-bottom: 8px;">Chọn khách thuê *</label>
+                            <select name="NguoiThueId" class="form-control" required style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--gray-200);">
+                                <option value="">-- Chọn khách hàng --</option>
+                                <option value="1">Nguyễn Văn A</option>
+                                <option value="2">Trần Thị B</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label style="display: block; font-weight: 600; margin-bottom: 8px;">Chọn phòng *</label>
+                            <select name="PhongId" class="form-control" required style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--gray-200);">
+                                <option value="">-- Chọn phòng trống --</option>
+                                <option value="101">Phòng 101</option>
+                                <option value="102">Phòng 102</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="activity-card" style="padding: 30px; background: white; border-radius: 16px;">
+                    <h3 style="margin: 0 0 25px 0; font-size: 1.25rem; font-weight: 700; border-bottom: 1px solid var(--gray-100); padding-bottom: 15px;">
+                        <span class="material-icons-round" style="vertical-align: middle; color: var(--primary);">payments</span> Điều khoản & Tài chính
+                    </h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                        <div class="form-group">
+                            <label style="display: block; font-weight: 600; margin-bottom: 8px;">Ngày bắt đầu *</label>
+                            <input type="date" name="NgayBatDau" class="form-control" required style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--gray-200);">
+                        </div>
+                        <div class="form-group">
+                            <label style="display: block; font-weight: 600; margin-bottom: 8px;">Ngày kết thúc *</label>
+                            <input type="date" name="NgayKetThuc" class="form-control" required style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--gray-200);">
+                        </div>
+                        <div class="form-group">
+                            <label style="display: block; font-weight: 600; margin-bottom: 8px;">Giá thuê (VNĐ/tháng) *</label>
+                            <input type="number" name="GiaThue" class="form-control" placeholder="3,500,000" required style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--gray-200);">
+                        </div>
+                        <div class="form-group">
+                            <label style="display: block; font-weight: 600; margin-bottom: 8px;">Tiền đặt cọc (VNĐ) *</label>
+                            <input type="number" name="TienCoc" class="form-control" placeholder="3,500,000" required style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--gray-200);">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label style="display: block; font-weight: 600; margin-bottom: 8px;">Ghi chú hợp đồng</label>
+                        <textarea name="GhiChu" rows="4" class="form-control" placeholder="Nhập các điều khoản bổ sung..." style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--gray-200); resize: none;"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+                <div class="activity-card" style="padding: 25px; position: sticky; top: 20px;">
+                    <h4 style="margin: 0 0 20px 0; font-weight: 700; color: var(--gray-800);">Hoàn tất hợp đồng</h4>
+                    <p style="font-size: 0.9rem; color: var(--gray-600); line-height: 1.5; margin-bottom: 20px;">
+                        Sau khi lưu, hệ thống sẽ tự động tạo mã hợp đồng và thông báo cho khách thuê qua ứng dụng.
+                    </p>
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <button type="submit" class="btn-action" style="width: 100%; justify-content: center; background: var(--primary); color: white; border: none; padding: 14px; border-radius: 10px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                            <span class="material-icons-round">save</span> Lưu hợp đồng
+                        </button>
+                        <a href="@Url.Action("HopDong", "ChuTro")" style="width: 100%; text-align: center; color: var(--gray-500); text-decoration: none; font-weight: 600; font-size: 0.9rem; padding: 10px;">
+                            Hủy bỏ
+                        </a>
+                    </div>
+                </div>
+
+                <div style="background: #e0f2fe; padding: 20px; border-radius: 16px; border-left: 4px solid #0369a1;">
+                    <h5 style="margin: 0 0 10px 0; color: #0369a1; display: flex; align-items: center; gap: 8px;">
+                        <span class="material-icons-round">lightbulb</span> Mẹo nhỏ
+                    </h5>
+                    <p style="margin: 0; font-size: 0.85rem; color: #0369a1; line-height: 1.5;">
+                        Hãy đảm bảo ngày kết thúc hợp đồng muộn hơn ngày bắt đầu ít nhất 1 tháng.
+                    </p>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary) !important;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+    .btn-back:hover {
+        background-color: var(--gray-50) !important;
+        transform: translateX(-3px);
+        transition: all 0.2s;
+    }
+</style>

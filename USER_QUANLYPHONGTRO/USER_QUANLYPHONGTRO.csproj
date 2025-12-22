@@ -121,10 +121,12 @@
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Controllers\AuthController.cs" />
+    <Compile Include="Controllers\AuthenticatedControllerBase.cs" />
     <Compile Include="Controllers\ChatController.cs" />
     <Compile Include="Controllers\ChuTroController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\KhachThueController.cs" />
+    <Compile Include="Filters\CustomAuthorizeAttribute.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -148,6 +150,7 @@
     <Compile Include="Models\viewmodels\KhachThue\TenantHopDongViewModel.cs" />
     <Compile Include="Models\viewmodels\KhachThue\TenantProfileViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\AuthService.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\auth.css" />
@@ -214,10 +217,16 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="services\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <Content Include="Views\chutro\DanhGia.cshtml" />
+    <Content Include="Views\chutro\DonDatPhong.cshtml" />
+    <Content Include="Views\chutro\QuanLyPhong.cshtml" />
+    <Content Include="Views\chutro\TaoHopDong.cshtml" />
+    <Content Include="Views\chutro\ThongKe.cshtml" />
+    <Content Include="Views\chutro\TinNhan.cshtml" />
+    <Content Include="Views\chutro\YeuCauHoTro.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

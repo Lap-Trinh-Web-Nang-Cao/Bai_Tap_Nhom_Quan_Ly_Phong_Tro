@@ -1,0 +1,90 @@
+﻿@model USER_QUANLYPHONGTRO.Models.ViewModels.ChuTro.ThongKeDanhGiaViewModel
+
+@{
+    Layout = "~/Views/Shared/_ChutroLayout.cshtml";
+    ViewBag.Title = "Quản lý đánh giá";
+}
+
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <div>
+            <h1 class="page-title">Đánh giá của khách thuê</h1>
+            <p class="page-subtitle">Dựa trên các trường dữ liệu: Diem, NoiDung, ThoiGian.</p>
+        </div>
+    </div>
+
+    <div class="stats-grid" style="grid-template-columns: 1fr 2fr; margin-bottom: 25px;">
+        <div class="stat-card card-blue" style="text-align: center;">
+            <div class="stat-label">ĐIỂM TRUNG BÌNH</div>
+            <div class="stat-value" style="font-size: 3rem;">@Model.DiemTrungBinh.ToString("0.0")</div>
+            <div style="color: #ffb400;">
+                @for (int i = 1; i <= 5; i++)
+                {
+                    <span class="material-icons-round">@(i <= Math.Round(Model.DiemTrungBinh) ? "star" : "star_outline")</span>
+                }
+            </div>
+            <div class="stat-desc">Tổng số @Model.TongLuotDanhGia đánh giá</div>
+        </div>
+
+        <div class="stat-card" style="background: white;">
+            <div class="stat-label" style="margin-bottom: 15px;">CHI TIẾT PHÂN BỔ</div>
+            @for (int star = 5; star >= 1; star--)
+            {
+                var count = Model.DanhSachDanhGia.Count(d => d.Diem == star);
+                var percent = Model.TongLuotDanhGia > 0 ? (count * 100 / Model.TongLuotDanhGia) : 0;
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                    <span style="width: 50px; font-size: 0.9rem;">@star sao</span>
+                    <div style="flex: 1; height: 8px; background: #f1f5f9; border-radius: 4px; overflow: hidden;">
+                        <div style="width: @(percent)%; height: 100%; background: #ffb400;"></div>
+                    </div>
+                    <span style="width: 40px; font-size: 0.85rem; color: var(--gray-500);">@count</span>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="activity-card">
+        <div class="activity-header"><h3 class="activity-title">Nhận xét từ khách thuê</h3></div>
+        <div class="activity-list" style="max-height: none;">
+            @if (Model.DanhSachDanhGia != null && Model.DanhSachDanhGia.Any())
+            {
+                foreach (var item in Model.DanhSachDanhGia)
+                {
+                    <div class="activity-item" style="padding: 20px; border-bottom: 1px solid var(--gray-100); align-items: flex-start;">
+                        <div class="item-avatar" style="width: 48px; height: 48px; background: var(--primary-bg); color: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 20px; flex-shrink: 0;">
+                            <span class="material-icons-round">person</span>
+                        </div>
+
+                        <div class="item-content" style="flex: 1;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                <div>
+                                    <h4 style="margin: 0; font-weight: 700;">@item.TenNguoiDanhGia</h4>
+                                    <div style="color: var(--gray-500); font-size: 0.85rem;">
+                                        Phòng: <strong>@item.TenPhong</strong> • @item.ThoiGian.ToString("dd/MM/yyyy HH:mm")
+                                    </div>
+                                </div>
+                                <div style="color: #ffb400;">
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        <span class="material-icons-round" style="font-size: 20px;">@(i <= item.Diem ? "star" : "star_outline")</span>
+                                    }
+                                </div>
+                            </div>
+
+                            <p style="margin: 12px 0 0; color: var(--gray-700); font-style: italic; line-height: 1.5;">
+                                "@item.NoiDung"
+                            </p>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="empty-state" style="padding: 50px; text-align: center; color: var(--gray-500);">
+                    <span class="material-icons-round" style="font-size: 48px; opacity: 0.2;">rate_review</span>
+                    <p style="margin-top: 10px;">Chưa có lượt đánh giá nào.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>

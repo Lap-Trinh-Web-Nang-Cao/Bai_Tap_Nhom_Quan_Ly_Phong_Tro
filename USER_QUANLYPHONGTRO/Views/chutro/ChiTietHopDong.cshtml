@@ -1,7 +1,144 @@
-﻿
+﻿@model USER_QUANLYPHONGTRO.Models.ViewModels.ChuTro.ChiTietHopDongViewModel
+
 @{
-    ViewBag.Title = "ChiTietHopDong";
+    Layout = "~/Views/Shared/_ChutroLayout.cshtml";
+    ViewBag.Title = "Chi tiết hợp đồng " + Model.SoHopDong;
 }
 
-<h2>ChiTietHopDong</h2>
+<div class="dashboard-container">
+    <div class="dashboard-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 30px;">
+        <div style="display: flex; align-items: center; gap: 20px;">
+            @* Nút mũi tên quay lại trang HopDong *@
+            <a href="@Url.Action("HopDong", "ChuTro")"
+               class="btn-back"
+               style="display: flex; align-items: center; justify-content: center; width: 45px; height: 45px; background: white; border: 1px solid var(--gray-200); border-radius: 12px; color: var(--gray-700); text-decoration: none; transition: all 0.2s;">
+                <span class="material-icons-round">arrow_back</span>
+            </a>
+            <div>
+                <h1 class="page-title" style="margin: 0; font-size: 1.75rem; font-weight: 800; color: var(--gray-900);">Hợp đồng @Model.SoHopDong</h1>
+                <p class="page-subtitle" style="margin: 5px 0 0; color: var(--gray-500); font-weight: 500;">Ngày lập: @Model.NgayLap.ToString("dd/MM/yyyy")</p>
+            </div>
+        </div>
+        <div class="header-actions">
+            <span class="status-badge" style="background: #dcfce7; color: #15803d; padding: 10px 20px; border-radius: 10px; font-weight: 700; font-size: 0.95rem; display: flex; align-items: center; gap: 8px;">
+                <span style="width: 8px; height: 8px; background: #15803d; border-radius: 50%;"></span>
+                Đang hiệu lực
+            </span>
+        </div>
+    </div>
 
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 25px;">
+        <div style="display: flex; flex-direction: column; gap: 25px;">
+
+            <div class="activity-card" style="padding: 30px; background: white; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.03);">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid var(--gray-100);">
+                    <span class="material-icons-round" style="color: var(--primary); font-size: 28px;">person</span>
+                    <h3 style="margin: 0; font-size: 1.25rem; font-weight: 700;">Thông tin người thuê</h3>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px;">
+                    <div class="info-group">
+                        <label style="display: block; color: var(--gray-500); font-size: 0.85rem; margin-bottom: 6px; font-weight: 600;">HỌ VÀ TÊN</label>
+                        <p style="margin: 0; font-weight: 700; font-size: 1.1rem; color: var(--gray-800);">@Model.TenNguoiThue</p>
+                    </div>
+                    <div class="info-group">
+                        <label style="display: block; color: var(--gray-500); font-size: 0.85rem; margin-bottom: 6px; font-weight: 600;">SỐ ĐIỆN THOẠI</label>
+                        <p style="margin: 0; font-weight: 600; color: var(--gray-800);">@Model.SoDienThoai</p>
+                    </div>
+                    <div class="info-group">
+                        <label style="display: block; color: var(--gray-500); font-size: 0.85rem; margin-bottom: 6px; font-weight: 600;">CCCD/CMND</label>
+                        <p style="margin: 0; font-weight: 500;">@Model.CCCD</p>
+                    </div>
+                    <div class="info-group">
+                        <label style="display: block; color: var(--gray-500); font-size: 0.85rem; margin-bottom: 6px; font-weight: 600;">QUÊ QUÁN</label>
+                        <p style="margin: 0; font-weight: 500;">@Model.QueQuan</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="activity-card" style="padding: 30px; background: white; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.03);">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid var(--gray-100);">
+                    <span class="material-icons-round" style="color: var(--primary); font-size: 28px;">apartment</span>
+                    <h3 style="margin: 0; font-size: 1.25rem; font-weight: 700;">Chi tiết phòng & Tài chính</h3>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px;">
+                    <div class="info-group">
+                        <label style="display: block; color: var(--gray-500); font-size: 0.85rem; margin-bottom: 6px; font-weight: 600;">TÊN PHÒNG</label>
+                        <p style="margin: 0; font-weight: 700; color: var(--gray-800);">@Model.TenPhong (@Model.DienTich m²)</p>
+                    </div>
+                    <div class="info-group">
+                        <label style="display: block; color: var(--gray-500); font-size: 0.85rem; margin-bottom: 6px; font-weight: 600;">GIÁ THUÊ HÀNG THÁNG</label>
+                        <p style="margin: 0; font-weight: 800; color: var(--primary); font-size: 1.25rem;">@Model.GiaThue.ToString("N0")đ</p>
+                    </div>
+                    <div class="info-group">
+                        <label style="display: block; color: var(--gray-500); font-size: 0.85rem; margin-bottom: 6px; font-weight: 600;">TIỀN ĐẶT CỌC</label>
+                        <p style="margin: 0; font-weight: 700; color: #10b981;">@Model.TienCoc.ToString("N0")đ</p>
+                    </div>
+                    <div class="info-group">
+                        <label style="display: block; color: var(--gray-500); font-size: 0.85rem; margin-bottom: 6px; font-weight: 600;">KỲ THANH TOÁN</label>
+                        <p style="margin: 0; font-weight: 600;">@Model.KyThanhToan tháng / lần</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="activity-card" style="padding: 30px; background: white; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.03);">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid var(--gray-100);">
+                    <span class="material-icons-round" style="color: var(--primary); font-size: 28px;">calendar_today</span>
+                    <h3 style="margin: 0; font-size: 1.25rem; font-weight: 700;">Thời hạn hợp đồng</h3>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 20px;">
+                    <div class="info-group">
+                        <label style="display: block; color: var(--gray-500); font-size: 0.85rem; margin-bottom: 6px; font-weight: 600;">NGÀY BẮT ĐẦU</label>
+                        <p style="margin: 0; font-weight: 600;">@Model.NgayBatDau.ToString("dd/MM/yyyy")</p>
+                    </div>
+                    <div class="info-group">
+                        <label style="display: block; color: var(--gray-500); font-size: 0.85rem; margin-bottom: 6px; font-weight: 600;">NGÀY KẾT THÚC</label>
+                        <p style="margin: 0; font-weight: 600;">@Model.NgayKetThuc.ToString("dd/MM/yyyy")</p>
+                    </div>
+                </div>
+                <div style="background: #f8fafc; padding: 15px; border-radius: 12px; border-left: 4px solid var(--primary);">
+                    <label style="display: block; color: var(--gray-500); font-size: 0.85rem; margin-bottom: 6px; font-weight: 600;">GHI CHÚ HỢP ĐỒNG</label>
+                    <p style="margin: 0; font-style: italic; color: var(--gray-700); line-height: 1.6;">"@Model.GhiChu"</p>
+                </div>
+            </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+            <div class="activity-card" style="padding: 25px; position: sticky; top: 20px;">
+                <h4 style="margin: 0 0 20px 0; font-weight: 700; color: var(--gray-800); border-bottom: 1px solid var(--gray-100); padding-bottom: 10px;">Thao tác quản lý</h4>
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <button class="btn-action" style="width: 100%; justify-content: center; background: var(--primary); color: white; border: none; padding: 12px; border-radius: 10px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                        <span class="material-icons-round">print</span> In hợp đồng (PDF)
+                    </button>
+                    <button class="btn-action" style="width: 100%; justify-content: center; background: white; border: 1px solid var(--gray-200); color: var(--gray-700); padding: 12px; border-radius: 10px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                        <span class="material-icons-round">edit</span> Chỉnh sửa thông tin
+                    </button>
+                    <button class="btn-action" style="width: 100%; justify-content: center; background: #fee2e2; color: #ef4444; border: none; padding: 12px; border-radius: 10px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                        <span class="material-icons-round">gavel</span> Chấm dứt hợp đồng
+                    </button>
+                </div>
+
+                <div style="margin-top: 25px; background: #fffbeb; border: 1px dashed #f59e0b; padding: 15px; border-radius: 12px;">
+                    <h5 style="margin: 0 0 8px 0; color: #92400e; display: flex; align-items: center; gap: 6px;">
+                        <span class="material-icons-round" style="font-size: 18px;">notifications_active</span> Nhắc nhở
+                    </h5>
+                    <p style="margin: 0; font-size: 0.85rem; color: #92400e; line-height: 1.5;">
+                        Hợp đồng này còn hiệu lực đến ngày <strong>@Model.NgayKetThuc.ToString("dd/MM/yyyy")</strong>.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .btn-back:hover {
+        background-color: var(--gray-50) !important;
+        transform: translateX(-3px);
+    }
+
+    .btn-action:hover {
+        opacity: 0.9;
+        transform: translateY(-2px);
+        transition: all 0.2s;
+    }
+</style>
