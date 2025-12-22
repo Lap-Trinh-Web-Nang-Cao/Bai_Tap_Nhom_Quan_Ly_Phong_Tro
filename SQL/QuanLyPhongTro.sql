@@ -1,4 +1,4 @@
-﻿    /**********************************************************************
+    /**********************************************************************
     Fixed full init script for DB "QuanLyPhongTro"
     - Ensure admin-related columns exist BEFORE creating stored procedures
     - Idempotent: checks existence before CREATE / ALTER
@@ -1808,6 +1808,7 @@ WHERE IsDeleted IS NULL;
 
 PRINT '✅ All existing Phong records updated with IsDeleted = 0';
 GO
+
 /* ==========================================================
    1. INSERT QUẬN / HUYỆN (ĐÀ NẴNG)
 ========================================================== */
@@ -1869,6 +1870,11 @@ DECLARE @ChuTro1    UNIQUEIDENTIFIER = '33333333-3333-3333-3333-333333333333';
 DECLARE @ChuTro2    UNIQUEIDENTIFIER = '44444444-4444-4444-4444-444444444444';
 DECLARE @Admin      UNIQUEIDENTIFIER = '55555555-5555-5555-5555-555555555555';
 
+-- Demo IDs used for testing "My Bookings" and Notifications
+DECLARE @TenantDemoId UNIQUEIDENTIFIER = '00000000-0000-0000-0000-000000000001';
+DECLARE @LandlordDemoId UNIQUEIDENTIFIER = '00000000-0000-0000-0000-000000000002';
+
+
 -- Lấy Role ID
 DECLARE @Role_Thue INT = (SELECT TOP 1 VaiTroId FROM VaiTro WHERE TenVaiTro='NguoiThue');
 DECLARE @Role_Chu INT = (SELECT TOP 1 VaiTroId FROM VaiTro WHERE TenVaiTro='ChuTro');
@@ -1894,6 +1900,16 @@ INSERT INTO HoSoNguoiDung (NguoiDungId, HoTen) SELECT @ChuTro2, N'Chủ Trọ B'
 INSERT INTO NguoiDung (NguoiDungId, Email, DienThoai, PasswordHash, VaiTroId)
 SELECT @Admin, 'admin@trotot.com','0905999999','adminhash', @Role_Admin WHERE NOT EXISTS (SELECT 1 FROM NguoiDung WHERE NguoiDungId=@Admin);
 INSERT INTO HoSoNguoiDung (NguoiDungId, HoTen) SELECT @Admin, N'Quản trị viên' WHERE NOT EXISTS (SELECT 1 FROM HoSoNguoiDung WHERE NguoiDungId=@Admin);
+
+-- INSERT DEMO USERS
+INSERT INTO NguoiDung (NguoiDungId, Email, DienThoai, PasswordHash, VaiTroId)
+SELECT @TenantDemoId, 'nguoithue@test.com','0911222333','hash123', @Role_Thue WHERE NOT EXISTS (SELECT 1 FROM NguoiDung WHERE NguoiDungId=@TenantDemoId);
+INSERT INTO HoSoNguoiDung (NguoiDungId, HoTen) SELECT @TenantDemoId, N'Trần Thị B (Người Thuê)' WHERE NOT EXISTS (SELECT 1 FROM HoSoNguoiDung WHERE NguoiDungId=@TenantDemoId);
+
+INSERT INTO NguoiDung (NguoiDungId, Email, DienThoai, PasswordHash, VaiTroId)
+SELECT @LandlordDemoId, 'chutro@test.com','0988777666','hash123', @Role_Chu WHERE NOT EXISTS (SELECT 1 FROM NguoiDung WHERE NguoiDungId=@LandlordDemoId);
+INSERT INTO HoSoNguoiDung (NguoiDungId, HoTen) SELECT @LandlordDemoId, N'Nguyễn Văn A (Chủ Trọ)' WHERE NOT EXISTS (SELECT 1 FROM HoSoNguoiDung WHERE NguoiDungId=@LandlordDemoId);
+
 
 /* ==========================================================
    4. NHÀ TRỌ & PHÒNG
@@ -2248,13 +2264,19 @@ BEGIN
     );
 END;
 GO
-ALTER TABLE dbo.PhongAnh
-ADD CONSTRAINT FK_PhongAnh_Phong
-FOREIGN KEY (PhongId) REFERENCES dbo.Phong(PhongId);
-
-ALTER TABLE dbo.PhongAnh
-ADD CONSTRAINT FK_PhongAnh_TapTin
-FOREIGN KEY (TapTinId) REFERENCES dbo.TapTin(TapTinId);
+IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = N'FK_DatPhong_Phong')
+BEGIN
+    ALTER TABLE dbo.PhongAnh
+		ADD CONSTRAINT FK_PhongAnh_Phong
+		FOREIGN KEY (PhongId) REFERENCES dbo.Phong(PhongId);
+END;
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = N'FK_DatPhong_Phong')
+BEGIN
+    ALTER TABLE dbo.PhongAnh
+	ADD CONSTRAINT FK_PhongAnh_TapTin
+	FOREIGN KEY (TapTinId) REFERENCES dbo.TapTin(TapTinId);
+END;
 GO
 
 INSERT INTO dbo.TapTin (DuongDan, MimeType)
@@ -2329,9 +2351,21 @@ BEGIN
     );
 END;
 GO
-
+IF COL_LENGTH('dbo.DatPhong', 'ChuTroId') IS NULL
+BEGIN
+    ALTER TABLE dbo.DatPhong ADD ChuTroId UNIQUEIDENTIFIER NULL;
+END;
+go
+IF NOT EXISTS (SELECT * FROM sys.columns 
+               WHERE object_id = OBJECT_ID(N'dbo.DatPhong') 
+               AND name = N'GhiChu')
+BEGIN
+    ALTER TABLE dbo.DatPhong ADD GhiChu NVARCHAR(100) NULL;
+END
 -- SEED DATA FOR DEMO APPOINTMENTS (Lịch Hẹn)
 -- Lấy ID một vài phòng để làm mẫu
+DECLARE @TenantDemoId UNIQUEIDENTIFIER = '00000000-0000-0000-0000-000000000001';
+DECLARE @LandlordDemoId UNIQUEIDENTIFIER = '00000000-0000-0000-0000-000000000002';
 DECLARE @RoomA UNIQUEIDENTIFIER = (SELECT TOP 1 PhongId FROM dbo.Phong);
 DECLARE @RoomB UNIQUEIDENTIFIER = (SELECT TOP 1 PhongId FROM dbo.Phong WHERE PhongId != @RoomA);
 
@@ -2339,31 +2373,30 @@ IF @RoomA IS NOT NULL
 BEGIN
     INSERT INTO dbo.DatPhong (DatPhongId, PhongId, NguoiThueId, ChuTroId, Loai, BatDau, KetThuc, ThoiGianTao, TrangThaiId, GhiChu)
     VALUES 
-    (NEWID(), @RoomA, '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002', 'XemPhong', DATEADD(DAY, 1, SYSDATETIMEOFFSET()), NULL, SYSDATETIMEOFFSET(), 1, N'Tôi muốn xem phòng vào sáng mai lúc 9h.'),
-    (NEWID(), @RoomB, '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002', 'XemPhong', DATEADD(DAY, 2, SYSDATETIMEOFFSET()), NULL, DATEADD(HOUR, -10, SYSDATETIMEOFFSET()), 2, N'Lịch hẹn này đã được chủ trọ xác nhận.');
+    (NEWID(), @RoomA, @TenantDemoId, @LandlordDemoId, 'XemPhong', DATEADD(DAY, 1, SYSDATETIMEOFFSET()), NULL, SYSDATETIMEOFFSET(), 1, N'Tôi muốn xem phòng vào sáng mai lúc 9h.'),
+    (NEWID(), @RoomB, @TenantDemoId, @LandlordDemoId, 'XemPhong', DATEADD(DAY, 2, SYSDATETIMEOFFSET()), NULL, DATEADD(HOUR, -10, SYSDATETIMEOFFSET()), 2, N'Lịch hẹn này đã được chủ trọ xác nhận.');
 END
 GO
 
-IF COL_LENGTH('dbo.DatPhong', 'ChuTroId') IS NULL
-BEGIN
-    ALTER TABLE dbo.DatPhong ADD ChuTroId UNIQUEIDENTIFIER NULL;
-END;
-GO
-
 -- SEED DATA FOR DEMO NOTIFICATIONS
-DECLARE @LandlordDemoId UNIQUEIDENTIFIER = '00000000-0000-0000-0000-000000000002';
-DECLARE @TenantDemoId UNIQUEIDENTIFIER = '00000000-0000-0000-0000-000000000001';
+DECLARE @TenantDemoId_N UNIQUEIDENTIFIER = '00000000-0000-0000-0000-000000000001';
+DECLARE @LandlordDemoId_N UNIQUEIDENTIFIER = '00000000-0000-0000-0000-000000000002';
+
+IF NOT EXISTS (SELECT 1 FROM dbo.NguoiDung WHERE NguoiDungId = @TenantDemoId_N)
+BEGIN
+    PRINT '⚠️ Warning: Demo Tenant user missing!';
+END
 
 -- Notifications for Landlord
 INSERT INTO dbo.ThongBao (ThongBaoId, NguoiDungId, TieuDe, NoiDung, Loai, ThoiGianTao, DaXem)
 VALUES 
-(NEWID(), @LandlordDemoId, N'Yêu cầu đặt phòng mới', N'Khách hàng Nguyễn Văn A vừa gửi yêu cầu đặt lịch xem phòng 101.', 'info', SYSDATETIMEOFFSET(), 0),
-(NEWID(), @LandlordDemoId, N'Yêu cầu đặt phòng mới', N'Khách hàng Trần Thị B muốn đặt phòng 202 từ tháng sau.', 'info', DATEADD(HOUR, -2, SYSDATETIMEOFFSET()), 0),
-(NEWID(), @LandlordDemoId, N'Thanh toán thành công', N'Người thuê phòng 305 đã gửi biên lai thanh toán tiền nhà tháng 12.', 'success', DATEADD(DAY, -1, SYSDATETIMEOFFSET()), 1);
+(NEWID(), @LandlordDemoId_N, N'Yêu cầu đặt phòng mới', N'Khách hàng Nguyễn Văn A vừa gửi yêu cầu đặt lịch xem phòng 101.', 'info', SYSDATETIMEOFFSET(), 0),
+(NEWID(), @LandlordDemoId_N, N'Yêu cầu đặt phòng mới', N'Khách hàng Trần Thị B muốn đặt phòng 202 từ tháng sau.', 'info', DATEADD(HOUR, -2, SYSDATETIMEOFFSET()), 0),
+(NEWID(), @LandlordDemoId_N, N'Thanh toán thành công', N'Người thuê phòng 305 đã gửi biên lai thanh toán tiền nhà tháng 12.', 'success', DATEADD(DAY, -1, SYSDATETIMEOFFSET()), 1);
 
 -- Notifications for Tenant
 INSERT INTO dbo.ThongBao (ThongBaoId, NguoiDungId, TieuDe, NoiDung, Loai, ThoiGianTao, DaXem)
 VALUES 
-(NEWID(), @TenantDemoId, N'Đã xác nhận lịch hẹn', N'Chủ trọ đã đồng ý lịch xem phòng vào 9h sáng mai.', 'success', SYSDATETIMEOFFSET(), 0),
-(NEWID(), @TenantDemoId, N'Yêu cầu thanh toán', N'Đã có hóa đơn tiền điện nước tháng 12, vui lòng thanh toán đúng hạn.', 'warning', DATEADD(HOUR, -5, SYSDATETIMEOFFSET()), 0);
+(NEWID(), @TenantDemoId_N, N'Đã xác nhận lịch hẹn', N'Chủ trọ đã đồng ý lịch xem phòng vào 9h sáng mai.', 'success', SYSDATETIMEOFFSET(), 0),
+(NEWID(), @TenantDemoId_N, N'Yêu cầu thanh toán', N'Đã có hóa đơn tiền điện nước tháng 12, vui lòng thanh toán đúng hạn.', 'warning', DATEADD(HOUR, -5, SYSDATETIMEOFFSET()), 0);
 GO
