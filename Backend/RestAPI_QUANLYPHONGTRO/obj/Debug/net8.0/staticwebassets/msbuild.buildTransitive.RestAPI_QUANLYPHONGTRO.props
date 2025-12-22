@@ -1,3 +1,0 @@
-﻿<Project>
-  <Import Project="..\buildMultiTargeting\RestAPI_QUANLYPHONGTRO.props" />
-</Project>
