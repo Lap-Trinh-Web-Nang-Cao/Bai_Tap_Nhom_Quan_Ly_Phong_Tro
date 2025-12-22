@@ -244,6 +244,7 @@
     <Compile Include="Models\ViewModels\Auth\RegisterViewModel.cs" />
     <Compile Include="Models\ViewModels\Chat\ChatMessageViewModel.cs" />
     <Compile Include="Models\ViewModels\Chat\ChatRoomViewModel.cs" />
+    <Compile Include="Models\ViewModels\ChuTro\CapNhatPhongViewModel.cs" />
     <Compile Include="Models\ViewModels\ChuTro\ChatViewModel.cs" />
     <Compile Include="Models\ViewModels\ChuTro\ChiTietHopDongViewModel.cs" />
     <Compile Include="Models\ViewModels\ChuTro\DanhGiaViewModel.cs" />

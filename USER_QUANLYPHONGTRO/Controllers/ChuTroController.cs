@@ -308,6 +308,120 @@ namespace USER_QUANLYPHONGTRO.Controllers
             }
         }
 
+        public async Task<ActionResult> SuaPhong(Guid id)
+        {
+            if (Session["UserId"] == null) return RedirectToAction("Login", "Auth");
+            var userId = Guid.Parse(Session["UserId"].ToString());
+
+            var model = new CapNhatPhongViewModel();
+            model.PhongId = id;
+
+            try
+            {
+                // 1. Load Dropdown Khu trọ (tái sử dụng hàm cũ)
+                await LoadDropdownNhaTro(userId, model);
+
+                // 2. Lấy chi tiết phòng hiện tại từ API
+                using (var client = new HttpClient())
+                {
+                    client.BaseAddress = new Uri("http://localhost:5101/"); // Cổng API
+                    var response = await client.GetAsync($"api/phong/{id}");
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var json = await response.Content.ReadAsStringAsync();
+                        // Deserialize dynamic cho nhanh
+                        var p = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(json);
+
+                        // Map dữ liệu vào ViewModel
+                        model.TieuDe = p.tieuDe;
+                        model.GiaTien = (long)p.giaTien;
+                        model.DienTich = (decimal?)p.dienTich;
+                        model.TienCoc = (long?)p.tienCoc;
+                        model.SoNguoiToiDa = (int?)p.soNguoiToiDa;
+                        model.NhaTroId = (Guid)p.nhaTroId;
+
+                        // Xử lý hiển thị ảnh cũ
+                        string anhApi = (string)p.anhDaiDien;
+                        if (!string.IsNullOrEmpty(anhApi))
+                        {
+                            // Nếu ảnh chưa có domain thì thêm vào
+                            model.AnhHienTai = anhApi.StartsWith("http") ? anhApi : "http://localhost:5101" + anhApi;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ViewBag.Error = "Lỗi tải dữ liệu: " + ex.Message;
+            }
+
+            return View(model);
+        }
+
+        // POST: Thực hiện sửa
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> SuaPhong(CapNhatPhongViewModel model)
+        {
+            if (Session["UserId"] == null) return RedirectToAction("Login", "Auth");
+            var userId = Guid.Parse(Session["UserId"].ToString());
+
+            // Nếu ModelState lỗi, load lại dropdown và trả về view
+            if (!ModelState.IsValid)
+            {
+                await LoadDropdownNhaTro(userId, model);
+                return View(model);
+            }
+
+            try
+            {
+                using (var content = new MultipartFormDataContent())
+                {
+                    // Add các trường dữ liệu
+                    content.Add(new StringContent(model.NhaTroId.ToString()), "NhaTroId");
+                    content.Add(new StringContent(model.TieuDe ?? ""), "TieuDe");
+                    content.Add(new StringContent(model.GiaTien.ToString()), "GiaTien");
+                    content.Add(new StringContent(model.DienTich?.ToString() ?? "0"), "DienTich");
+                    content.Add(new StringContent(model.TienCoc?.ToString() ?? "0"), "TienCoc");
+                    content.Add(new StringContent(model.SoNguoiToiDa?.ToString() ?? "1"), "SoNguoiToiDa");
+
+                    // Nếu user chọn ảnh mới thì gửi, không thì thôi
+                    if (model.HinhAnhUpload != null && model.HinhAnhUpload.ContentLength > 0)
+                    {
+                        var fileContent = new StreamContent(model.HinhAnhUpload.InputStream);
+                        content.Add(fileContent, "HinhAnhUpload", model.HinhAnhUpload.FileName);
+                    }
+
+                    using (var client = new HttpClient())
+                    {
+                        client.BaseAddress = new Uri("http://localhost:5101/");
+                        // Gọi PUT thay vì POST
+                        var response = await client.PutAsync($"api/phong/{model.PhongId}?userId={userId}", content);
+
+                        if (response.IsSuccessStatusCode)
+                        {
+                            TempData["SuccessMessage"] = "Cập nhật phòng thành công!";
+                            return RedirectToAction("QuanLyPhong");
+                        }
+                        else
+                        {
+                            string err = await response.Content.ReadAsStringAsync();
+                            ViewBag.Error = "Lỗi API: " + err;
+                            await LoadDropdownNhaTro(userId, model);
+                            return View(model);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ViewBag.Error = "Lỗi hệ thống: " + ex.Message;
+                await LoadDropdownNhaTro(userId, model);
+                return View(model);
+            }
+        }
+
         // ============================================================
         // 3. THỐNG KÊ CHI TIẾT
         // ============================================================
@@ -326,6 +440,40 @@ namespace USER_QUANLYPHONGTRO.Controllers
             };
 
             return View(model);
+        }
+
+        public async Task<ActionResult> XoaPhong(Guid id)
+        {
+            if (Session["UserId"] == null) return RedirectToAction("Login", "Auth");
+            var userId = Guid.Parse(Session["UserId"].ToString());
+
+            try
+            {
+                using (var client = new HttpClient())
+                {
+                    // Sửa lại cổng API cho đúng (http://localhost:5101/)
+                    client.BaseAddress = new Uri("http://localhost:5101/");
+
+                    // Gọi API Delete
+                    var response = await client.DeleteAsync($"api/phong/{id}?userId={userId}");
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        TempData["SuccessMessage"] = "Đã xóa phòng thành công!";
+                    }
+                    else
+                    {
+                        TempData["ErrorMessage"] = "Lỗi xóa phòng: " + await response.Content.ReadAsStringAsync();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Lỗi hệ thống: " + ex.Message;
+            }
+
+            // Quay lại trang danh sách
+            return RedirectToAction("QuanLyPhong");
         }
 
         // ============================================================
