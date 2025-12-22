@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("RestAPI_QUANLYPHONGTRO")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9b4dec84b1c2c63827b53d91689f5edb3f254bd1")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e75b9a11e98bbc3e97d38bc0fc3accd53be747fe")]
 [assembly: System.Reflection.AssemblyProductAttribute("RestAPI_QUANLYPHONGTRO")]
 [assembly: System.Reflection.AssemblyTitleAttribute("RestAPI_QUANLYPHONGTRO")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
