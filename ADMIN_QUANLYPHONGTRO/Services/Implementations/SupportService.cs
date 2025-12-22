@@ -41,7 +41,7 @@ namespace ADMIN_QUANLYPHONGTRO.Services.Implementations
             return _apiClient.GetLoaiHoTroAsync();
         }
 
-        public Task<SupportStatistics> GetStatisticsAsync()
+        public Task<ADMIN_QUANLYPHONGTRO.ApiClients.SupportStatistics> GetStatisticsAsync()
         {
             return _apiClient.GetStatisticsAsync();
         }

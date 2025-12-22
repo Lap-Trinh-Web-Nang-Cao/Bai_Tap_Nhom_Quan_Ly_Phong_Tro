@@ -43,7 +43,7 @@ namespace ADMIN_QUANLYPHONGTRO.Services.Implementations
                 var statsTask = _dashboardApi.GetDashboardStatsAsync();
                 var monthlyRoomsTask = _dashboardApi.GetMonthlyRoomStatsAsync(12);
                 var statusDistributionTask = _dashboardApi.GetRoomStatusDistributionAsync();
-                var pendingRoomsTask = _dashboardApi.GetPendingRoomsAsync(5);
+                var topPendingRoomsTask = _dashboardApi.GetTopPendingRoomsAsync(5);  // ✅ Top 5 cho widget
                 var recentReportsTask = _dashboardApi.GetRecentReportsAsync(5);
                 var recentActivitiesTask = _dashboardApi.GetRecentActivitiesAsync(10);
 
@@ -52,7 +52,7 @@ namespace ADMIN_QUANLYPHONGTRO.Services.Implementations
                     statsTask,
                     monthlyRoomsTask,
                     statusDistributionTask,
-                    pendingRoomsTask,
+                    topPendingRoomsTask,
                     recentReportsTask,
                     recentActivitiesTask
                 );
@@ -66,11 +66,11 @@ namespace ADMIN_QUANLYPHONGTRO.Services.Implementations
                 var statusDistribution = await statusDistributionTask;
                 MapChartData(viewModel, monthlyRooms, statusDistribution);
 
-                // Map activities
-                var pendingRooms = await pendingRoomsTask;
+                // Map activities (sử dụng topPendingRoomsTask thay vì pendingRoomsTask)
+                var topPendingRooms = await topPendingRoomsTask;  // ✅ Top 5
                 var recentReports = await recentReportsTask;
                 var recentActivities = await recentActivitiesTask;
-                MapActivities(viewModel, pendingRooms, recentReports, recentActivities);
+                MapActivities(viewModel, topPendingRooms, recentReports, recentActivities);
             }
             catch (Exception ex)
             {
@@ -96,6 +96,9 @@ namespace ADMIN_QUANLYPHONGTRO.Services.Implementations
 
         private void MapStatistics(DashboardViewModel viewModel, DashboardStatsDto stats)
         {
+            if (stats == null)
+                return;
+
             viewModel.TotalRooms = stats.TotalRooms;
             viewModel.PendingRooms = stats.PendingRooms;
             viewModel.VerifiedHosts = stats.VerifiedHosts;
@@ -109,19 +112,32 @@ namespace ADMIN_QUANLYPHONGTRO.Services.Implementations
             RoomStatusDistributionDto statusDist)
         {
             // Map monthly rooms data
-            viewModel.RoomsChartData = monthlyRooms.Select(m => new MonthlyRoomData
-            {
-                Month = ParseMonthName(m.Month),
-                Count = m.NewRooms
-            }).ToList();
+            viewModel.RoomsChartData = monthlyRooms != null
+                ? monthlyRooms.Select(m => new MonthlyRoomData
+                {
+                    Month = ParseMonthName(m.Month),
+                    Count = m.NewRooms
+                }).ToList()
+                : Enumerable.Range(1, 12).Select(i => new MonthlyRoomData
+                {
+                    Month = new[] { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" }[i - 1],
+                    Count = 0
+                }).ToList();
 
             // Map status distribution
-            viewModel.RoomStatusChartData = new RoomStatusData
-            {
-                Approved = statusDist.Approved,
-                Pending = statusDist.Pending,
-                Locked = statusDist.Locked
-            };
+            viewModel.RoomStatusChartData = statusDist != null
+                ? new RoomStatusData
+                {
+                    Approved = statusDist.Approved,
+                    Pending = statusDist.Pending,
+                    Locked = statusDist.Locked
+                }
+                : new RoomStatusData
+                {
+                    Approved = 0,
+                    Pending = 0,
+                    Locked = 0
+                };
         }
 
         private void MapActivities(DashboardViewModel viewModel, 
@@ -129,39 +145,45 @@ namespace ADMIN_QUANLYPHONGTRO.Services.Implementations
             List<BaoCaoViPhamDto> recentReports, 
             List<ActivityLogDto> activities)
         {
-            // Map pending rooms
-            viewModel.PendingRoomsList = pendingRooms.Select(r => new PendingRoomItem
-            {
-                RoomId = r.PhongId,
-                Title = r.TieuDe ?? "Phòng trọ",
-                ImageUrl = "/Content/img/room-default.jpg", // Default image
-                Price = r.GiaTien,
-                OwnerName = "Chủ trọ", // TODO: Get from relationship
-                SubmittedDate = r.CreatedAt.DateTime
-            }).ToList();
+            // Map pending rooms (Top 5 cho widget)
+            viewModel.PendingRoomsList = pendingRooms != null
+                ? pendingRooms.Select(r => new PendingRoomItem
+                {
+                    RoomId = r.PhongId,
+                    Title = !string.IsNullOrEmpty(r.TieuDe) ? r.TieuDe : "Phòng trọ",
+                    ImageUrl = "/Content/img/room-default.jpg", // Default image
+                    Price = r.GiaTien,
+                    OwnerName = "Chủ trọ", // TODO: Get from relationship
+                    SubmittedDate = r.CreatedAt.DateTime
+                }).ToList()
+                : new List<PendingRoomItem>();
 
-            // Map recent reports - sử dụng đúng property names từ BaoCaoViPhamDto
-            viewModel.PendingReportsList = recentReports.Select(r => new PendingReportItem
-            {
-                ReportId = r.BaoCaoId,
-                ViolationType = r.TieuDe ?? "Vi phạm",
-                TargetType = r.LoaiThucThe ?? "Phòng",
-                TargetName = r.ThucTheId.HasValue ? $"#{r.ThucTheId}" : "N/A",
-                ReporterName = "User", // TODO: Get from relationship using NguoiBaoCao
-                ReportedDate = r.ThoiGianBaoCao?.DateTime ?? DateTime.Now,
-                Severity = r.TrangThai == "URGENT" ? "Cao" : (r.TrangThai == "CHO_XU_LY" ? "Trung bình" : "Thấp")
-            }).ToList();
+            // Map recent reports
+            viewModel.PendingReportsList = recentReports != null
+                ? recentReports.Select(r => new PendingReportItem
+                {
+                    ReportId = r.BaoCaoId,
+                    ViolationType = !string.IsNullOrEmpty(r.TieuDe) ? r.TieuDe : "Vi phạm",
+                    TargetType = !string.IsNullOrEmpty(r.LoaiThucThe) ? r.LoaiThucThe : "Phòng",
+                    TargetName = r.ThucTheId.HasValue ? $"#{r.ThucTheId}" : "N/A",
+                    ReporterName = "User", // TODO: Get from relationship using NguoiBaoCao
+                    ReportedDate = r.ThoiGianBaoCao?.DateTime ?? DateTime.Now,
+                    Severity = r.TrangThai == "URGENT" ? "Cao" : (r.TrangThai == "CHO_XU_LY" ? "Trung bình" : "Thấp")
+                }).ToList()
+                : new List<PendingReportItem>();
 
             // Map activity logs
-            viewModel.RecentActivities = activities.Select(a => new ActivityLog
-            {
-                Id = a.ActivityId.GetHashCode(),
-                Action = TranslateAction(a.Action),
-                Description = a.Description ?? "",
-                PerformedBy = a.PerformedBy ?? "Admin",
-                Timestamp = a.Timestamp,
-                Type = a.Type ?? "info"
-            }).ToList();
+            viewModel.RecentActivities = activities != null
+                ? activities.Select(a => new ActivityLog
+                {
+                    Id = (int)(a.ActivityId % int.MaxValue), // Convert long to int safely
+                    Action = TranslateAction(a.Action),
+                    Description = !string.IsNullOrEmpty(a.Description) ? a.Description : "",
+                    PerformedBy = !string.IsNullOrEmpty(a.PerformedBy) ? a.PerformedBy : "Admin",
+                    Timestamp = a.Timestamp,
+                    Type = !string.IsNullOrEmpty(a.Type) ? a.Type : "info"
+                }).ToList()
+                : new List<ActivityLog>();
         }
 
         private void LoadFallbackData(DashboardViewModel viewModel)

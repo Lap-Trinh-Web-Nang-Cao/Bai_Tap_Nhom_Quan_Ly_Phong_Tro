@@ -36,6 +36,6 @@ namespace ADMIN_QUANLYPHONGTRO.Services.Interfaces
         /// <summary>
         /// Lấy thống kê
         /// </summary>
-        Task<SupportStatistics> GetStatisticsAsync();
+        Task<ADMIN_QUANLYPHONGTRO.ApiClients.SupportStatistics> GetStatisticsAsync();
     }
 }

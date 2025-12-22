@@ -65,7 +65,7 @@
                     <div class="col col-stats ml-3 ml-sm-0">
                         <div class="numbers">
                             <p class="card-category">Tổng yêu cầu</p>
-                            <h4 class="card-title">@statistics.TotalRequests</h4>
+                            <h4 class="card-title" data-stat="total">@statistics.TotalRequests</h4>
                         </div>
                     </div>
                 </div>
@@ -86,7 +86,7 @@
                     <div class="col col-stats ml-3 ml-sm-0">
                         <div class="numbers">
                             <p class="card-category">Mới gửi</p>
-                            <h4 class="card-title">@statistics.NewRequests</h4>
+                            <h4 class="card-title" data-stat="new">@statistics.NewRequests</h4>
                         </div>
                     </div>
                 </div>
@@ -107,7 +107,7 @@
                     <div class="col col-stats ml-3 ml-sm-0">
                         <div class="numbers">
                             <p class="card-category">Đang xử lý</p>
-                            <h4 class="card-title">@statistics.ProcessingRequests</h4>
+                            <h4 class="card-title" data-stat="processing">@statistics.ProcessingRequests</h4>
                         </div>
                     </div>
                 </div>
@@ -128,7 +128,7 @@
                     <div class="col col-stats ml-3 ml-sm-0">
                         <div class="numbers">
                             <p class="card-category">Hoàn thành</p>
-                            <h4 class="card-title">@statistics.CompletedRequests</h4>
+                            <h4 class="card-title" data-stat="completed">@statistics.CompletedRequests</h4>
                         </div>
                     </div>
                 </div>
@@ -171,12 +171,12 @@
                     </div>
                     <div class="col-md-3">
                         <div class="form-group">
-                            <label>Lọc theo loại hỗ trợ</label>
+                            <label>Lọc theo loại</label>
                             <select class="form-control" id="typeFilter">
                                 <option value="">Tất cả loại</option>
                                 @foreach (var loai in loaiHoTros)
                                 {
-                                    <option value="@loai.TenLoai">@loai.TenLoai</option>
+                                    <option value="@loai.LoaiHoTroId">@loai.TenLoai</option>
                                 }
                             </select>
                         </div>
@@ -184,7 +184,14 @@
                     <div class="col-md-4">
                         <div class="form-group">
                             <label>Tìm kiếm</label>
-                            <input type="text" class="form-control" id="searchInput" placeholder="Nhập tiêu đề hoặc mô tả...">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="searchInput" placeholder="Nhập tiêu đề hoặc mô tả...">
+                                <div class="input-group-append">
+                                    <button type="button" class="btn btn-primary" id="btnSearchSupport">
+                                        <i class="fa fa-search"></i>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-2 d-flex align-items-end">
@@ -371,8 +378,18 @@
     <script src="~/Scripts/pages/support.js?v=@DateTime.Now.Ticks"></script>
     <script>
         $(function () {
-            if (window.SupportPage && typeof window.SupportPage.initIndex === 'function') {
-                window.SupportPage.initIndex();
+            // Initialize SupportPage with URLs from the view
+            if (window.SupportPage && typeof window.SupportPage.init === 'function') {
+                window.SupportPage.init({
+                    urls: {
+                        getSupports: '@Url.Action("GetSupports", "Support")',
+                        getSupportDetail: '@Url.Action("GetSupportDetail", "Support")',
+                        process: '@Url.Action("Process", "Support")',
+                        complete: '@Url.Action("Complete", "Support")',
+                        reject: '@Url.Action("Reject", "Support")',
+                        getStatistics: '@Url.Action("GetStatistics", "Support")'
+                    }
+                });
             }
         });
     </script>

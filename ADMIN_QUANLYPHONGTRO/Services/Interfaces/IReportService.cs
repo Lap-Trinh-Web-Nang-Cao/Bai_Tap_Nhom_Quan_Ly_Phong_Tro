@@ -42,6 +42,10 @@ namespace ADMIN_QUANLYPHONGTRO.Services.Interfaces
         Task<bool> DeleteReportAsync(string baoCaoId);
 
         /// <summary>
+        /// Cập nhật trạng thái báo cáo
+        /// </summary>
+        Task<ApiResponse<bool>> UpdateStatusAsync(string baoCaoId, string trangThai, string chiTiet = "");
+        /// <summary>
         /// Lấy danh sách loại vi phạm
         /// </summary>
         Task<List<ViPhamDto>> GetViolationTypesAsync();

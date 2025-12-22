@@ -541,13 +541,14 @@
                     // Update support counter with badge color
                     var supportElement = $('#supportPendingCount');
                     if (supportElement.length > 0) {
+                        // Show combined New + Processing requests
                         var pendingCount = (stats.NewRequests || 0) + (stats.ProcessingRequests || 0);
                         supportElement
                             .text(pendingCount)
                             .removeClass('badge-secondary')
                             .addClass('badge-info');
                         
-                        console.log('✅ Support statistics updated successfully');
+                        console.log('✅ Support statistics updated successfully. Pending count: ' + pendingCount);
                     } else {
                         console.warn('⚠️ Support counter element not found');
                     }
@@ -557,6 +558,54 @@
             },
             error: function (xhr, status, error) {
                 console.error('❌ Support statistics error:', error);
+                console.error('Status:', status);
+                console.error('Response:', xhr.responseText);
+            }
+        });
+    }
+
+    /**
+     * Load room statistics
+     */
+    function loadRoomStatistics() {
+        console.log('📊 Loading room statistics for sidebar...');
+
+        $.ajax({
+            url: '/Rooms/GetRoomStats',
+            type: 'GET',
+            dataType: 'json',
+            timeout: 5000,
+            success: function (response) {
+                console.log('✅ Room Statistics Response:', response);
+
+                if (response.success && response.data) {
+                    var stats = response.data;
+
+                    console.log('📈 Room stats data:', {
+                        pending: stats.Pending,
+                        approved: stats.Approved,
+                        locked: stats.Locked,
+                        total: stats.Total
+                    });
+
+                    // Update room counter with badge color
+                    var roomElement = $('a[href*="Rooms/Pending"] .badge');
+                    if (roomElement.length > 0) {
+                        roomElement
+                            .text(stats.Pending || 0)
+                            .removeClass('badge-secondary')
+                            .addClass('badge-warning');
+                        
+                        console.log('✅ Room statistics updated successfully');
+                    } else {
+                        console.warn('⚠️ Room counter element not found');
+                    }
+                } else {
+                    console.warn('⚠️ Invalid room response format:', response);
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error('❌ Room statistics error:', error);
                 console.error('Status:', status);
                 console.error('Response:', xhr.responseText);
             }
@@ -586,6 +635,7 @@
         loadHostStatistics();
         loadReportStatistics();
         loadSupportStatistics();
+        loadRoomStatistics();
 
         // Refresh statistics every 2 minutes
         setInterval(function () {
@@ -594,6 +644,7 @@
             loadHostStatistics();
             loadReportStatistics();
             loadSupportStatistics();
+            loadRoomStatistics();
         }, 120000);
 
         console.log('✅ Sidebar Manager Initialized Successfully');
@@ -616,6 +667,7 @@
             loadHostStatistics();
             loadReportStatistics();
             loadSupportStatistics();
+            loadRoomStatistics();
         }
     };
 

@@ -66,13 +66,4 @@ namespace ADMIN_QUANLYPHONGTRO.Models.DTO
         /// </summary>
         public string TenPhong { get; set; }
     }
-    
-    /// <summary>
-    /// DTO cho Loại hỗ trợ
-    /// </summary>
-    public class LoaiHoTroDto
-    {
-        public int LoaiHoTroId { get; set; }
-        public string TenLoai { get; set; }
-    }
 }

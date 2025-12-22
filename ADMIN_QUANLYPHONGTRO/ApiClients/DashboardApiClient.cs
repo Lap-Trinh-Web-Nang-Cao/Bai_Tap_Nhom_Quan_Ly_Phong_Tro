@@ -77,5 +77,21 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
         {
             return await GetAsync<int>($"{BASE_PATH}/users/new-this-month");
         }
+
+        /// <summary>
+        /// Lấy danh sách phòng chờ duyệt (với pagination) - Cho trang Xét duyệt
+        /// </summary>
+        public async Task<PagedResult<PhongDto>> GetPendingRoomsAsync(int pageIndex = 1, int pageSize = 10)
+        {
+            return await GetAsync<PagedResult<PhongDto>>($"{BASE_PATH}/rooms/pending?pageIndex={pageIndex}&pageSize={pageSize}");
+        }
+
+        /// <summary>
+        /// Lấy Top N phòng chờ duyệt - Cho Dashboard widget (mặc định Top 5)
+        /// </summary>
+        public async Task<List<PhongDto>> GetTopPendingRoomsAsync(int top = 5)
+        {
+            return await GetAsync<List<PhongDto>>($"{BASE_PATH}/rooms/pending-top?top={top}");
+        }
     }
 }

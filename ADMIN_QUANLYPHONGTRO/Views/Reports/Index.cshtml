@@ -62,7 +62,7 @@
                     <div class="col col-stats ml-3 ml-sm-0">
                         <div class="numbers">
                             <p class="card-category">Tổng báo cáo</p>
-                            <h4 class="card-title">@(Model != null ? Model.Count : 0)</h4>
+                            <h4 class="card-title" data-stat="total">@statistics.TotalReports</h4>
                         </div>
                     </div>
                 </div>
@@ -82,7 +82,7 @@
                     <div class="col col-stats ml-3 ml-sm-0">
                         <div class="numbers">
                             <p class="card-category">Chờ xử lý</p>
-                            <h4 class="card-title">@(Model != null ? Model.Count(r => r.TrangThai == "CHO_XU_LY") : 0)</h4>
+                            <h4 class="card-title" data-stat="pending">@statistics.PendingReports</h4>
                         </div>
                     </div>
                 </div>
@@ -102,7 +102,7 @@
                     <div class="col col-stats ml-3 ml-sm-0">
                         <div class="numbers">
                             <p class="card-category">Đã xử lý</p>
-                            <h4 class="card-title">@(Model != null ? Model.Count(r => r.TrangThai == "DA_XU_LY") : 0)</h4>
+                            <h4 class="card-title" data-stat="resolved">@statistics.ResolvedReports</h4>
                         </div>
                     </div>
                 </div>
@@ -122,7 +122,7 @@
                     <div class="col col-stats ml-3 ml-sm-0">
                         <div class="numbers">
                             <p class="card-category">Từ chối</p>
-                            <h4 class="card-title">@(Model != null ? Model.Count(r => r.TrangThai == "TU_CHOI") : 0)</h4>
+                            <h4 class="card-title" data-stat="rejected">@statistics.RejectedReports</h4>
                         </div>
                     </div>
                 </div>
@@ -140,15 +140,11 @@
                     <div class="card-title">Danh sách báo cáo vi phạm</div>
                     <div class="card-tools">
                         <button class="btn btn-info btn-border btn-round btn-sm mr-2" onclick="exportReports()">
-                            <span class="btn-label">
-                                <i class="fa fa-download"></i>
-                            </span>
+                            <span class="btn-label"><i class="fa fa-download"></i></span>
                             Export
                         </button>
                         <button class="btn btn-primary btn-border btn-round btn-sm" onclick="refreshTable()">
-                            <span class="btn-label">
-                                <i class="fa fa-sync-alt"></i>
-                            </span>
+                            <span class="btn-label"><i class="fa fa-sync-alt"></i></span>
                             Làm mới
                         </button>
                     </div>
@@ -157,7 +153,7 @@
             <div class="card-body">
                 <!-- Filters -->
                 <div class="row mb-3">
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <div class="form-group">
                             <label>Lọc theo trạng thái</label>
                             <select class="form-control" id="statusFilter">
@@ -169,7 +165,7 @@
                             </select>
                         </div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <div class="form-group">
                             <label>Lọc theo loại đối tượng</label>
                             <select class="form-control" id="typeFilter">
@@ -180,9 +176,22 @@
                             </select>
                         </div>
                     </div>
-                    <div class="col-md-4 d-flex align-items-end">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Tìm kiếm</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="searchInput" placeholder="Tìm theo tiêu đề, mô tả..." />
+                                <div class="input-group-append">
+                                    <button type="button" class="btn btn-primary" id="btnSearchReports">
+                                        <i class="fa fa-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
                         <button class="btn btn-secondary btn-block" onclick="clearFilters()">
-                            <i class="fa fa-times"></i> Xóa bộ lọc
+                            <i class="fa fa-times"></i> Xóa lọc
                         </button>
                     </div>
                 </div>
@@ -379,7 +388,8 @@
                 <div class="form-group">
                     <label for="resolveResult">Kết quả xử lý <span class="text-danger">*</span></label>
                     <textarea class="form-control" id="resolveResult" rows="4" 
-                              placeholder="Nhập kết quả xử lý vi phạm...">Đã xử lý vi phạm theo quy định.</textarea>
+                              placeholder="Nhập chi tiết kết quả xử lý báo cáo..."></textarea>
+                    <small class="text-muted d-block mt-2">Mô tả hành động đã thực hiện để xử lý báo cáo này</small>
                 </div>
             </div>
             <div class="modal-footer">
@@ -410,6 +420,7 @@
                     <label for="rejectReason">Lý do từ chối <span class="text-danger">*</span></label>
                     <textarea class="form-control" id="rejectReason" rows="4" 
                               placeholder="Nhập lý do từ chối báo cáo..." required></textarea>
+                    <small class="text-muted d-block mt-2">Giải thích rõ lý do từ chối để người dùng hiểu</small>
                 </div>
             </div>
             <div class="modal-footer">
@@ -426,8 +437,20 @@
     <script src="~/Scripts/pages/reports.js?v=@DateTime.Now.Ticks"></script>
     <script>
         $(function () {
-            if (window.ReportsPage && typeof window.ReportsPage.initIndex === 'function') {
-                window.ReportsPage.initIndex();
+            // Initialize ReportsPage with URLs from the view
+            if (window.ReportsPage && typeof window.ReportsPage.init === 'function') {
+                window.ReportsPage.init({
+                    urls:
+                    {
+                        getReports: '@Url.Action("GetReports", "Reports")',
+                        getReportDetail: '@Url.Action("GetReportDetail", "Reports")',
+                        start: '@Url.Action("Start", "Reports")',
+                        resolve: '@Url.Action("Resolve", "Reports")',
+                        reject: '@Url.Action("Reject", "Reports")',
+                        delete: '@Url.Action("Delete", "Reports")',
+                        getStatistics: '@Url.Action("GetStatistics", "Reports")'
+                    }
+                });
             }
         });
     </script>

@@ -1,5 +1,6 @@
 ﻿using ADMIN_QUANLYPHONGTRO.Models.Common;
 using ADMIN_QUANLYPHONGTRO.Models.DTO;
+using ADMIN_QUANLYPHONGTRO.Services.Interfaces;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -221,19 +222,15 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
         {
             try
             {
-                var request = new XuLyBaoCaoRequest
+                var request = new { id = id, ketQua = ketQua };
+                var response = await PostAsync<dynamic>("baocaovipham/resolve", request);
+                
+                if (response != null && response.success == true)
                 {
-                    TrangThai = "DA_XU_LY",
-                    KetQua = ketQua,
-                    NguoiXuLy = null // TODO: Lấy từ session admin
-                };
-
-                var result = await PutAsync<BaoCaoViPhamDto>(string.Format("{0}/{1}", BASE_ENDPOINT, id), request);
-                return new ApiResponse<bool>
-                {
-                    Success = result != null,
-                    Message = result != null ? "Xử lý thành công" : "Không thể xử lý báo cáo"
-                };
+                    return new ApiResponse<bool> { Success = true, Message = "Xử lý thành công" };
+                }
+                
+                return new ApiResponse<bool> { Success = false, Message = response?.message ?? "Không thể xử lý báo cáo" };
             }
             catch (Exception ex)
             {
@@ -249,19 +246,15 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
         {
             try
             {
-                var request = new XuLyBaoCaoRequest
+                var request = new { id = id, lyDo = lyDo };
+                var response = await PostAsync<dynamic>("baocaovipham/reject", request);
+                
+                if (response != null && response.success == true)
                 {
-                    TrangThai = "TU_CHOI",
-                    KetQua = lyDo,
-                    NguoiXuLy = null // TODO: Lấy từ session admin
-                };
-
-                var result = await PutAsync<BaoCaoViPhamDto>(string.Format("{0}/{1}", BASE_ENDPOINT, id), request);
-                return new ApiResponse<bool>
-                {
-                    Success = result != null,
-                    Message = result != null ? "Đã từ chối báo cáo" : "Không thể từ chối báo cáo"
-                };
+                    return new ApiResponse<bool> { Success = true, Message = "Đã từ chối báo cáo" };
+                }
+                
+                return new ApiResponse<bool> { Success = false, Message = response?.message ?? "Không thể từ chối báo cáo" };
             }
             catch (Exception ex)
             {
@@ -277,12 +270,45 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
         {
             try
             {
-                return await DeleteAsync(string.Format("{0}/{1}", BASE_ENDPOINT, id));
+                var request = new { id = id };
+                var response = await PostAsync<dynamic>("baocaovipham/delete", request);
+                return response != null && response.success == true;
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine(string.Format("❌ ReportApiClient.DeleteReport Error: {0}", ex.Message));
                 return false;
+            }
+        }
+
+        /// <summary>
+        /// Cập nhật trạng thái báo cáo
+        /// </summary>
+        public async Task<ApiResponse<bool>> UpdateStatus(string id, string trangThai, string chiTiet = "")
+        {
+            try
+            {
+                // Use PostAsync for start action (status = DANG_XU_LY)
+                if (trangThai == "DANG_XU_LY")
+                {
+                    var request = new { id = id };
+                    var response = await PostAsync<dynamic>("baocaovipham/start", request);
+                    
+                    if (response != null && response.success == true)
+                    {
+                        return new ApiResponse<bool> { Success = true, Message = $"Đã cập nhật trạng thái" };
+                    }
+                    
+                    return new ApiResponse<bool> { Success = false, Message = response?.message ?? "Không thể cập nhật trạng thái" };
+                }
+
+                // For other status changes, use resolve/reject
+                return new ApiResponse<bool> { Success = false, Message = "Không hỗ trợ cập nhật trạng thái này" };
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(string.Format("❌ ReportApiClient.UpdateStatus Error: {0}", ex.Message));
+                return new ApiResponse<bool> { Success = false, Message = ex.Message };
             }
         }
 
@@ -300,6 +326,66 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
             {
                 System.Diagnostics.Debug.WriteLine(string.Format("❌ ReportApiClient.GetViolationTypes Error: {0}", ex.Message));
                 return new List<ViPhamDto>();
+            }
+        }
+
+        /// <summary>
+        /// Lấy thống kê báo cáo từ Backend API
+        /// GET: /api/baocaovipham/statistics
+        /// </summary>
+        public async Task<ReportStatistics> GetStatistics()
+        {
+            try
+            {
+                // Call Backend API: GET /api/baocaovipham/statistics
+                var token = await GetAsync<JToken>("baocaovipham/statistics");
+                if (token == null)
+                {
+                    System.Diagnostics.Debug.WriteLine("⚠️ ReportApiClient.GetStatistics: response token is null");
+                    return new ReportStatistics { TotalReports = 0, PendingReports = 0, ProcessingReports = 0, ResolvedReports = 0, RejectedReports = 0 };
+                }
+
+                System.Diagnostics.Debug.WriteLine($"🔍 ReportApiClient.GetStatistics - received token type: {token.Type}");
+
+                if (token.Type == JTokenType.Object)
+                {
+                    var obj = (JObject)token;
+                    
+                    // Extract data from response wrapper
+                    var dataToken = obj["data"] ?? obj["Data"];
+                    if (dataToken != null && dataToken.Type == JTokenType.Object)
+                    {
+                        var data = (JObject)dataToken;
+                        
+                        System.Diagnostics.Debug.WriteLine($"✅ Parsing statistics data: {dataToken}");
+
+                        var stats = new ReportStatistics
+                        {
+                            TotalReports = data["tongSoBaoCao"]?.Value<int>() ?? 
+                                          data["TotalReports"]?.Value<int>() ?? 0,
+                            PendingReports = data["choXuLy"]?.Value<int>() ?? 
+                                            data["PendingReports"]?.Value<int>() ?? 0,
+                            ProcessingReports = data["dangXuLy"]?.Value<int>() ?? 
+                                               data["ProcessingReports"]?.Value<int>() ?? 0,
+                            ResolvedReports = data["daXuLy"]?.Value<int>() ?? 
+                                             data["ResolvedReports"]?.Value<int>() ?? 0,
+                            RejectedReports = data["tuChoi"]?.Value<int>() ?? 
+                                             data["RejectedReports"]?.Value<int>() ?? 0
+                        };
+
+                        System.Diagnostics.Debug.WriteLine($"✅ Statistics parsed: Total={stats.TotalReports}, Pending={stats.PendingReports}, Processing={stats.ProcessingReports}, Resolved={stats.ResolvedReports}, Rejected={stats.RejectedReports}");
+
+                        return stats;
+                    }
+                }
+
+                System.Diagnostics.Debug.WriteLine("⚠️ ReportApiClient.GetStatistics: Unable to parse response -> returning empty stats");
+                return new ReportStatistics { TotalReports = 0, PendingReports = 0, ProcessingReports = 0, ResolvedReports = 0, RejectedReports = 0 };
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ ReportApiClient.GetStatistics Error: {ex.Message}");
+                return new ReportStatistics { TotalReports = 0, PendingReports = 0, ProcessingReports = 0, ResolvedReports = 0, RejectedReports = 0 };
             }
         }
     }

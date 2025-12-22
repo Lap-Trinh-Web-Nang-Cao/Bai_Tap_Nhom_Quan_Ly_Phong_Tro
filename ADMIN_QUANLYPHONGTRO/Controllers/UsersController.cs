@@ -1,4 +1,5 @@
 ﻿using ADMIN_QUANLYPHONGTRO.ApiClients;
+using ADMIN_QUANLYPHONGTRO.Services;
 using ADMIN_QUANLYPHONGTRO.Services.Implementations;
 using ADMIN_QUANLYPHONGTRO.Services.Interfaces;
 using System;
@@ -10,18 +11,40 @@ using ADMIN_QUANLYPHONGTRO.Models.ViewModels;
 
 namespace ADMIN_QUANLYPHONGTRO.Controllers
 {
+    /// <summary>
+    /// UsersController - Quản lý người dùng
+    /// Token-based: check nếu có session Admin, không có thì redirect /
+    /// </summary>
+    [Filters.AllowAnonymous]
     public class UsersController : Controller
     {
         private readonly IUserService _service;
+        private readonly AdminAuthService _authService;
 
         public UsersController()
         {
             _service = new UserService();
+            _authService = new AdminAuthService();
+        }
+
+        /// <summary>
+        /// Kiểm tra Admin đã đăng nhập
+        /// </summary>
+        private bool CheckAdminSession()
+        {
+            if (!_authService.IsAdminLoggedIn())
+            {
+                System.Diagnostics.Debug.WriteLine("❌ UsersController: Admin not logged in, redirecting to /");
+                return false;
+            }
+            return true;
         }
 
         // GET: Users/Index - Danh sách người dùng (View)
         public async Task<ActionResult> Index(int page = 1, int pageSize = 10, string keyword = "")
         {
+            if (!CheckAdminSession()) return Redirect("/");
+
             try
             {
                 var pagedData = await _service.GetUsersAsync(page, pageSize, keyword);
@@ -47,7 +70,7 @@ namespace ADMIN_QUANLYPHONGTRO.Controllers
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ UsersController.Index Error: {ex.Message}\n{ex.StackTrace}");
+                System.Diagnostics.Debug.WriteLine(string.Format("❌ UsersController.Index Error: {0}\n{1}", ex.Message, ex.StackTrace));
                 ViewBag.Error = "Lỗi khi tải danh sách người dùng";
                 ViewBag.ErrorDetails = ex.Message;
                 return View(new List<UserItemViewModel>());
@@ -57,6 +80,8 @@ namespace ADMIN_QUANLYPHONGTRO.Controllers
         // GET: Users/Details - Chi tiết người dùng
         public async Task<ActionResult> Details(string id)
         {
+            if (!CheckAdminSession()) return Redirect("/");
+
             try
             {
                 var result = await _service.GetUserByIdAsync(id);
@@ -66,25 +91,30 @@ namespace ADMIN_QUANLYPHONGTRO.Controllers
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ UsersController.Details Error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine(string.Format("❌ UsersController.Details Error: {0}", ex.Message));
                 return HttpNotFound();
             }
         }
 
-        // ============ STATISTICS API ============
+        // ============ API METHODS (Token-based check) ============
 
         /// <summary>
-        /// API: Lấy thống kê người dùng (cho sidebar)
+        /// API: Lấy thống kê người dùng
         /// </summary>
         [HttpGet]
         public async Task<JsonResult> GetUserStatistics()
         {
+            if (!CheckAdminSession())
+            {
+                return Json(new { success = false, message = "Admin session expired", redirect = "/" }, JsonRequestBehavior.AllowGet);
+            }
+
             try
             {
                 var apiClient = new UserApiClient();
                 var stats = await apiClient.GetUserStatisticsAsync();
                 
-                System.Diagnostics.Debug.WriteLine($"✅ User Statistics: Tenants={stats.TotalTenants}, Landlords={stats.TotalLandlords}, Admins={stats.TotalAdmins}");
+                System.Diagnostics.Debug.WriteLine(string.Format("✅ User Statistics: Tenants={0}, Landlords={1}, Admins={2}", stats.TotalTenants, stats.TotalLandlords, stats.TotalAdmins));
                 
                 return Json(new
                 {
@@ -94,7 +124,7 @@ namespace ADMIN_QUANLYPHONGTRO.Controllers
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ GetUserStatistics Error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine(string.Format("❌ GetUserStatistics Error: {0}", ex.Message));
                 return Json(new
                 {
                     success = false,
@@ -103,25 +133,34 @@ namespace ADMIN_QUANLYPHONGTRO.Controllers
             }
         }
 
-        // ============ DATATABLES API METHODS ============
-
         /// <summary>
-        /// API cho DataTables: Lấy danh sách người dùng với server-side processing
+        /// API cho DataTables: Lấy danh sách người dùng
         /// </summary>
         [HttpPost]
         public async Task<JsonResult> GetUsers()
         {
+            if (!CheckAdminSession())
+            {
+                return Json(new
+                {
+                    draw = Request.Form["draw"],
+                    recordsTotal = 0,
+                    recordsFiltered = 0,
+                    error = "Admin session expired",
+                    redirect = "/",
+                    data = new List<object>()
+                });
+            }
+
             try
             {
-                // Lấy tham số từ DataTables request
                 var draw = Request.Form["draw"];
                 var start = int.Parse(Request.Form["start"] ?? "0");
                 var length = int.Parse(Request.Form["length"] ?? "10");
                 var searchValue = Request.Form["search[value]"] ?? "";
                 
-                // Custom filters
                 var vaiTroIdStr = Request.Form["vaiTroId"];
-                var statusStr = Request.Form["status"]; // Frontend gửi "active" hoặc "locked"
+                var statusStr = Request.Form["status"];
                 var keywordStr = Request.Form["keyword"];
 
                 int? vaiTroId = null;
@@ -130,29 +169,21 @@ namespace ADMIN_QUANLYPHONGTRO.Controllers
                     vaiTroId = vaiTro;
                 }
 
-                // Combine search sources
                 string keyword = string.IsNullOrEmpty(keywordStr) ? searchValue : keywordStr;
 
-                // Convert frontend "status" filter thành "isKhoa" boolean
                 bool? isKhoa = null;
                 if (!string.IsNullOrEmpty(statusStr))
                 {
                     if (statusStr.ToLower() == "locked")
-                        isKhoa = true; // Đã khóa
+                        isKhoa = true;
                     else if (statusStr.ToLower() == "active")
-                        isKhoa = false; // Không khóa
+                        isKhoa = false;
                 }
 
-                // Tính toán pageIndex từ start và length
                 int pageIndex = (start / length) + 1;
 
-                System.Diagnostics.Debug.WriteLine($"🔍 GetUsers: start={start}, length={length}, pageIndex={pageIndex}");
-                System.Diagnostics.Debug.WriteLine($"🔍 GetUsers filter: vaiTroId={vaiTroId}, isKhoa={isKhoa}, keyword={keyword}");
-
-                // Gọi service để lấy dữ liệu từ API Backend
                 var pagedData = await _service.GetUsersAsync(pageIndex, length, keyword, vaiTroId, isKhoa);
 
-                // Map dữ liệu sang object cho DataTables
                 var users = new List<object>();
                 if (pagedData?.Items != null)
                 {
@@ -173,21 +204,17 @@ namespace ADMIN_QUANLYPHONGTRO.Controllers
                     }).Cast<object>().ToList();
                 }
 
-                var result = new
+                return Json(new
                 {
                     draw = draw,
                     recordsTotal = pagedData?.TotalRecords ?? 0,
                     recordsFiltered = pagedData?.TotalRecords ?? 0,
                     data = users
-                };
-
-                System.Diagnostics.Debug.WriteLine($"✅ GetUsers result: {result.recordsTotal} records, filtered: {result.recordsFiltered}");
-
-                return Json(result);
+                });
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ UsersController.GetUsers Error: {ex.Message}\n{ex.StackTrace}");
+                System.Diagnostics.Debug.WriteLine(string.Format("❌ UsersController.GetUsers Error: {0}\n{1}", ex.Message, ex.StackTrace));
                 return Json(new
                 {
                     draw = Request.Form["draw"],
@@ -200,65 +227,58 @@ namespace ADMIN_QUANLYPHONGTRO.Controllers
         }
 
         /// <summary>
-        /// API: Lấy chi tiết người dùng để hiển thị trong Modal
+        /// API: Lấy chi tiết người dùng
         /// </summary>
         [HttpGet]
         public async Task<JsonResult> GetUserDetail(string id)
         {
+            if (!CheckAdminSession())
+            {
+                return Json(new { success = false, message = "Admin session expired", redirect = "/" }, JsonRequestBehavior.AllowGet);
+            }
+
             try
             {
                 if (string.IsNullOrEmpty(id))
-                    return Json(
-                        new { success = false, message = "ID không hợp lệ" },
-                        JsonRequestBehavior.AllowGet
-                    );
+                    return Json(new { success = false, message = "ID không hợp lệ" }, JsonRequestBehavior.AllowGet);
 
                 var result = await _service.GetUserByIdAsync(id);
 
                 if (result == null || !result.Success || result.Data == null)
-                    return Json(
-                        new { success = false, message = result?.Message ?? "Không tìm thấy người dùng" },
-                        JsonRequestBehavior.AllowGet
-                    );
+                    return Json(new { success = false, message = result?.Message ?? "Không tìm thấy người dùng" }, JsonRequestBehavior.AllowGet);
 
                 var user = result.Data;
 
-                return Json(
-                    new
+                return Json(new
+                {
+                    success = true,
+                    data = new
                     {
-                        success = true,
-                        data = new
-                        {
-                            NguoiDungId = user.NguoiDungId,
-                            HoTen = user.HoTen ?? "Chưa cập nhật",
-                            Email = user.Email ?? "",
-                            DienThoai = user.DienThoai ?? "",
-                            SoCCCD = user.LoaiGiayTo ?? "",
-                            Avatar = user.Avatar ?? "/Content/img/default-avatar.png",
-                            VaiTroId = user.VaiTroId,
-                            VaiTroName = user.VaiTroName ?? GetRoleName(user.VaiTroId),
-                            IsKhoa = user.IsKhoa,
-                            IsEmailXacThuc = user.IsEmailXacThuc,
-                            NgayDangKy = user.CreatedAt,
-                            SoPhongDaDang = user.SoPhongDaDang,
-                            SoDatPhong = user.SoDatPhong,
-                            DiaChi = "-",
-                            GhiChu = user.GhiChu ?? "-",
-                            CCCDMatTruoc = "/Content/img/no-image.png",
-                            CCCDMatSau = "/Content/img/no-image.png",
-                            Rating = 0
-                        }
-                    },
-                    JsonRequestBehavior.AllowGet
-                );
+                        NguoiDungId = user.NguoiDungId,
+                        HoTen = user.HoTen ?? "Chưa cập nhật",
+                        Email = user.Email ?? "",
+                        DienThoai = user.DienThoai ?? "",
+                        SoCCCD = user.LoaiGiayTo ?? "",
+                        Avatar = user.Avatar ?? "/Content/img/default-avatar.png",
+                        VaiTroId = user.VaiTroId,
+                        VaiTroName = user.VaiTroName ?? GetRoleName(user.VaiTroId),
+                        IsKhoa = user.IsKhoa,
+                        IsEmailXacThuc = user.IsEmailXacThuc,
+                        NgayDangKy = user.CreatedAt,
+                        SoPhongDaDang = user.SoPhongDaDang,
+                        SoDatPhong = user.SoDatPhong,
+                        DiaChi = "-",
+                        GhiChu = user.GhiChu ?? "-",
+                        CCCDMatTruoc = "/Content/img/no-image.png",
+                        CCCDMatSau = "/Content/img/no-image.png",
+                        Rating = 0
+                    }
+                }, JsonRequestBehavior.AllowGet);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ UsersController.GetUserDetail Error: {ex.Message}");
-                return Json(
-                    new { success = false, message = ex.Message },
-                    JsonRequestBehavior.AllowGet
-                );
+                System.Diagnostics.Debug.WriteLine(string.Format("❌ UsersController.GetUserDetail Error: {0}", ex.Message));
+                return Json(new { success = false, message = ex.Message }, JsonRequestBehavior.AllowGet);
             }
         }
 
@@ -268,6 +288,11 @@ namespace ADMIN_QUANLYPHONGTRO.Controllers
         [HttpPost]
         public async Task<JsonResult> CreateUser(CreateUserRequest request)
         {
+            if (!CheckAdminSession())
+            {
+                return Json(new { success = false, message = "Admin session expired", redirect = "/" });
+            }
+
             try
             {
                 if (request == null)
@@ -302,7 +327,7 @@ namespace ADMIN_QUANLYPHONGTRO.Controllers
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ UsersController.CreateUser Error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine(string.Format("❌ UsersController.CreateUser Error: {0}", ex.Message));
                 return Json(new { success = false, message = ex.Message });
             }
         }
@@ -313,6 +338,11 @@ namespace ADMIN_QUANLYPHONGTRO.Controllers
         [HttpPost]
         public async Task<JsonResult> LockUser(string id)
         {
+            if (!CheckAdminSession())
+            {
+                return Json(new { success = false, message = "Admin session expired", redirect = "/" });
+            }
+
             try
             {
                 if (string.IsNullOrEmpty(id))
@@ -327,7 +357,7 @@ namespace ADMIN_QUANLYPHONGTRO.Controllers
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ UsersController.LockUser Error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine(string.Format("❌ UsersController.LockUser Error: {0}", ex.Message));
                 return Json(new { success = false, message = ex.Message });
             }
         }
@@ -338,6 +368,11 @@ namespace ADMIN_QUANLYPHONGTRO.Controllers
         [HttpPost]
         public async Task<JsonResult> UnlockUser(string id)
         {
+            if (!CheckAdminSession())
+            {
+                return Json(new { success = false, message = "Admin session expired", redirect = "/" });
+            }
+
             try
             {
                 if (string.IsNullOrEmpty(id))
@@ -352,7 +387,7 @@ namespace ADMIN_QUANLYPHONGTRO.Controllers
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ UsersController.UnlockUser Error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine(string.Format("❌ UsersController.UnlockUser Error: {0}", ex.Message));
                 return Json(new { success = false, message = ex.Message });
             }
         }

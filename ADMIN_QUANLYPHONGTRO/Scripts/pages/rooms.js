@@ -56,15 +56,21 @@ var RoomsPage = (function ($) {
                 type: 'POST',
                 dataType: 'json',
                 data: function (d) {
-                    // Thêm filter parameters
+                    // NOTE: Backend MVC action đang nhận (draw, start, length, status, keyword)
+                    // nên gửi đúng tên param để filter hoạt động.
                     d.status = $('#filterStatus').val();
-                    d.search = $('#filterKeyword').val().trim();
+                    d.keyword = $('#filterKeyword').val().trim();
+
+                    // Nếu DataTables tự gửi search[value] thì cũng set cho tương thích
+                    if (!d.search) d.search = {};
+                    d.search.value = d.keyword;
+
                     console.log('📤 Sending DataTables request:', {
                         draw: d.draw,
                         start: d.start,
                         length: d.length,
                         status: d.status,
-                        search: d.search
+                        keyword: d.keyword
                     });
                 },
                 dataSrc: function (json) {
@@ -304,27 +310,48 @@ var RoomsPage = (function ($) {
     }
 
     function applyFilter() {
-        console.log('🔍 Applying filter with:', {
-            status: $('#filterStatus').val(),
-            keyword: $('#filterKeyword').val().trim()
-        });
-        
-        if (roomsTable) {
-            roomsTable.ajax.reload(null, false);
-        }
+        var status = $('#filterStatus').val();
+        var keyword = $('#filterKeyword').val().trim();
+
+        console.log('🔍 Applying filter with:', { status: status, keyword: keyword });
+
+        if (!roomsTable) return;
+
+        // Không dùng DataTables built-in search (vì server đã xử lý keyword)
+        roomsTable.ajax.reload(null, true);
     }
 
     function refreshTable() {
         console.log('🔄 Refreshing table...');
-        // Reset filters
+
         $('#filterStatus').val('pending');
         $('#filterKeyword').val('');
-        
+
         if (roomsTable) {
-            roomsTable.ajax.reload(null, true); // true = reset to page 1
+            roomsTable.ajax.reload(null, true);
         }
-        
+
         loadStats();
+    }
+
+    // helper: update sidebar badges
+    function updateRoomBadges(stats) {
+        if (!stats) return;
+
+        // Support both {Pending} and {pending}
+        var pending = (typeof stats.pending !== 'undefined') ? stats.pending : stats.Pending;
+        var approved = (typeof stats.approved !== 'undefined') ? stats.approved : stats.Approved;
+        var locked = (typeof stats.locked !== 'undefined') ? stats.locked : stats.Locked;
+
+        var $pending = $('#roomPendingCount');
+        if ($pending.length) $pending.text(pending || 0);
+
+        // If your sidebar has these ids, update them too (safe if not exist)
+        var $approved = $('#roomApprovedCount');
+        if ($approved.length) $approved.text(approved || 0);
+
+        var $locked = $('#roomLockedCount');
+        if ($locked.length) $locked.text(locked || 0);
     }
 
     // ============ MODAL EVENTS ============
@@ -473,7 +500,7 @@ var RoomsPage = (function ($) {
             data: { id: roomId },
             dataType: 'json',
             success: function (response) {
-                if (response.success) {
+                if (response && response.success) {
                     swal({
                         title: 'Thành công!',
                         text: response.message || 'Đã duyệt phòng',
@@ -481,15 +508,17 @@ var RoomsPage = (function ($) {
                         button: 'OK'
                     }).then(function () {
                         $('#roomDetailModal').modal('hide');
-                        roomsTable.ajax.reload(null, false);
+                        // reload table + stats so UI changes immediately
+                        if (roomsTable) roomsTable.ajax.reload(null, false);
                         loadStats();
                     });
                 } else {
-                    swal('Lỗi', response.message || 'Không thể duyệt phòng', 'error');
+                    swal('Lỗi', (response && response.message) ? response.message : 'Không thể duyệt phòng', 'error');
                 }
             },
             error: function (xhr, error) {
                 console.error('❌ Approve error:', error);
+                console.error('Response:', xhr && xhr.responseText);
                 swal('Lỗi', 'Có lỗi xảy ra khi duyệt phòng', 'error');
             }
         });
@@ -584,7 +613,7 @@ var RoomsPage = (function ($) {
             data: { id: roomId, reason: reason },
             dataType: 'json',
             success: function (response) {
-                if (response.success) {
+                if (response && response.success) {
                     swal({
                         title: 'Thành công!',
                         text: response.message || 'Đã từ chối phòng',
@@ -592,15 +621,16 @@ var RoomsPage = (function ($) {
                         button: 'OK'
                     }).then(function () {
                         $('#roomDetailModal').modal('hide');
-                        roomsTable.ajax.reload(null, false);
+                        if (roomsTable) roomsTable.ajax.reload(null, false);
                         loadStats();
                     });
                 } else {
-                    swal('Lỗi', response.message || 'Không thể từ chối', 'error');
+                    swal('Lỗi', (response && response.message) ? response.message : 'Không thể từ chối', 'error');
                 }
             },
             error: function (xhr, error) {
                 console.error('❌ Reject error:', error);
+                console.error('Response:', xhr && xhr.responseText);
                 swal('Lỗi', 'Có lỗi xảy ra khi từ chối', 'error');
             }
         });
@@ -647,22 +677,23 @@ var RoomsPage = (function ($) {
             data: { id: roomId, isLocked: shouldLock },
             dataType: 'json',
             success: function (response) {
-                if (response.success) {
+                if (response && response.success) {
                     swal({
                         title: 'Thành công!',
                         text: response.message,
                         icon: 'success',
                         button: 'OK'
                     }).then(function () {
-                        roomsTable.ajax.reload(null, false);
+                        if (roomsTable) roomsTable.ajax.reload(null, false);
                         loadStats();
                     });
                 } else {
-                    swal('Lỗi', response.message || 'Không thể thực hiện', 'error');
+                    swal('Lỗi', (response && response.message) ? response.message : 'Không thể thực hiện', 'error');
                 }
             },
             error: function (xhr, error) {
                 console.error('❌ Toggle lock error:', error);
+                console.error('Response:', xhr && xhr.responseText);
                 swal('Lỗi', 'Có lỗi xảy ra', 'error');
             }
         });
@@ -677,16 +708,16 @@ var RoomsPage = (function ($) {
             type: 'GET',
             dataType: 'json',
             success: function (response) {
-                if (response.success && response.data) {
+                if (response && response.success && response.data) {
                     console.log('✅ Room stats loaded:', response.data);
-                    // Update sidebar stats if needed
-                    if (typeof updateRoomStats === 'function') {
-                        updateRoomStats(response.data);
-                    }
+                    updateRoomBadges(response.data);
+                } else {
+                    console.log('⚠️ Room stats response invalid:', response);
                 }
             },
-            error: function () {
+            error: function (xhr) {
                 console.log('⚠️ Could not load stats');
+                if (xhr && xhr.responseText) console.log(xhr.responseText);
             }
         });
     }

@@ -144,16 +144,21 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
             try
             {
                 var response = await GetAsync<JObject>("phong/stats");
-                
+
                 if (response == null)
                     return new RoomStatsDto { Total = 0, Pending = 0, Approved = 0, Locked = 0 };
 
+                // Backend có thể trả về 2 dạng:
+                // 1) { total, pending, approved, locked }
+                // 2) { success, message, data: { total, pending, approved, locked } }
+                var data = response["data"] as JObject ?? response;
+
                 return new RoomStatsDto
                 {
-                    Total = response["total"]?.Value<int>() ?? 0,
-                    Pending = response["pending"]?.Value<int>() ?? 0,
-                    Approved = response["approved"]?.Value<int>() ?? 0,
-                    Locked = response["locked"]?.Value<int>() ?? 0
+                    Total = data["total"]?.Value<int>() ?? 0,
+                    Pending = data["pending"]?.Value<int>() ?? 0,
+                    Approved = data["approved"]?.Value<int>() ?? 0,
+                    Locked = data["locked"]?.Value<int>() ?? 0
                 };
             }
             catch (Exception ex)

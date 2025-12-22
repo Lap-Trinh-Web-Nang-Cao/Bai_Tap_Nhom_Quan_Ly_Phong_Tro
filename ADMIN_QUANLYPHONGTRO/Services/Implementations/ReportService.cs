@@ -124,6 +124,23 @@ namespace ADMIN_QUANLYPHONGTRO.Services.Implementations
         }
 
         /// <summary>
+        /// Cập nhật trạng thái báo cáo
+        /// </summary>
+        public async Task<ApiResponse<bool>> UpdateStatusAsync(string baoCaoId, string trangThai, string chiTiet = "")
+        {
+            try
+            {
+                var response = await _apiClient.UpdateStatus(baoCaoId, trangThai, chiTiet);
+                return response;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ ReportService.UpdateStatusAsync Error: {ex.Message}");
+                return new ApiResponse<bool> { Success = false, Message = ex.Message };
+            }
+        }
+
+        /// <summary>
         /// Lấy danh sách loại vi phạm
         /// </summary>
         public async Task<List<ViPhamDto>> GetViolationTypesAsync()
@@ -146,21 +163,22 @@ namespace ADMIN_QUANLYPHONGTRO.Services.Implementations
         {
             try
             {
-                var allReports = await _apiClient.GetAllReports();
-                
-                return new ReportStatistics
-                {
-                    TotalReports = allReports.Count,
-                    PendingReports = allReports.Count(x => x.TrangThai == "CHO_XU_LY"),
-                    ProcessingReports = allReports.Count(x => x.TrangThai == "DANG_XU_LY"),
-                    ResolvedReports = allReports.Count(x => x.TrangThai == "DA_XU_LY"),
-                    RejectedReports = allReports.Count(x => x.TrangThai == "TU_CHOI")
-                };
+                // Gọi Backend API để lấy statistics thay vì tính local
+                var stats = await _apiClient.GetStatistics();
+                System.Diagnostics.Debug.WriteLine($"✅ ReportService.GetStatisticsAsync: Total={stats.TotalReports}, Pending={stats.PendingReports}, Processing={stats.ProcessingReports}, Resolved={stats.ResolvedReports}, Rejected={stats.RejectedReports}");
+                return stats;
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"❌ ReportService.GetStatisticsAsync Error: {ex.Message}");
-                return new ReportStatistics();
+                return new ReportStatistics
+                {
+                    TotalReports = 0,
+                    PendingReports = 0,
+                    ProcessingReports = 0,
+                    ResolvedReports = 0,
+                    RejectedReports = 0
+                };
             }
         }
     }
