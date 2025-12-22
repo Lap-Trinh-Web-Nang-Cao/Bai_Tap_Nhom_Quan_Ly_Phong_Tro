@@ -17,8 +17,13 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
             _service = service;
         }
 
-        // API Đăng ký (Ai cũng gọi được -> Không cần [Authorize])
+        // ===== PUBLIC ENDPOINTS (Khách vãng lai) =====
+
+        /// <summary>
+        /// API Đăng ký - Ai cũng gọi được
+        /// </summary>
         [HttpPost("register")]
+        [AllowAnonymous]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -29,8 +34,11 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
             return Ok(new { message = "Đăng ký thành công!" });
         }
 
-        // API Đăng nhập
+        /// <summary>
+        /// API Đăng nhập - Ai cũng gọi được
+        /// </summary>
         [HttpPost("login")]
+        [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
             try
@@ -42,16 +50,19 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message }); // Trả về lỗi nếu bị khóa
+                return BadRequest(new { message = ex.Message });
             }
         }
 
-        // API Lấy thông tin bản thân (Cần đăng nhập -> Có [Authorize])
+        // ===== AUTHENTICATED USER ENDPOINTS (Đã đăng nhập) =====
+
+        /// <summary>
+        /// API Lấy thông tin bản thân - Yêu cầu đăng nhập
+        /// </summary>
         [HttpGet("me")]
-        [Authorize]
+        [Authorize(Policy = "AuthenticatedOnly")]
         public async Task<IActionResult> GetMyProfile()
         {
-            // Lấy ID từ Token
             var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdStr)) return Unauthorized();
 
@@ -60,20 +71,21 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
 
             if (user == null) return NotFound();
 
-            // Ẩn mật khẩu trước khi trả về
             user.PasswordHash = null;
-
             return Ok(user);
         }
 
-        [HttpPut("me")] // PUT: api/nguoidung/me
-        [Authorize] // Bắt buộc đăng nhập
+        /// <summary>
+        /// API Cập nhật hồ sơ bản thân - Yêu cầu đăng nhập
+        /// </summary>
+        [HttpPut("me")]
+        [Authorize(Policy = "AuthenticatedOnly")]
         public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest request)
         {
-            // Lấy ID từ Token (đảm bảo chỉ sửa của chính mình)
-            var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdStr)) return Unauthorized();
+            
             var userId = Guid.Parse(userIdStr);
-
             var result = await _service.UpdateProfileAsync(userId, request);
 
             if (!result) return NotFound("Không tìm thấy người dùng.");
@@ -81,16 +93,19 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
             return Ok(new { message = "Cập nhật thông tin thành công!" });
         }
 
+        /// <summary>
+        /// API Đổi mật khẩu - Yêu cầu đăng nhập
+        /// </summary>
         [HttpPut("change-password")]
-        [Authorize]
+        [Authorize(Policy = "AuthenticatedOnly")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            // Lấy ID từ Token
-            var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdStr)) return Unauthorized();
+            
             var userId = Guid.Parse(userIdStr);
-
             var result = await _service.ChangePasswordAsync(userId, request);
 
             if (!result)
@@ -101,17 +116,17 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
             return Ok(new { message = "Đổi mật khẩu thành công!" });
         }
 
-        // ===== ADMIN ENDPOINTS =====
+        // ===== ADMIN ONLY ENDPOINTS =====
 
         /// <summary>
-        /// GET: /api/nguoidung/statistics - Lấy thống kê người dùng
+        /// GET: /api/nguoidung/statistics - Lấy thống kê người dùng (Admin only)
         /// </summary>
         [HttpGet("statistics")]
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> GetStatistics()
         {
             try
             {
-                // Đếm theo vai trò
                 var totalUsers = await _service.GetUsersAsync(1, int.MaxValue, "");
                 var totalTenants = await _service.GetUsersAsync(1, int.MaxValue, "", 3, null);
                 var totalLandlords = await _service.GetUsersAsync(1, int.MaxValue, "", 2, null);
@@ -138,10 +153,10 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
         }
 
         /// <summary>
-        /// GET: /api/nguoidung - Lấy danh sách users (phân trang) với filter
+        /// GET: /api/nguoidung - Lấy danh sách users (Admin only)
         /// </summary>
         [HttpGet]
-        // [Authorize]  // ⚠️ TEMPORARILY DISABLED FOR TESTING
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> GetUsers(
             [FromQuery] int pageIndex = 1, 
             [FromQuery] int pageSize = 10, 
@@ -152,9 +167,7 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
             try
             {
                 var result = await _service.GetUsersAsync(pageIndex, pageSize, keyword, vaiTroId, isKhoa);
-                
                 System.Diagnostics.Debug.WriteLine($"✅ GetUsers API: {result.TotalCount} records");
-                
                 return Ok(result);
             }
             catch (Exception ex)
@@ -165,10 +178,10 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
         }
 
         /// <summary>
-        /// GET: /api/nguoidung/{id} - Lấy chi tiết user
+        /// GET: /api/nguoidung/{id} - Lấy chi tiết user (Admin only)
         /// </summary>
         [HttpGet("{id}")]
-        // [Authorize]
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> GetUserDetail(string id)
         {
             if (!Guid.TryParse(id, out var userId))
@@ -189,10 +202,10 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
         }
 
         /// <summary>
-        /// POST: /api/nguoidung/admin-create - Admin tạo user mới
+        /// POST: /api/nguoidung/admin-create - Admin tạo user mới (Admin only)
         /// </summary>
         [HttpPost("admin-create")]
-        // [Authorize]  // ⚠️ TEMPORARILY DISABLED FOR TESTING
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> AdminCreateUser([FromBody] AdminCreateUserRequest request)
         {
             if (!ModelState.IsValid) 
@@ -213,10 +226,10 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
         }
 
         /// <summary>
-        /// PUT: /api/nguoidung/{id}/lock - Khóa tài khoản
+        /// PUT: /api/nguoidung/{id}/lock - Khóa tài khoản (Admin only)
         /// </summary>
         [HttpPut("{id}/lock")]
-        // [Authorize]  // ⚠️ TEMPORARILY DISABLED FOR TESTING
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> LockUser(string id)
         {
             if (!Guid.TryParse(id, out var userId))
@@ -237,10 +250,10 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
         }
 
         /// <summary>
-        /// PUT: /api/nguoidung/{id}/unlock - Mở khóa tài khoản
+        /// PUT: /api/nguoidung/{id}/unlock - Mở khóa tài khoản (Admin only)
         /// </summary>
         [HttpPut("{id}/unlock")]
-        // [Authorize]  // ⚠️ TEMPORARILY DISABLED FOR TESTING
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> UnlockUser(string id)
         {
             if (!Guid.TryParse(id, out var userId))

@@ -8,7 +8,7 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    // [Authorize] // Toàn bộ Controller này yêu cầu đăng nhập (Tắt để test Fake Login)
+    [Authorize] // Toàn bộ Controller này yêu cầu đăng nhập
     public class DatPhongController : ControllerBase
     {
         private readonly IDatPhongService _service;
@@ -21,91 +21,50 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
         private Guid GetUserId()
         {
             var id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!string.IsNullOrEmpty(id)) return Guid.Parse(id);
-
-            // Fallback cho Fake Login hỗ trợ "thông báo thật"
-            return Guid.Parse("00000000-0000-0000-0000-000000000001");
+            return Guid.Parse(id);
         }
 
-        //1. Người thuê: Đặt phòng
+        // 1. Người thuê: Đặt phòng
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateDatPhongRequest request)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(new { Success = false, Errors = ModelState, Message = "Dữ liệu không hợp lệ" });
-
+            if (!ModelState.IsValid) return BadRequest(ModelState);
             try
             {
                 var result = await _service.CreateBookingAsync(request, GetUserId());
-                return Ok(new { Success = true, Data = result, Message = "Đặt lịch xem phòng thành công" });
+                return Ok(result);
             }
             catch (Exception ex)
             {
-                return BadRequest(new { Success = false, Message = ex.Message });
+                return BadRequest(ex.Message); // Ví dụ lỗi trùng phòng
             }
         }
 
-        //2. Người thuê: Xem lịch sử đặt của mình
+        // 2. Người thuê: Xem lịch sử đặt của mình
         [HttpGet("my-bookings")]
         public async Task<IActionResult> GetMyBookings()
         {
-            try
-            {
-                var result = await _service.GetMyBookingsAsync(GetUserId());
-                return Ok(new { Success = true, Data = result, Message = "Lấy danh sách lịch hẹn thành công" });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { Success = false, Message = ex.Message });
-            }
+            var result = await _service.GetMyBookingsAsync(GetUserId());
+            return Ok(result);
         }
 
-        //2.1 Người thuê: Xem lịch sử đặt của một người thuê cụ thể
-        [HttpGet("nguoithue/{userId}")]
-        public async Task<IActionResult> GetByTenantId(Guid userId)
-        {
-            try
-            {
-                var result = await _service.GetMyBookingsAsync(userId);
-                return Ok(new { Success = true, Data = result, Message = "Lấy danh sách lịch hẹn thành công" });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { Success = false, Message = ex.Message });
-            }
-        }
-
-        //3. Chủ trọ: Xem danh sách người khác đặt phòng mình
+        // 3. Chủ trọ: Xem danh sách người khác đặt phòng mình
         [HttpGet("landlord-requests")]
         public async Task<IActionResult> GetLandlordRequests()
         {
-            try
-            {
-                var result = await _service.GetRequestsForLandlordAsync(GetUserId());
-                return Ok(new { Success = true, Data = result, Message = "Lấy danh sách yêu cầu đặt phòng thành công" });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { Success = false, Message = ex.Message });
-            }
+            // API này trả về các đơn mà User hiện tại ĐÓNG VAI TRÒ LÀ CHỦ TRỌ
+            var result = await _service.GetRequestsForLandlordAsync(GetUserId());
+            return Ok(result);
         }
 
-        //4. Chủ trọ: Duyệt đơn (status =2) hoặc Từ chối (status =3)
+        // 4. Chủ trọ: Duyệt đơn (status = 2) hoặc Từ chối (status = 3)
         [HttpPut("status/{id}")]
         public async Task<IActionResult> UpdateStatus(Guid id, [FromQuery] int status)
         {
-            try
-            {
-                var success = await _service.UpdateStatusAsync(id, status, GetUserId());
-                if (!success)
-                    return BadRequest(new { Success = false, Message = "Không tìm thấy đơn hoặc bạn không phải chủ trọ." });
+            var success = await _service.UpdateStatusAsync(id, status, GetUserId());
+            if (!success) return BadRequest("Không tìm thấy đơn hoặc bạn không phải chủ trọ.");
 
-                return Ok(new { Success = true, Message = "Cập nhật trạng thái thành công" });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { Success = false, Message = ex.Message });
-            }
+            return Ok(new { message = "Cập nhật trạng thái thành công" });
         }
     }
 }

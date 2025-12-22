@@ -53,16 +53,75 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
         {
             // 1. Tìm user
             var user = await _context.NguoiDungs.FirstOrDefaultAsync(u => u.Email == request.Email);
-            if (user == null) return null; // Sai Email
+            
+            System.Diagnostics.Debug.WriteLine($"\n========== LOGIN DEBUG ==========");
+            System.Diagnostics.Debug.WriteLine($"📧 Email từ request: '{request.Email}'");
+            System.Diagnostics.Debug.WriteLine($"🔑 Password từ request: '{request.Password}'");
+            
+            if (user == null) 
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ User không tìm thấy trong database");
+                System.Diagnostics.Debug.WriteLine($"========== END DEBUG ==========\n");
+                return null; // Sai Email
+            }
 
-            // 2. Kiểm tra mật khẩu (So sánh hash)
-            bool isValidPass = BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash);
+            System.Diagnostics.Debug.WriteLine($"✅ User tìm thấy: {user.Email}");
+            System.Diagnostics.Debug.WriteLine($"📝 PasswordHash trong DB: '{user.PasswordHash}'");
+            System.Diagnostics.Debug.WriteLine($"📏 PasswordHash độ dài: {user.PasswordHash?.Length}");
+            System.Diagnostics.Debug.WriteLine($"🔒 PasswordHash bắt đầu: {user.PasswordHash?.Substring(0, Math.Min(20, user.PasswordHash?.Length ?? 0))}");
+
+            // ✅ CHECK NULL HASH
+            if (string.IsNullOrEmpty(user.PasswordHash)) 
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ PasswordHash là NULL hoặc EMPTY");
+                System.Diagnostics.Debug.WriteLine($"========== END DEBUG ==========\n");
+                return null;
+            }
+
+            // ✅ KIỂM TRA VÀ XỬ LÝ PLAIN TEXT PASSWORD
+            bool isValidPass = false;
+            try
+            {
+                // Thử verify với BCrypt
+                System.Diagnostics.Debug.WriteLine($"🔐 Cố gắng verify với BCrypt...");
+                isValidPass = BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash);
+                System.Diagnostics.Debug.WriteLine($"✅ BCrypt verify kết quả: {isValidPass}");
+            }
+            catch (Exception ex) // Catch all exceptions to be safe
+            {
+                // Nếu hash không phải BCrypt format (Plain text), so sánh trực tiếp
+                System.Diagnostics.Debug.WriteLine($"⚠️ BCrypt verify exception: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"🔐 Cố gắng so sánh plain text...");
+                System.Diagnostics.Debug.WriteLine($"   Password input: '{request.Password}'");
+                System.Diagnostics.Debug.WriteLine($"   Hash in DB:    '{user.PasswordHash}'");
+                
+                // Trim whitespace just in case
+                string dbHash = user.PasswordHash?.Trim();
+                string inputPass = request.Password?.Trim();
+
+                isValidPass = (inputPass == dbHash);
+                System.Diagnostics.Debug.WriteLine($"✅ Plain text so sánh kết quả: {isValidPass}");
+                
+                // Nếu đúng, UPDATE thành BCrypt hash (upgrade security)
+                if (isValidPass)
+                {
+                    System.Diagnostics.Debug.WriteLine($"🔄 Upgrading password to BCrypt...");
+                    user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
+                    user.UpdatedAt = DateTimeOffset.Now;
+                    await _context.SaveChangesAsync();
+                    System.Diagnostics.Debug.WriteLine($"✅ Upgraded password to BCrypt");
+                }
+            }
+
+            System.Diagnostics.Debug.WriteLine($"🎯 Final isValidPass: {isValidPass}");
+            System.Diagnostics.Debug.WriteLine($"========== END DEBUG ==========\n");
+
             if (!isValidPass) return null; // Sai Pass
 
-            // 3. Kiểm tra bị khóa
+            // 2. Kiểm tra bị khóa
             if (user.IsKhoa) throw new Exception("Tài khoản đã bị khóa");
 
-            // 4. Tạo JWT Token
+            // 3. Tạo JWT Token
             return GenerateJwtToken(user);
         }
 
@@ -81,7 +140,8 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
             {
                 new Claim(ClaimTypes.NameIdentifier, user.NguoiDungId.ToString()),
                 new Claim(ClaimTypes.Email, user.Email ?? ""),
-                new Claim("VaiTroId", user.VaiTroId.ToString()) // Lưu Role ID để phân quyền
+                new Claim("VaiTroId", user.VaiTroId.ToString()), // Custom claim
+                new Claim(ClaimTypes.Role, user.VaiTroId.ToString()) // ✅ ADD: Role claim cho [Authorize(Roles = "1")]
             };
 
             var tokenDescriptor = new SecurityTokenDescriptor
@@ -115,8 +175,19 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
             var user = await _context.NguoiDungs.FindAsync(userId);
             if (user == null) return false;
 
-            // B1: Kiểm tra mật khẩu cũ có đúng không
-            bool isOldPassCorrect = BCrypt.Net.BCrypt.Verify(request.MatKhauCu, user.PasswordHash);
+            // ✅ KIỂM TRA PLAIN TEXT TRONG CHANGEPASSWORD
+            bool isOldPassCorrect = false;
+            try
+            {
+                // Thử BCrypt verify trước
+                isOldPassCorrect = BCrypt.Net.BCrypt.Verify(request.MatKhauCu, user.PasswordHash);
+            }
+            catch (InvalidOperationException)
+            {
+                // Nếu hash không phải BCrypt → so sánh plain text
+                isOldPassCorrect = (request.MatKhauCu == user.PasswordHash);
+            }
+
             if (!isOldPassCorrect)
             {
                 return false; // Mật khẩu cũ sai

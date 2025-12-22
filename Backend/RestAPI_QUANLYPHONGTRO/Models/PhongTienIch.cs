@@ -16,10 +16,7 @@ namespace RestAPI_QUANLYPHONGTRO.Models
         public int TienIchId { get; set; } // FK tới TienIch
 
         // Navigation properties (Tuỳ chọn để join bảng)
-        [ForeignKey("PhongId")]
-        public virtual Phong? Phong { get; set; }
-
-        [ForeignKey("TienIchId")]
-        public virtual TienIch? TienIch { get; set; }
+        // public virtual Phong Phong { get; set; }
+        // public virtual TienIch TienIch { get; set; }
     }
 }

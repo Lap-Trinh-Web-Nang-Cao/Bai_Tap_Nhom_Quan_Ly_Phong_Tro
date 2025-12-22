@@ -8,7 +8,7 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    // [Authorize] // Bắt buộc đăng nhập (Tắt để test Fake Login)
+    [Authorize] // Bắt buộc đăng nhập
     public class TinNhanController : ControllerBase
     {
         private readonly ITinNhanService _service;
@@ -21,26 +21,24 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
         private Guid GetUserId()
         {
             var id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!string.IsNullOrEmpty(id)) return Guid.Parse(id);
-
-            // Fallback cho Fake Login
-            return Guid.Parse("00000000-0000-0000-0000-000000000001");
+            if (string.IsNullOrEmpty(id)) throw new UnauthorizedAccessException();
+            return Guid.Parse(id);
         }
 
         // 1. Gửi tin nhắn
         [HttpPost]
         public async Task<IActionResult> Send([FromBody] SendMessageRequest request)
         {
-            if (!ModelState.IsValid) return BadRequest(new { Success = false, Message = "Dữ liệu không hợp lệ" });
+            if (!ModelState.IsValid) return BadRequest(ModelState);
             try
             {
                 var userId = GetUserId();
                 var result = await _service.SendAsync(request, userId);
-                return Ok(new { Success = true, Data = result, Message = "Gửi tin nhắn thành công" });
+                return Ok(result);
             }
             catch (Exception ex)
             {
-                return BadRequest(new { Success = false, Message = ex.Message });
+                return BadRequest(ex.Message);
             }
         }
 
@@ -51,7 +49,7 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
         {
             var userId = GetUserId();
             var list = await _service.GetConversationAsync(userId, otherUserId);
-            return Ok(new { Success = true, Data = list });
+            return Ok(list);
         }
 
         // 3. Đánh dấu đã đọc (Khi user mở khung chat lên)
@@ -61,16 +59,7 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
         {
             var userId = GetUserId();
             await _service.MarkAsReadAsync(userId, otherUserId);
-            return Ok(new { Success = true, Message = "Đã đánh dấu đã đọc." });
-        }
-
-        // 4. Lấy danh sách các cuộc hội thoại
-        [HttpGet("my-conversations")]
-        public async Task<IActionResult> GetMyConversations()
-        {
-            var userId = GetUserId();
-            var result = await _service.GetMyConversationsAsync(userId);
-            return Ok(new { Success = true, Data = result });
+            return Ok(new { message = "Đã đánh dấu đã đọc." });
         }
     }
 }

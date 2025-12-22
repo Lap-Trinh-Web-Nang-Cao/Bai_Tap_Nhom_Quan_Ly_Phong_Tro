@@ -39,7 +39,7 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
             }
 
             // Mặc định chưa xác nhận khi mới tạo
-            if (!bienLai.DaXacNhan.HasValue || !bienLai.DaXacNhan.Value)
+            if (!bienLai.DaXacNhan)
             {
                 bienLai.DaXacNhan = false;
             }
@@ -61,7 +61,6 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
             existingItem.SoTien = bienLai.SoTien;
             existingItem.ThoiGianTai = bienLai.ThoiGianTai;
             existingItem.DaXacNhan = bienLai.DaXacNhan;
-            existingItem.NguoiXacNhan = bienLai.NguoiXacNhan;
             existingItem.SoBienLai = bienLai.SoBienLai;
 
             await _context.SaveChangesAsync();
@@ -88,7 +87,6 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
 
             // 3. Thực hiện nghiệp vụ xác nhận
             bienLai.DaXacNhan = true;
-            bienLai.NguoiXacNhan = nguoiXacNhanId;
 
             // 4. Lưu thay đổi
             await _context.SaveChangesAsync();

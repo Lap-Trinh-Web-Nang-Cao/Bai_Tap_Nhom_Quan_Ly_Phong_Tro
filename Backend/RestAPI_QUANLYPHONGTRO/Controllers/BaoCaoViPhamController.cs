@@ -4,6 +4,7 @@ using RestAPI_QUANLYPHONGTRO.Data;
 using RestAPI_QUANLYPHONGTRO.Models;
 using RestAPI_QUANLYPHONGTRO.Services.Interfaces;
 using RestAPI_QUANLYPHONGTRO.ViewModels;
+using System.Text.Json;
 
 namespace RestAPI_QUANLYPHONGTRO.Controllers
 {
@@ -238,100 +239,130 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
 
         /// <summary>
         /// Xử lý báo cáo vi phạm (chấp nhận)
+        /// Endpoint: POST /api/baocaovipham/resolve
         /// </summary>
-        [HttpPut("{id}/resolve")]
-        public async Task<IActionResult> Resolve(Guid id, [FromBody] XuLyBaoCaoRequest request)
+        [HttpPost("resolve")]
+        public async Task<IActionResult> ResolveReport([FromBody] JsonElement request)
         {
             try
             {
-                var baoCao = await _context.BaoCaoViPhams.FindAsync(id);
-                if (baoCao == null) return NotFound(new { Success = false, Message = "Không tìm thấy báo cáo" });
+                string id = request.GetProperty("id").GetString();
+                string ketQua = "Đã xử lý";
+                if (request.TryGetProperty("ketQua", out var ketQuaElem))
+                {
+                    ketQua = ketQuaElem.GetString() ?? "Đã xử lý";
+                }
+
+                if (string.IsNullOrEmpty(id) || !Guid.TryParse(id, out var baoCaoId))
+                    return BadRequest(new { success = false, message = "ID báo cáo không hợp lệ" });
+
+                var baoCao = await _context.BaoCaoViPhams.FindAsync(baoCaoId);
+                if (baoCao == null) return NotFound(new { success = false, message = "Không tìm thấy báo cáo" });
 
                 // Cập nhật trạng thái
                 baoCao.TrangThai = "DaXuLy";
-                baoCao.KetQua = request?.KetQua ?? "Đã xử lý";
-                baoCao.ViPhamId = request?.ViPhamId;
+                baoCao.KetQua = ketQua;
                 baoCao.ThoiGianXuLy = DateTimeOffset.Now;
-                // TODO: Get admin ID from token
-                // baoCao.NguoiXuLy = adminId;
-
-                // Xử lý khóa tài khoản nếu cần
-                if (request?.KhoaTaiKhoan == true && baoCao.LoaiThucThe == "NGUOIDUNG" && baoCao.ThucTheId.HasValue)
-                {
-                    var nguoiDung = await _context.NguoiDungs.FindAsync(baoCao.ThucTheId.Value);
-                    if (nguoiDung != null)
-                    {
-                        nguoiDung.IsKhoa = true;
-                        nguoiDung.UpdatedAt = DateTimeOffset.Now;
-                    }
-                }
-
-                // Xử lý khóa bài đăng nếu cần
-                if (request?.KhoaBaiDang == true && baoCao.LoaiThucThe == "PHONG" && baoCao.ThucTheId.HasValue)
-                {
-                    var phong = await _context.Phongs.FindAsync(baoCao.ThucTheId.Value);
-                    if (phong != null)
-                    {
-                        phong.IsBiKhoa = true;
-                        phong.IsDuyet = false;
-                        phong.UpdatedAt = DateTimeOffset.Now;
-                    }
-                }
 
                 await _context.SaveChangesAsync();
 
-                return Ok(new { Success = true, Message = "Đã xử lý báo cáo thành công" });
+                return Ok(new { success = true, message = "Đã xử lý báo cáo thành công" });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { Success = false, Message = "Lỗi server: " + ex.Message });
+                return StatusCode(500, new { success = false, message = "Lỗi server: " + ex.Message });
             }
         }
 
         /// <summary>
         /// Từ chối báo cáo vi phạm
+        /// Endpoint: POST /api/baocaovipham/reject
         /// </summary>
-        [HttpPut("{id}/reject")]
-        public async Task<IActionResult> Reject(Guid id, [FromBody] XuLyBaoCaoRequest request)
+        [HttpPost("reject")]
+        public async Task<IActionResult> RejectReport([FromBody] JsonElement request)
         {
             try
             {
-                var baoCao = await _context.BaoCaoViPhams.FindAsync(id);
-                if (baoCao == null) return NotFound(new { Success = false, Message = "Không tìm thấy báo cáo" });
+                string id = request.GetProperty("id").GetString();
+                string lyDo = "Báo cáo không hợp lệ";
+                if (request.TryGetProperty("lyDo", out var lyDoElem))
+                {
+                    lyDo = lyDoElem.GetString() ?? "Báo cáo không hợp lệ";
+                }
+
+                if (string.IsNullOrEmpty(id) || !Guid.TryParse(id, out var baoCaoId))
+                    return BadRequest(new { success = false, message = "ID báo cáo không hợp lệ" });
+
+                var baoCao = await _context.BaoCaoViPhams.FindAsync(baoCaoId);
+                if (baoCao == null) return NotFound(new { success = false, message = "Không tìm thấy báo cáo" });
 
                 baoCao.TrangThai = "TuChoi";
-                baoCao.KetQua = request?.KetQua ?? "Báo cáo không hợp lệ";
+                baoCao.KetQua = lyDo;
                 baoCao.ThoiGianXuLy = DateTimeOffset.Now;
 
                 await _context.SaveChangesAsync();
 
-                return Ok(new { Success = true, Message = "Đã từ chối báo cáo" });
+                return Ok(new { success = true, message = "Đã từ chối báo cáo" });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { Success = false, Message = "Lỗi server: " + ex.Message });
+                return StatusCode(500, new { success = false, message = "Lỗi server: " + ex.Message });
             }
         }
 
         /// <summary>
-        /// Đánh dấu đang xử lý
+        /// Bắt đầu xử lý báo cáo
+        /// Endpoint: POST /api/baocaovipham/start
         /// </summary>
-        [HttpPut("{id}/processing")]
-        public async Task<IActionResult> MarkAsProcessing(Guid id)
+        [HttpPost("start")]
+        public async Task<IActionResult> StartProcessing([FromBody] JsonElement request)
         {
             try
             {
-                var baoCao = await _context.BaoCaoViPhams.FindAsync(id);
-                if (baoCao == null) return NotFound(new { Success = false, Message = "Không tìm thấy báo cáo" });
+                string id = request.GetProperty("id").GetString();
+
+                if (string.IsNullOrEmpty(id) || !Guid.TryParse(id, out var baoCaoId))
+                    return BadRequest(new { success = false, message = "ID báo cáo không hợp lệ" });
+
+                var baoCao = await _context.BaoCaoViPhams.FindAsync(baoCaoId);
+                if (baoCao == null) return NotFound(new { success = false, message = "Không tìm thấy báo cáo" });
 
                 baoCao.TrangThai = "DangXuLy";
                 await _context.SaveChangesAsync();
 
-                return Ok(new { Success = true, Message = "Đã cập nhật trạng thái" });
+                return Ok(new { success = true, message = "Đã bắt đầu xử lý báo cáo" });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { Success = false, Message = "Lỗi server: " + ex.Message });
+                return StatusCode(500, new { success = false, message = "Lỗi server: " + ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Xóa báo cáo vi phạm
+        /// Endpoint: POST /api/baocaovipham/delete
+        /// </summary>
+        [HttpPost("delete")]
+        public async Task<IActionResult> DeleteReport([FromBody] JsonElement request)
+        {
+            try
+            {
+                string id = request.GetProperty("id").GetString();
+
+                if (string.IsNullOrEmpty(id) || !Guid.TryParse(id, out var baoCaoId))
+                    return BadRequest(new { success = false, message = "ID báo cáo không hợp lệ" });
+
+                var baoCao = await _context.BaoCaoViPhams.FindAsync(baoCaoId);
+                if (baoCao == null) return NotFound(new { success = false, message = "Không tìm thấy báo cáo" });
+
+                _context.BaoCaoViPhams.Remove(baoCao);
+                await _context.SaveChangesAsync();
+
+                return Ok(new { success = true, message = "Xóa báo cáo thành công" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = "Lỗi server: " + ex.Message });
             }
         }
 

@@ -60,6 +60,7 @@ builder.Services.AddScoped<ITokenThongBaoService, TokenThongBaoService>();
 builder.Services.AddScoped<ITrangThaiDatPhongService, TrangThaiDatPhongService>();
 builder.Services.AddScoped<IViPhamService, ViPhamService>();
 builder.Services.AddScoped<IYeuCauHoTroService, YeuCauHoTroService>();
+builder.Services.AddScoped<ISystemSettingService, SystemSettingService>();
 
 // 3. Cấu hình xác thực JWT
 builder.Services.AddAuthentication(options =>
@@ -79,6 +80,36 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = builder.Configuration["Jwt:Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
     };
+});
+
+// 4. Cấu hình Authorization Policies (Phân quyền)
+builder.Services.AddAuthorization(options =>
+{
+    // Policy cho user đã đăng nhập (bất kỳ vai trò nào)
+    options.AddPolicy("AuthenticatedOnly", policy =>
+        policy.RequireAuthenticatedUser());
+
+    // Policy chỉ dành cho Admin (VaiTroId = 1)
+    options.AddPolicy("AdminOnly", policy =>
+        policy.RequireClaim("VaiTroId", "1"));
+
+    // Policy chỉ dành cho Chủ trọ (VaiTroId = 2)
+    options.AddPolicy("ChuTroOnly", policy =>
+        policy.RequireClaim("VaiTroId", "2"));
+
+    // Policy chỉ dành cho Người thuê (VaiTroId = 3)
+    options.AddPolicy("NguoiThueOnly", policy =>
+        policy.RequireClaim("VaiTroId", "3"));
+
+    // Policy cho Admin hoặc Chủ trọ
+    options.AddPolicy("AdminOrChuTro", policy =>
+        policy.RequireAssertion(context =>
+            context.User.HasClaim(c => c.Type == "VaiTroId" && (c.Value == "1" || c.Value == "2"))));
+
+    // Policy cho Chủ trọ hoặc Người thuê (không phải Admin)
+    options.AddPolicy("ChuTroOrNguoiThue", policy =>
+        policy.RequireAssertion(context =>
+            context.User.HasClaim(c => c.Type == "VaiTroId" && (c.Value == "2" || c.Value == "3"))));
 });
 
 builder.Services.AddScoped<RestAPI_QUANLYPHONGTRO.Data.IDbIntrospectionService, RestAPI_QUANLYPHONGTRO.Data.DbIntrospectionService>();

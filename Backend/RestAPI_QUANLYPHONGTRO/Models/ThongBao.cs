@@ -15,13 +15,13 @@ namespace RestAPI_QUANLYPHONGTRO.Models
 
         [Required]
         [MaxLength(250)]
-        public string TieuDe { get; set; }
+        public string TieuDe { get; set; } = string.Empty;
 
         [Required]
-        public string NoiDung { get; set; }
+        public string NoiDung { get; set; } = string.Empty;
 
         [MaxLength(50)]
-        public string Loai { get; set; } // "success", "info", "warning", "error"
+        public string? Loai { get; set; } // "success", "info", "warning", "error"
 
         public bool DaXem { get; set; } = false;
 

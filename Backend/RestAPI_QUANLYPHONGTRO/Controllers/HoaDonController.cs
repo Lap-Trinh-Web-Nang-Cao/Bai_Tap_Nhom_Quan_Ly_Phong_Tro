@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
+ï»¿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RestAPI_QUANLYPHONGTRO.Data;
@@ -8,7 +8,7 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    // TODO: b?t l?i [Authorize] khi hoàn thi?n login/token
+    // TODO: báº­t láº¡i [Authorize] khi hoÃ n thiá»‡n login/token
     [AllowAnonymous]
     public class HoaDonController : ControllerBase
     {
@@ -21,10 +21,12 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
             _dbInfo = dbInfo;
         }
 
-        private Guid GetUserId()
+        private Guid? GetUserId()
         {
             var id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            return Guid.Parse(id);
+            if (string.IsNullOrWhiteSpace(id)) return null;
+            if (Guid.TryParse(id, out var guid)) return guid;
+            return null;
         }
 
         // GET /api/hoadon/nguoithue/{nguoiThueId}
@@ -38,7 +40,7 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
                 if (!hoaDonExists || !hopDongExists)
                 {
                     var dbName = await _dbInfo.GetCurrentDatabaseNameAsync();
-                    return BadRequest(new { success = false, message = $"Invalid object name '{(!hopDongExists ? "HopDong" : "HoaDon")}'. Backend ðang k?t n?i DB '{dbName}'. H?y ki?m tra connection string và ð?m b?o có b?ng dbo.HopDong và dbo.HoaDon." });
+                    return BadRequest(new { success = false, message = $"Invalid object name '{(!hopDongExists ? "HopDong" : "HoaDon")}'. Backend Ä‘ang káº¿t ná»‘i DB '{dbName}'. HÃ£y kiá»ƒm tra connection string vÃ  Ä‘áº£m báº£o cÃ³ báº£ng dbo.HopDong vÃ  dbo.HoaDon." });
                 }
 
                 var query = from hd in _context.HoaDons
@@ -48,19 +50,19 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
                             select new
                             {
                                 HoaDonId = hd.HoaDonId,
-                                ThangNam = (hd.Thang <10 ? "0" + hd.Thang : hd.Thang.ToString()) + "/" + hd.Nam,
+                                ThangNam = (hd.Thang < 10 ? "0" + hd.Thang : hd.Thang.ToString()) + "/" + hd.Nam,
                                 TienThue = hd.TienPhong,
-                                TienDien = hd.TienDien ??0,
-                                TienNuoc = hd.TienNuoc ??0,
-                                PhiKhac = hd.TienDichVu ??0,
+                                TienDien = hd.TienDien ?? 0,
+                                TienNuoc = hd.TienNuoc ?? 0,
+                                PhiKhac = hd.TienDichVu ?? 0,
                                 TongTien = hd.TongTien,
-                                TrangThai = hd.TrangThai == "DaThanhToan" ? "Ð? thanh toán" : (hd.TrangThai == "ChuaThanhToan" ? "Chýa thanh toán" : hd.TrangThai),
+                                TrangThai = hd.TrangThai == "DaThanhToan" ? "ÄÃ£ thanh toÃ¡n" : (hd.TrangThai == "ChuaThanhToan" ? "ChÆ°a thanh toÃ¡n" : hd.TrangThai),
                                 NgayThanhToan = hd.NgayThanhToan,
                                 HanThanhToan = (DateTime?)null
                             };
 
                 var list = await query.ToListAsync();
-                return Ok(new { Success = true, Data = list, Message = "L?y danh sách hóa ðõn thành công" });
+                return Ok(new { Success = true, Data = list, Message = "Láº¥y danh sÃ¡ch hÃ³a Ä‘Æ¡n thÃ nh cÃ´ng" });
             }
             catch (Exception ex)
             {
@@ -68,14 +70,14 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
             }
         }
 
-        // GET /api/hoadon - L?y t?t c? hóa ðõn
+        // GET /api/hoadon - Láº¥y táº¥t cáº£ hÃ³a Ä‘Æ¡n
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
             try
             {
-                // TODO: Implement logic l?y t?t c? hóa ðõn
-                return Ok(new { Success = true, Data = new List<object>(), Message = "L?y danh sách hóa ðõn thành công" });
+                // TODO: Implement logic láº¥y táº¥t cáº£ hÃ³a Ä‘Æ¡n
+                return Ok(new { Success = true, Data = new List<object>(), Message = "Láº¥y danh sÃ¡ch hÃ³a Ä‘Æ¡n thÃ nh cÃ´ng" });
             }
             catch (Exception ex)
             {
@@ -85,12 +87,12 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
 
         // GET /api/hoadon/{id}
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(Guid id)
+        public async Task<IActionResult?> GetById(Guid id)
         {
             try
             {
-                // TODO: Implement logic l?y 1 hóa ðõn by ID
-                return Ok(new { Success = true, Data = (object)null, Message = "L?y hóa ðõn thành công" });
+                // TODO: Implement logic láº¥y 1 hÃ³a Ä‘Æ¡n by ID
+                return Ok(new { Success = true, Data = (object?)null, Message = "Láº¥y hÃ³a Ä‘Æ¡n thÃ nh cÃ´ng" });
             }
             catch (Exception ex)
             {
@@ -105,13 +107,13 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
             try
             {
                 var invoice = await _context.HoaDons.FirstOrDefaultAsync(x => x.HoaDonId == id);
-                if (invoice == null) return NotFound(new { Success = false, Message = "Không t?m th?y hóa ðõn" });
+                if (invoice == null) return NotFound(new { Success = false, Message = "KhÃ´ng tÃ¬m tháº¥y hÃ³a Ä‘Æ¡n" });
 
                 invoice.TrangThai = "DaThanhToan";
                 invoice.NgayThanhToan = DateTimeOffset.Now;
                 await _context.SaveChangesAsync();
 
-                return Ok(new { Success = true, Message = "Thanh toán hóa ðõn thành công" });
+                return Ok(new { Success = true, Message = "Thanh toÃ¡n hÃ³a Ä‘Æ¡n thÃ nh cÃ´ng" });
             }
             catch (Exception ex)
             {

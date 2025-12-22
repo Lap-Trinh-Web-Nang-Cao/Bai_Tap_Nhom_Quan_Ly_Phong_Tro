@@ -22,27 +22,10 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
             int pageIndex,
             int pageSize)
         {
-            // Backward-compatible overload: approved-only
-            return await GetPublicRoomsInternalAsync(nhaTroId, minPrice, maxPrice, pageIndex, pageSize, includeUnapproved: false);
-        }
-
-        public async Task<(IEnumerable<Phong> Data, int TotalCount)> GetPublicRoomsInternalAsync(
-            Guid? nhaTroId,
-            long? minPrice,
-            long? maxPrice,
-            int pageIndex,
-            int pageSize,
-            bool includeUnapproved)
-        {
             // 1. Query cơ bản (chưa thực thi)
             var query = _context.Phongs
                 .Include(p => p.NhaTro) // Join để lấy thêm địa chỉ nhà trọ nếu cần
-                .Where(x => x.IsBiKhoa == false && x.IsDeleted == false);
-
-            if (!includeUnapproved)
-            {
-                query = query.Where(x => x.IsDuyet == true);
-            }
+                .Where(x => x.IsDuyet == true && x.IsBiKhoa == false);
 
             // 2. Các bộ lọc
             if (nhaTroId.HasValue) query = query.Where(x => x.NhaTroId == nhaTroId.Value);
@@ -54,7 +37,7 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
 
             // 4. Phân trang (Skip & Take)
             var data = await query
-                .OrderByDescending(x => x.CreatedAt ?? DateTimeOffset.MinValue)
+                .OrderByDescending(x => x.CreatedAt)
                 .Skip((pageIndex - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
@@ -64,11 +47,7 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
 
         public async Task<Phong?> GetByIdAsync(Guid id)
         {
-            return await _context.Phongs
-                .Include(p => p.NhaTro)
-                .Include(p => p.PhongTienIchs)
-                    .ThenInclude(pti => pti.TienIch)
-                .FirstOrDefaultAsync(p => p.PhongId == id);
+            return await _context.Phongs.FindAsync(id);
         }
 
         public async Task<Phong> CreateAsync(CreatePhongRequest request, Guid userId)
@@ -154,6 +133,23 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
             return true;
         }
 
+        public async Task<bool> RejectRoomAsync(Guid id, string reason)
+        {
+            var phong = await _context.Phongs.FindAsync(id);
+            if (phong == null) return false;
+
+            // Không dùng UpdateAsync (vì UpdateAsync check quyền chủ trọ)
+            phong.IsDuyet = false;
+            phong.TrangThai = "Từ chối";
+            phong.UpdatedAt = DateTimeOffset.Now;
+
+            // TODO: Nếu có cột lưu lý do từ chối thì set ở đây
+            // phong.LyDoTuChoi = reason;
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
         public async Task<bool> DeleteAsync(Guid id)
         {
             var phong = await _context.Phongs.FindAsync(id);
@@ -211,82 +207,5 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
                 throw;
             }
         }
-
-        public async Task<Dictionary<Guid, (string? Thumbnail, List<string> All)>> GetRoomImagesAsync(List<Guid> phongIds)
-        {
-            if (phongIds == null || phongIds.Count == 0)
-            {
-                return new Dictionary<Guid, (string?, List<string>)>();
-            }
-
-            List<PhongHinhAnh> images;
-            try
-            {
-                images = await _context.PhongHinhAnhs
-                    .Where(x => phongIds.Contains(x.PhongId))
-                    .OrderByDescending(x => x.LaThumbnail)
-                    .ThenBy(x => x.ThuTu)
-                    .ToListAsync();
-            }
-            catch (Microsoft.Data.SqlClient.SqlException ex) when (ex.Number == 208) // Invalid object name
-            {
-                // DB chưa có bảng PhongHinhAnh -> fallback schema PhongAnh + TapTin
-                try
-                {
-                    var alt = await _context.PhongAnhs
-                        .Where(pa => phongIds.Contains(pa.PhongId))
-                        .Join(_context.TapTins,
-                        pa => pa.TapTinId,
-                        tt => tt.TapTinId,
-                        (pa, tt) => new { pa.PhongId, pa.ThuTu, DuongDan = tt.DuongDan })
-                        .OrderBy(x => x.ThuTu)
-                        .ToListAsync();
-
-                    var groupedAlt = alt
-                        .GroupBy(x => x.PhongId)
-                        .ToDictionary(g => g.Key, g =>
-                        {
-                            var list = g.Select(x => x.DuongDan).Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
-                            var thumb = list.FirstOrDefault();
-                            return (thumb, list);
-                        });
-
-                    foreach (var id in phongIds)
-                    {
-                        if (!groupedAlt.ContainsKey(id))
-                            groupedAlt[id] = (null, new List<string>());
-                    }
-
-                    return groupedAlt;
-                }
-                catch (Microsoft.Data.SqlClient.SqlException ex2) when (ex2.Number == 208)
-                {
-                    // DB cũng chưa có PhongAnh -> không fail API
-                    return phongIds.ToDictionary(id => id, id => ((string?)null, new List<string>()));
-                }
-            }
-
-            var grouped = images
-                .GroupBy(x => x.PhongId)
-                .ToDictionary(
-                    g => g.Key,
-                    g =>
-                    {
-                        var list = g.Select(x => x.DuongDanAnh).Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
-                        var thumb = g.Where(x => x.LaThumbnail).Select(x => x.DuongDanAnh).FirstOrDefault();
-                        if (string.IsNullOrWhiteSpace(thumb)) thumb = list.FirstOrDefault();
-                        return (thumb, list);
-                    });
-
-            // đảm bảo key tồn tại cho mọi phongId (dù không có ảnh)
-            foreach (var id in phongIds)
-            {
-                if (!grouped.ContainsKey(id))
-                    grouped[id] = (null, new List<string>());
-            }
-
-            return grouped;
-        }
-
     }
 }

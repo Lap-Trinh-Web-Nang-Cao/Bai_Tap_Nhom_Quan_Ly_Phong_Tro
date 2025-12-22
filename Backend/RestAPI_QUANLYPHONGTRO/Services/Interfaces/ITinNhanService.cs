@@ -13,8 +13,5 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Interfaces
 
         // Đánh dấu đã đọc tất cả tin nhắn từ người khác gửi cho tôi
         Task<bool> MarkAsReadAsync(Guid userId, Guid otherUserId);
-
-        // Lấy danh sách những người đã nhắn tin với tôi (Conversation list)
-        Task<IEnumerable<object>> GetMyConversationsAsync(Guid userId);
     }
 }

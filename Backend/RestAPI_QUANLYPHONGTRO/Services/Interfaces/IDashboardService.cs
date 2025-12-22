@@ -23,9 +23,14 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Interfaces
         Task<RoomStatusDistributionResponse> GetRoomStatusDistributionAsync();
 
         /// <summary>
-        /// Lấy danh sách phòng chờ duyệt (top N)
+        /// Lấy danh sách phòng chờ duyệt (với pagination)
         /// </summary>
-        Task<List<PendingRoomResponse>> GetPendingRoomsAsync(int top = 5);
+        Task<PagedResult<PendingRoomResponse>> GetPendingRoomsAsync(int pageIndex = 1, int pageSize = 10);
+
+        /// <summary>
+        /// Lấy danh sách phòng chờ duyệt Top N (dùng cho Dashboard widget)
+        /// </summary>
+        Task<List<PendingRoomResponse>> GetTopPendingRoomsAsync(int top = 5);
 
         /// <summary>
         /// Lấy danh sách báo cáo vi phạm mới (top N)

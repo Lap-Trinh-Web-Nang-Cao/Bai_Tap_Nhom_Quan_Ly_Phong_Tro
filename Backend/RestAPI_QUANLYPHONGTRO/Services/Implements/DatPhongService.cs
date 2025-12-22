@@ -46,94 +46,24 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
             };
 
             _context.DatPhongs.Add(datPhong);
-
-            // 3. Thông báo cho NGƯỜI THUÊ (Confirm request sent)
-            var thongBaoKhach = new ThongBao
-            {
-                ThongBaoId = Guid.NewGuid(),
-                NguoiDungId = userId,
-                TieuDe = "Gửi yêu cầu thành công!",
-                NoiDung = $"Yêu cầu đặt phòng của bạn đã được gửi tới chủ trọ. Vui lòng đợi phản hồi.",
-                Loai = "success",
-                ThoiGianTao = DateTimeOffset.Now,
-                DaXem = false,
-                RedirectUrl = "/KhachThue/LichDaDat"
-            };
-            _context.ThongBaos.Add(thongBaoKhach);
-
-            // 4. Thông báo cho CHỦ TRỌ (New request alert)
-            var thongBaoChuTro = new ThongBao
-            {
-                ThongBaoId = Guid.NewGuid(),
-                NguoiDungId = request.ChuTroId,
-                TieuDe = "Yêu cầu đặt phòng mới",
-                NoiDung = $"Bạn có một yêu cầu mới cho phòng. Vui lòng kiểm tra và phản hồi.",
-                Loai = "info",
-                ThoiGianTao = DateTimeOffset.Now,
-                DaXem = false,
-                RedirectUrl = "/ChuTro/ManageBookings"
-            };
-            _context.ThongBaos.Add(thongBaoChuTro);
-
             await _context.SaveChangesAsync();
             return datPhong;
         }
 
-        public async Task<IEnumerable<BookingDetailDto>> GetMyBookingsAsync(Guid userId)
+        public async Task<IEnumerable<DatPhong>> GetMyBookingsAsync(Guid userId)
         {
-            var query = from d in _context.DatPhongs
-                        join p in _context.Phongs on d.PhongId equals p.PhongId
-                        join n in _context.NhaTros on p.NhaTroId equals n.NhaTroId
-                        join c in _context.NguoiDungs on d.ChuTroId equals c.NguoiDungId
-                        where d.NguoiThueId == userId
-                        orderby d.ThoiGianTao descending
-                        select new BookingDetailDto
-                        {
-                            DatPhongId = d.DatPhongId,
-                            PhongId = d.PhongId,
-                            TieuDePhong = p.TieuDe,
-                            DiaChi = n.DiaChi,
-                            Loai = d.Loai,
-                            BatDau = d.BatDau,
-                            KetThuc = d.KetThuc,
-                            ThoiGianTao = d.ThoiGianTao ?? DateTimeOffset.Now,
-                            TrangThaiId = d.TrangThaiId,
-                            TenTrangThai = d.TrangThaiId == 1 ? "Chờ xác nhận" : (d.TrangThaiId == 2 ? "Đã xác nhận" : "Bị từ chối"),
-                            SdtChuTro = c.DienThoai,
-                            GhiChu = d.GhiChu
-                        };
-
-            return await query.ToListAsync();
+            return await _context.DatPhongs
+                .Where(x => x.NguoiThueId == userId)
+                .OrderByDescending(x => x.ThoiGianTao)
+                .ToListAsync();
         }
 
-        public async Task<IEnumerable<BookingDetailDto>> GetRequestsForLandlordAsync(Guid chuTroId)
+        public async Task<IEnumerable<DatPhong>> GetRequestsForLandlordAsync(Guid chuTroId)
         {
-            var query = from d in _context.DatPhongs
-                        join p in _context.Phongs on d.PhongId equals p.PhongId
-                        join n in _context.NhaTros on p.NhaTroId equals n.NhaTroId
-                        join t in _context.NguoiDungs on d.NguoiThueId equals t.NguoiDungId
-                        join h in _context.HoSoNguoiDungs on t.NguoiDungId equals h.NguoiDungId into hs
-                        from h in hs.DefaultIfEmpty()
-                        where d.ChuTroId == chuTroId
-                        orderby d.ThoiGianTao descending
-                        select new BookingDetailDto
-                        {
-                            DatPhongId = d.DatPhongId,
-                            PhongId = d.PhongId,
-                            TieuDePhong = p.TieuDe,
-                            DiaChi = n.DiaChi,
-                            Loai = d.Loai,
-                            BatDau = d.BatDau,
-                            KetThuc = d.KetThuc,
-                            ThoiGianTao = d.ThoiGianTao ?? DateTimeOffset.Now,
-                            TrangThaiId = d.TrangThaiId,
-                            TenTrangThai = d.TrangThaiId == 1 ? "Chờ xác nhận" : (d.TrangThaiId == 2 ? "Đã xác nhận" : "Bị từ chối"),
-                            HoTenNguoiThue = h.HoTen ?? "Người dùng",
-                            SdtNguoiThue = t.DienThoai,
-                            GhiChu = d.GhiChu
-                        };
-
-            return await query.ToListAsync();
+            return await _context.DatPhongs
+                .Where(x => x.ChuTroId == chuTroId)
+                .OrderByDescending(x => x.ThoiGianTao)
+                .ToListAsync();
         }
 
         public async Task<bool> UpdateStatusAsync(Guid datPhongId, int trangThaiId, Guid currentUserId)
@@ -145,22 +75,6 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
             if (booking.ChuTroId != currentUserId) return false;
 
             booking.TrangThaiId = trangThaiId;
-
-            // Tạo thông báo cho người thuê về việc thay đổi trạng thái
-            string statusName = trangThaiId == 2 ? "đã được DUYỆT" : (trangThaiId == 3 ? "bị TỪ CHỐI" : "đã thay đổi");
-            var thongBao = new ThongBao
-            {
-                ThongBaoId = Guid.NewGuid(),
-                NguoiDungId = booking.NguoiThueId,
-                TieuDe = "Cập nhật trạng thái đặt phòng",
-                NoiDung = $"Yêu cầu đặt phòng của bạn {statusName} bởi chủ trọ.",
-                Loai = trangThaiId == 2 ? "success" : "info",
-                ThoiGianTao = DateTimeOffset.Now,
-                DaXem = false,
-                RedirectUrl = "/KhachThue/LichDaDat"
-            };
-            _context.ThongBaos.Add(thongBao);
-
             await _context.SaveChangesAsync();
             return true;
         }

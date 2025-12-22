@@ -9,20 +9,23 @@ namespace RestAPI_QUANLYPHONGTRO.Models
         [Key]
         public Guid BienLaiId { get; set; }
 
-        public Guid? DatPhongId { get; set; } // Foreign Key - cho phép NULL
+        [Required]
+        public Guid DatPhongId { get; set; } // Foreign Key
 
-        public Guid? NguoiTai { get; set; } // Foreign Key - cho phép NULL
+        [Required]
+        public Guid NguoiTai { get; set; } // Foreign Key
 
-        public Guid? TapTinId { get; set; } // Foreign Key - cho phép NULL
+        [Required]
+        public Guid TapTinId { get; set; } // Foreign Key
 
-        public long? SoTien { get; set; }
+        public long? SoTien { get; set; } // bigint -> long
 
         public DateTimeOffset? ThoiGianTai { get; set; }
 
-        public bool? DaXacNhan { get; set; } // bit -> bool nullable
+        [Required]
+        public bool DaXacNhan { get; set; } // bit -> bool
 
-        public Guid? NguoiXacNhan { get; set; }
-
-        public string? SoBienLai { get; set; } // Thay int thành string nullable
+        [Required]
+        public int SoBienLai { get; set; }
     }
 }

@@ -174,38 +174,21 @@
         }
       }
     },
-    "/api/BaoCaoViPham/{id}/resolve": {
-      "put": {
+    "/api/BaoCaoViPham/resolve": {
+      "post": {
         "tags": [
           "BaoCaoViPham"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
         ],
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/XuLyBaoCaoRequest"
-              }
+              "schema": { }
             },
             "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/XuLyBaoCaoRequest"
-              }
+              "schema": { }
             },
             "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/XuLyBaoCaoRequest"
-              }
+              "schema": { }
             }
           }
         },
@@ -216,38 +199,21 @@
         }
       }
     },
-    "/api/BaoCaoViPham/{id}/reject": {
-      "put": {
+    "/api/BaoCaoViPham/reject": {
+      "post": {
         "tags": [
           "BaoCaoViPham"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
         ],
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/XuLyBaoCaoRequest"
-              }
+              "schema": { }
             },
             "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/XuLyBaoCaoRequest"
-              }
+              "schema": { }
             },
             "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/XuLyBaoCaoRequest"
-              }
+              "schema": { }
             }
           }
         },
@@ -258,22 +224,49 @@
         }
       }
     },
-    "/api/BaoCaoViPham/{id}/processing": {
-      "put": {
+    "/api/BaoCaoViPham/start": {
+      "post": {
         "tags": [
           "BaoCaoViPham"
         ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { }
+            },
+            "text/json": {
+              "schema": { }
+            },
+            "application/*+json": {
+              "schema": { }
             }
           }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/BaoCaoViPham/delete": {
+      "post": {
+        "tags": [
+          "BaoCaoViPham"
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { }
+            },
+            "text/json": {
+              "schema": { }
+            },
+            "application/*+json": {
+              "schema": { }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "OK"
@@ -653,6 +646,38 @@
         ],
         "parameters": [
           {
+            "name": "pageIndex",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Dashboard/rooms/pending-top": {
+      "get": {
+        "tags": [
+          "Dashboard"
+        ],
+        "parameters": [
+          {
             "name": "top",
             "in": "query",
             "schema": {
@@ -762,29 +787,6 @@
       "get": {
         "tags": [
           "DatPhong"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/DatPhong/nguoithue/{userId}": {
-      "get": {
-        "tags": [
-          "DatPhong"
-        ],
-        "parameters": [
-          {
-            "name": "userId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
         ],
         "responses": {
           "200": {
@@ -1166,38 +1168,6 @@
             }
           }
         },
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/LichSu/nguoithue/{userId}": {
-      "get": {
-        "tags": [
-          "LichSu"
-        ],
-        "parameters": [
-          {
-            "name": "userId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32",
-              "default": 20
-            }
-          }
-        ],
         "responses": {
           "200": {
             "description": "OK"
@@ -1829,14 +1799,6 @@
             }
           },
           {
-            "name": "includeUnapproved",
-            "in": "query",
-            "schema": {
-              "type": "boolean",
-              "default": false
-            }
-          },
-          {
             "name": "page",
             "in": "query",
             "schema": {
@@ -2017,6 +1979,48 @@
         }
       }
     },
+    "/api/Phong/{id}/reject": {
+      "put": {
+        "tags": [
+          "Phong"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RejectRoomRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RejectRoomRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RejectRoomRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/Phong/lock/{id}": {
       "put": {
         "tags": [
@@ -2040,6 +2044,18 @@
               "default": true
             }
           }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Phong/stats": {
+      "get": {
+        "tags": [
+          "Phong"
         ],
         "responses": {
           "200": {
@@ -2403,6 +2419,194 @@
         }
       }
     },
+    "/api/SystemSettings": {
+      "get": {
+        "tags": [
+          "SystemSettings"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "SystemSettings"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SystemSettingRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SystemSettingRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/SystemSettingRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/SystemSettings/by-group/{groupName}": {
+      "get": {
+        "tags": [
+          "SystemSettings"
+        ],
+        "parameters": [
+          {
+            "name": "groupName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/SystemSettings/{key}": {
+      "get": {
+        "tags": [
+          "SystemSettings"
+        ],
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/SystemSettings/{id}": {
+      "put": {
+        "tags": [
+          "SystemSettings"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SystemSettingRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SystemSettingRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/SystemSettingRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "SystemSettings"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/SystemSettings/update-by-key": {
+      "post": {
+        "tags": [
+          "SystemSettings"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            },
+            "text/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/TapTin/upload": {
       "post": {
         "tags": [
@@ -2742,18 +2946,6 @@
               "format": "uuid"
             }
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/TinNhan/my-conversations": {
-      "get": {
-        "tags": [
-          "TinNhan"
         ],
         "responses": {
           "200": {
@@ -3661,6 +3853,13 @@
         "additionalProperties": false
       },
       "BienLai": {
+        "required": [
+          "datPhongId",
+          "daXacNhan",
+          "nguoiTai",
+          "soBienLai",
+          "tapTinId"
+        ],
         "type": "object",
         "properties": {
           "bienLaiId": {
@@ -3669,18 +3868,15 @@
           },
           "datPhongId": {
             "type": "string",
-            "format": "uuid",
-            "nullable": true
+            "format": "uuid"
           },
           "nguoiTai": {
             "type": "string",
-            "format": "uuid",
-            "nullable": true
+            "format": "uuid"
           },
           "tapTinId": {
             "type": "string",
-            "format": "uuid",
-            "nullable": true
+            "format": "uuid"
           },
           "soTien": {
             "type": "integer",
@@ -3693,17 +3889,11 @@
             "nullable": true
           },
           "daXacNhan": {
-            "type": "boolean",
-            "nullable": true
-          },
-          "nguoiXacNhan": {
-            "type": "string",
-            "format": "uuid",
-            "nullable": true
+            "type": "boolean"
           },
           "soBienLai": {
-            "type": "string",
-            "nullable": true
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -4137,6 +4327,16 @@
         },
         "additionalProperties": false
       },
+      "RejectRoomRequest": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "SendMessageRequest": {
         "required": [
           "toUser"
@@ -4155,6 +4355,35 @@
             "type": "string",
             "format": "uuid",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "SystemSettingRequest": {
+        "type": "object",
+        "properties": {
+          "settingKey": {
+            "type": "string",
+            "nullable": true
+          },
+          "settingValue": {
+            "type": "string",
+            "nullable": true
+          },
+          "dataType": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "groupName": {
+            "type": "string",
+            "nullable": true
+          },
+          "isVisible": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false
@@ -4255,36 +4484,6 @@
             "type": "integer",
             "format": "int32",
             "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "XuLyBaoCaoRequest": {
-        "type": "object",
-        "properties": {
-          "baoCaoId": {
-            "type": "string",
-            "format": "uuid",
-            "nullable": true
-          },
-          "hanhDong": {
-            "type": "string",
-            "nullable": true
-          },
-          "ketQua": {
-            "type": "string",
-            "nullable": true
-          },
-          "viPhamId": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "khoaTaiKhoan": {
-            "type": "boolean"
-          },
-          "khoaBaiDang": {
-            "type": "boolean"
           }
         },
         "additionalProperties": false
