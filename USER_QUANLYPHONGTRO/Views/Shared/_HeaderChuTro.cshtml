@@ -1,0 +1,129 @@
+@{
+    // Thông tin ch? tr?
+    string username = Session["UserName"]?.ToString();
+    string hoTen = Session["HoTen"]?.ToString() ?? username;
+    string avatarUrl = Session["AvatarUrl"]?.ToString() ?? "~/images/default-avatar.png";
+    
+    int notificationCount = Session["NotificationCount"] != null ? (int)Session["NotificationCount"] : 0;
+    int messageCount = Session["MessageCount"] != null ? (int)Session["MessageCount"] : 0;
+}
+
+<!-- ===== HEADER CH? TR? - SELLER CENTER STYLE ===== -->
+<header class="seller-header">
+    
+    <!-- T?NG 1: TOP BAR -->
+    <div class="seller-topbar">
+        <div class="seller-container">
+            <!-- Logo & Brand -->
+            <div class="seller-brand">
+                <a href="@Url.Action("Dashboard", "ChuTro")" class="brand-link">
+                    <img src="~/images/logo.png" alt="TroTot" class="brand-logo" />
+                    <span class="brand-name">TroTot Seller Center</span>
+                </a>
+            </div>
+
+            <!-- Right Actions -->
+            <div class="seller-actions">
+                <!-- Notifications -->
+                <a href="@Url.Action("ThongBao", "ChuTro")" class="seller-icon-btn" title="Thông báo">
+                    <i class="fa fa-bell"></i>
+                    @if (notificationCount > 0)
+                    {
+                        <span class="seller-badge">@notificationCount</span>
+                    }
+                </a>
+
+                <!-- Messages -->
+                <a href="@Url.Action("TinNhan", "ChuTro")" class="seller-icon-btn" title="Tin nh?n">
+                    <i class="fa fa-comments"></i>
+                    @if (messageCount > 0)
+                    {
+                        <span class="seller-badge">@messageCount</span>
+                    }
+                </a>
+
+                <!-- Help -->
+                <a href="#" class="seller-icon-btn" title="Tr? giúp">
+                    <i class="fa fa-question-circle"></i>
+                </a>
+
+                <!-- Account Dropdown -->
+                <div class="seller-account">
+                    <div class="account-trigger">
+                        <img src="@Url.Content(avatarUrl)" alt="Avatar" class="seller-avatar" />
+                        <span class="seller-name">@hoTen</span>
+                        <i class="fa fa-chevron-down"></i>
+                    </div>
+
+                    <div class="seller-dropdown">
+                        <a href="@Url.Action("ThongTinCaNhan", "ChuTro")" class="dropdown-item">
+                            <i class="fa fa-user"></i>
+                            <span>Tài kho?n c?a tôi</span>
+                        </a>
+                        
+                        <a href="@Url.Action("CaiDat", "ChuTro")" class="dropdown-item">
+                            <i class="fa fa-cog"></i>
+                            <span>Cài ??t</span>
+                        </a>
+
+                        <div class="dropdown-divider"></div>
+
+                        <a href="@Url.Action("Index", "Home")" class="dropdown-item">
+                            <i class="fa fa-shopping-bag"></i>
+                            <span>Chuy?n sang trang mua hàng</span>
+                        </a>
+
+                        <div class="dropdown-divider"></div>
+
+                        <a href="@Url.Action("Logout", "Auth")" class="dropdown-item logout">
+                            <i class="fa fa-sign-out"></i>
+                            <span>??ng xu?t</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- T?NG 2: NAVIGATION -->
+    <nav class="seller-navbar">
+        <div class="seller-container">
+            <div class="seller-nav-menu">
+                <a href="@Url.Action("Dashboard", "ChuTro")" class="nav-link active">
+                    <i class="fa fa-tachometer-alt"></i>
+                    <span>T?ng quan</span>
+                </a>
+
+                <a href="@Url.Action("QuanLyPhong", "ChuTro")" class="nav-link">
+                    <i class="fa fa-building"></i>
+                    <span>Qu?n lý phòng</span>
+                </a>
+
+                <a href="@Url.Action("DonDatPhong", "ChuTro")" class="nav-link">
+                    <i class="fa fa-calendar-check"></i>
+                    <span>??n ??t phòng</span>
+                </a>
+
+                <a href="@Url.Action("HopDong", "ChuTro")" class="nav-link">
+                    <i class="fa fa-file-contract"></i>
+                    <span>H?p ??ng</span>
+                </a>
+
+                <a href="@Url.Action("HoaDon", "ChuTro")" class="nav-link">
+                    <i class="fa fa-file-invoice-dollar"></i>
+                    <span>Hóa ??n</span>
+                </a>
+
+                <a href="@Url.Action("ThongKe", "ChuTro")" class="nav-link">
+                    <i class="fa fa-chart-line"></i>
+                    <span>Th?ng kê</span>
+                </a>
+
+                <a href="@Url.Action("YeuCauHoTro", "ChuTro")" class="nav-link">
+                    <i class="fa fa-life-ring"></i>
+                    <span>Yêu c?u h? tr?</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+</header>

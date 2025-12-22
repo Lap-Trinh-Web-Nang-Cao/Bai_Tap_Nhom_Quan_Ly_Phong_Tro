@@ -1,0 +1,359 @@
+@{
+    // Thông tin người dùng (CHỈ CHO NGƯỜI THUÊ VÀ KHÁCH)
+    string username = Session["UserName"] as string;
+    string hoTen = Session["HoTen"] as string ?? username;
+    string avatarUrl = Session["AvatarUrl"] as string ?? "/images/default-avatar.png";
+    bool isLoggedIn = !string.IsNullOrEmpty(username);
+
+    int notificationCount = Session["NotificationCount"] != null ? (int)Session["NotificationCount"] : 0;
+    int messageCount = Session["MessageCount"] != null ? (int)Session["MessageCount"] : 0;
+
+    string userRole = Session["UserRole"] as string;
+
+    // Khai báo các biến dùng chung cho Header
+    var routeValues = ViewContext.RouteData.Values;
+    string currentAction = routeValues["action"] != null ? routeValues["action"].ToString() : "";
+    string currentController = routeValues["controller"] != null ? routeValues["controller"].ToString() : "";
+    string ctrl = currentController.ToUpper();
+    string act = currentAction.ToUpper();
+
+    // Flags cho navigation
+    bool isTenantContext = isLoggedIn || ctrl == "KHACHTHUE";
+    string homeUrl = isTenantContext ? Url.Action("Index", "KhachThue") : Url.Action("Index", "Guest");
+    string roomsUrl = isTenantContext ? Url.Action("DanhSachPhong", "KhachThue") : Url.Action("DanhSachPhong", "Guest");
+}
+
+@if (userRole != "ChuTro")
+{
+    <!-- ===== HEADER CHO KHÁCH VÃNG LAI & NGƯỜI THUÊ ===== -->
+    <header class="app-header @(isTenantContext ? "is-tenant" : "")">
+
+        <!-- TẦNG 1: TOP BAR -->
+        <div class="header-topbar">
+            <div class="header-container">
+                <!-- Left side links -->
+                <div class="topbar-left">
+                    <a href="@Url.Action("ChuTro_Register", "Auth")" class="topbar-link">
+                        Trở thành Chủ trọ
+                    </a>
+                    <span class="topbar-divider">|</span>
+                    @if (isTenantContext)
+                    {
+                        <span class="tenant-badge">Bảng điều khiển người thuê</span>
+                    }
+                </div>
+
+                <!-- Right side actions -->
+                <div class="topbar-right">
+                    @if (!isLoggedIn)
+                    {
+                        if (isTenantContext)
+                        {
+                            <span class="topbar-link" style="opacity: 0.7; font-size: 11px;">
+                                <i class="fa fa-info-circle"></i> Bạn chưa đăng nhập
+                            </span>
+                        }
+                        <a href="@Url.Action("Login", "Auth", new { returnUrl = Request.Url.PathAndQuery })"
+                            class="topbar-link">Đăng Nhập</a>
+                        <span class="topbar-divider">|</span>
+                        <a href="@Url.Action("NguoiThue_Register", "Auth")" class="topbar-link">Đăng Ký</a>
+                    }
+                    else
+                    {
+                        <!-- Notifications Dropdown -->
+                        <div class="topbar-notification" id="notificationDropdown">
+                            <div class="notification-trigger">
+                                <i class="fa fa-bell-o"></i>
+                                <span class="topbar-badge-abs" id="notiBadge" style="display:none;">0</span>
+                            </div>
+                            <div class="notification-dropdown">
+                                <div class="dropdown-header">
+                                    <span>Thông báo mới</span>
+                                    <a href="@Url.Action("ClearNotifications", "KhachThue")">Đã xem tất cả</a>
+                                </div>
+                                <div class="notification-list" id="notiList">
+                                    <div class="no-notifications" style="padding: 20px; text-align: center; color: #a0aec0;">
+                                        <i class="fa fa-circle-o-notch fa-spin"
+                                            style="font-size: 24px; margin-bottom: 10px; display: block;"></i>
+                                        <p style="font-size: 13px;">Đang tải thông báo...</p>
+                                    </div>
+                                </div>
+                                <div class="dropdown-footer">
+                                    <a href="@Url.Action("ThongBao", "KhachThue")">Xem tất cả thông báo</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <span class="topbar-divider">|</span>
+                        <a href="@Url.Action("TinNhan", "KhachThue")" class="topbar-link">
+                            <i class="fa fa-comments"></i> Tin nhắn
+                            @if (messageCount > 0)
+                            {
+                                <span class="topbar-badge">@messageCount</span>
+                            }
+                        </a>
+                        <span class="topbar-divider">|</span>
+
+                        <!-- Account dropdown -->
+                        <div class="topbar-account">
+                            <div class="account-trigger">
+                                <img src="@Url.Content(avatarUrl)" alt="Avatar" class="topbar-avatar" />
+                                <span>@hoTen</span>
+                                <i class="fa fa-chevron-down"></i>
+                            </div>
+
+                            <div class="account-dropdown">
+                                <a href="@Url.Action("ThongTinCaNhan", "KhachThue")" class="dropdown-item">
+                                    <i class="fa fa-user"></i> Tài khoản của tôi
+                                </a>
+                                <a href="@Url.Action("LichDaDat", "KhachThue")" class="dropdown-item">
+                                    <i class="fa fa-calendar"></i> Lịch đặt phòng
+                                </a>
+                                <a href="@Url.Action("YeuThich", "KhachThue")" class="dropdown-item">
+                                    <i class="fa fa-heart"></i> Phòng yêu thích
+                                </a>
+
+                                <div class="dropdown-divider"></div>
+                                <a href="@Url.Action("Logout", "Auth")" class="dropdown-item logout">
+                                    <i class="fa fa-sign-out"></i> Đăng xuất
+                                </a>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- TẦNG 2: MAIN BAR (Logo + Search + Quick Actions) -->
+        <div class="header-mainbar">
+            <div class="header-container">
+
+                <!-- Logo Section -->
+                <a href="@homeUrl" class="logo-section">
+                    <img src="@Url.Content("~/images/logo.png")" alt="Logo" class="logo-image" />
+                </a>
+
+                <!-- Search Section -->
+                <div class="search-section">
+                    <form action="@roomsUrl" method="get" id="searchForm">
+                        <!-- Main Search Bar -->
+                        <div class="search-wrapper">
+                            <input type="text" name="keyword" class="search-input"
+                                placeholder="Tìm kiếm phòng trọ theo khu vực" />
+                            <button type="submit" class="search-button">
+                                <i class="fa fa-search"></i>
+                            </button>
+                        </div>
+
+                        <!-- Advanced Filters (Dropdowns) -->
+                        <div class="search-filters">
+                            <select name="priceRange" class="filter-select">
+                                <option value="">Khoảng giá</option>
+                                <option value="0-2000000">Dưới 2 triệu</option>
+                                <option value="2000000-3000000">2 - 3 triệu</option>
+                                <option value="3000000-5000000">3 - 5 triệu</option>
+                                <option value="5000000-10000000">Trên 5 triệu</option>
+                            </select>
+
+                            <select name="areaRange" class="filter-select">
+                                <option value="">Diện tích</option>
+                                <option value="0-20">Dưới 20m²</option>
+                                <option value="20-30">20 - 30m²</option>
+                                <option value="30-50">30 - 50m²</option>
+                                <option value="50-100">Trên 50m²</option>
+                            </select>
+
+                            <select name="roomType" class="filter-select">
+                                <option value="">Loại phòng</option>
+                                <option value="phongtro">Phòng trọ</option>
+                                <option value="chungcumini">Chung cư mini</option>
+                                <option value="nhanguyen">Nhà nguyên căn</option>
+                            </select>
+                        </div>
+
+                        <!-- Quick Tags -->
+                        <div class="search-tags">
+                            <a href="@Url.Action("DanhSachPhong", isTenantContext ? "KhachThue" : "Guest", new { featured = true })"
+                                class="search-tag">
+                                <i class="fa fa-star"></i> Phòng nổi bật
+                            </a>
+                            <a href="@Url.Action("DanhSachPhong", isTenantContext ? "KhachThue" : "Guest", new { minArea = 20 })"
+                                class="search-tag">
+                                <i class="fa fa-expand"></i> Phòng rộng
+                            </a>
+                            <a href="@Url.Action("DanhSachPhong", isTenantContext ? "KhachThue" : "Guest", new { sort = "new" })"
+                                class="search-tag">
+                                <i class="fa fa-clock-o"></i> Mới nhất
+                            </a>
+                            <a href="@Url.Action("DanhSachPhong", isTenantContext ? "KhachThue" : "Guest", new { verified = true })"
+                                class="search-tag">
+                                <i class="fa fa-check-circle"></i> Đã xác minh
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- TẦNG 3: NAVIGATION MENU (CHỈ CHO NGƯỜI THUÊ) -->
+        <nav class="header-navbar">
+            <div class="header-container">
+                <div class="navbar-menu">
+                    @{
+                        bool isKhachThueIndex = (act == "INDEX" && ctrl == "KHACHTHUE");
+                        bool isAllRooms = (act == "DANHSACHPHONG");
+                        bool isHome = (act == "INDEX" && (ctrl == "HOME" || ctrl == "GUEST"));
+                    }
+
+                    <a href="@homeUrl" class="navbar-item @(isHome || isKhachThueIndex ? "active" : "")">
+                        <i class="fa fa-home"></i> @(isLoggedIn ? "Trang chủ người thuê" : "Trang chủ")
+                    </a>
+
+                    <a href="@roomsUrl" class="navbar-item @(isAllRooms ? "active" : "")">
+                        <i class="fa fa-search"></i> Tìm phòng
+                    </a>
+
+                    @if (isLoggedIn || ctrl == "KHACHTHUE")
+                    {
+                        <a href="@Url.Action("LichDaDat", "KhachThue")"
+                            class="navbar-item @(currentAction == "LichDaDat" ? "active" : "")">
+                            <i class="fa fa-calendar-check-o"></i> Lịch hẹn
+                        </a>
+                        <a href="@Url.Action("HopDong", "KhachThue")"
+                            class="navbar-item @(currentAction == "HopDong" ? "active" : "")">
+                            <i class="fa fa-file-text-o"></i> Hợp đồng
+                        </a>
+                        <a href="@Url.Action("HoaDon", "KhachThue")"
+                            class="navbar-item @(currentAction == "HoaDon" ? "active" : "")">
+                            <i class="fa fa-credit-card"></i> Hóa đơn
+                        </a>
+                        <a href="@Url.Action("YeuThich", "KhachThue")"
+                            class="navbar-item @(currentAction == "YeuThich" ? "active" : "")">
+                            <i class="fa fa-heart-o"></i> Yêu thích
+                        </a>
+                    }
+                </div>
+            </div>
+        </nav>
+    </header>
+}
+
+@if (isLoggedIn && userRole == "KhachThue")
+{
+    <script>
+        $(document).ready(function () {
+            let isNotiLoading = false;
+            let lastNotiDataHash = "";
+
+            function loadNotifications(showLoading = false) {
+                if (isNotiLoading) return;
+                isNotiLoading = true;
+
+                $.ajax({
+                    url: '@Url.Action("GetNotifications", "KhachThue")',
+                    type: 'GET',
+                    cache: false,
+                    success: function (res) {
+                        if (res.success) {
+                            const dataHash = JSON.stringify(res.data);
+                            if (showLoading || dataHash !== lastNotiDataHash) {
+                                lastNotiDataHash = dataHash;
+                                renderNotifications(res.data);
+                            }
+                        } else {
+                            $('#notiList').html('<div style="padding:20px; text-align:center; color:#e53e3e; font-size:12px;"><i class="fa fa-exclamation-circle" style="display:block; font-size:20px; margin-bottom:5px;"></i> Lỗi tải dữ liệu</div>');
+                        }
+                    },
+                    error: function (xhr) {
+                        console.error("AJAX Error:", xhr);
+                        $('#notiList').html('<div style="padding:20px; text-align:center; color:#e53e3e; font-size:12px;"><i class="fa fa-exclamation-circle" style="display:block; font-size:20px; margin-bottom:5px;"></i> Lỗi kết nối server</div>');
+                    },
+                    complete: function () {
+                        isNotiLoading = false;
+                    }
+                });
+            }
+
+            function renderNotifications(data) {
+                const $list = $('#notiList');
+                const $badge = $('#notiBadge');
+                if (!$list.length) return;
+
+                $list.empty();
+
+                let unreadCount = 0;
+                if (!data || data.length === 0) {
+                    $list.append('<div class="no-notifications" style="padding: 20px; text-align: center; color: #a0aec0;"><i class="fa fa-bell-slash-o" style="font-size: 24px; margin-bottom: 10px; display: block;"></i><p style="font-size: 13px;">Không có thông báo mới</p></div>');
+                    $badge.hide();
+                    return;
+                }
+
+                const displayData = data.slice(0, 3);
+
+                displayData.forEach(item => {
+                    if (!item.isRead) unreadCount++;
+                    const iconClass = item.type === 'success' ? 'success' : 'info';
+                    const icon = item.type === 'success' ? 'fa-check-circle' : 'fa-info-circle';
+                    const unreadClass = item.isRead ? '' : 'unread';
+                    const timeStr = formatTime(item.time);
+                    const html = `
+                                    <a href="${item.url || '#'}" class="notification-item ${unreadClass}" data-id="${item.id}">
+                                        <div class="item-icon ${iconClass}">
+                                            <i class="fa ${icon}"></i>
+                                        </div>
+                                        <div class="item-content">
+                                            <p class="noti-title"><strong>${item.title}</strong></p>
+                                            <p class="noti-text">${item.content}</p>
+                                            <span class="item-time">${timeStr}</span>
+                                        </div>
+                                    </a>`;
+                    $list.append(html);
+                });
+
+                // Recalculate unread count from full data
+                let actualUnread = data.filter(x => !x.isRead).length;
+
+                if (actualUnread > 0) {
+                    $badge.text(actualUnread > 99 ? '99+' : actualUnread).show();
+                } else {
+                    $badge.hide();
+                }
+            }
+
+            function formatTime(dateStr) {
+                if (!dateStr) return '';
+                const date = new Date(dateStr);
+                const now = new Date();
+                const diffMs = now - date;
+                const diffMin = Math.floor(diffMs / 60000);
+                if (diffMin < 1) return 'Vừa xong';
+                if (diffMin < 60) return diffMin + ' phút trước';
+                const diffHour = Math.floor(diffMin / 60);
+                if (diffHour < 24) return diffHour + ' giờ trước';
+                return date.toLocaleDateString('vi-VN');
+            }
+
+            // Load on mouse enter
+            $('#notificationDropdown').on('mouseenter', function () {
+                loadNotifications(false);
+            });
+
+            // Mark as read on click
+            $(document).on('click', '.notification-item.unread', function (e) {
+                const id = $(this).data('id');
+                const $this = $(this);
+                $.post('@Url.Action("MarkAsRead", "KhachThue")', { id: id }, function (res) {
+                    if (res.success) {
+                        $this.removeClass('unread');
+                        // Optional: silent reload to update badge accurately
+                        loadNotifications(false);
+                    }
+                });
+            });
+
+            // Initial and auto reload
+            loadNotifications(true);
+            setInterval(loadNotifications, 30000); // 30s for better responsiveness
+        });
+    </script>
+}

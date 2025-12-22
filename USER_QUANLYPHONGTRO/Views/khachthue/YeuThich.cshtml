@@ -1,0 +1,94 @@
+﻿@model List<USER_QUANLYPHONGTRO.Models.Dtos.Rooms.PhongDto>
+@{
+    ViewBag.Title = "Phòng Trọ Yêu Thích";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="wishlist-container py-5">
+    <div class="container">
+        <div class="header-section mb-5">
+            <h1 class="fw-black display-5 mb-2" style="color: #2d3748;">❤️ Danh sách yêu thích</h1>
+            <p class="text-muted fs-5">Lưu lại những căn phòng bạn ưng ý nhất để dễ dàng theo dõi.</p>
+        </div>
+
+        @if (Model != null && Model.Any())
+        {
+            <div class="row g-4">
+                @foreach (var room in Model)
+                {
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden room-card">
+                            <div class="position-relative">
+                                <img src="@room.HinhAnhDaiDien" class="card-img-top" style="height: 200px; object-fit: cover;" alt="@room.TieuDe">
+                                <button class="btn btn-white position-absolute top-0 end-0 m-3 rounded-circle shadow-sm btn-remove-wishlist" title="Bỏ yêu thích">
+                                    <i class="fa fa-heart text-danger"></i>
+                                </button>
+                                <div class="position-absolute bottom-0 start-0 m-3">
+                                    <span class="badge bg-white text-dark shadow-sm">
+                                        @(room.TrangThai == "con_trong" ? "🏠 Còn trống" : "🔒 Đã thuê")
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="card-body p-4">
+                                <h5 class="card-title fw-bold text-truncate mb-2" title="@room.TieuDe">@room.TieuDe</h5>
+                                <p class="text-muted small mb-3"><i class="fa fa-map-marker me-2"></i>@(room.NhaTro != null ? room.NhaTro.DiaChi : "Đang cập nhật")</p>
+                                
+                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                    <h4 class="text-danger fw-black mb-0">@room.GiaTien.ToString("N0") <small style="font-size: 13px;">đ/tháng</small></h4>
+                                    <span class="small text-muted fw-bold">@room.DienTich m²</span>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-white border-0 p-4 pt-0">
+                                <a href="@Url.Action("ChiTietPhong", "KhachThue", new { id = room.PhongId })" class="btn btn-primary w-100 rounded-pill py-2 fw-bold shadow-sm" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">
+                                    <i class="fa fa-eye me-2"></i> Xem chi tiết
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="empty-state text-center py-5">
+                <div class="mb-4">
+                    <i class="fa fa-heart-o text-muted" style="font-size: 100px; opacity: 0.3;"></i>
+                </div>
+                <h2 class="fw-bold">Danh sách còn trống</h2>
+                <p class="text-muted mb-4">Bạn chưa lưu phòng trọ nào vào danh sách yêu thích.</p>
+                <a href="@Url.Action("DanhSachPhong", "KhachThue")" class="btn btn-primary rounded-pill px-5 btn-lg shadow" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">
+                    Khám phá phòng ngay
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .wishlist-container {
+        background-color: #f8fafc;
+        min-height: 80vh;
+    }
+    .room-card {
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .room-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1) !important;
+    }
+    .fw-black { font-weight: 900; }
+    .btn-remove-wishlist {
+        width: 38px;
+        height: 38px;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        z-index: 10;
+    }
+    .btn-remove-wishlist:hover {
+        background: #fff5f5;
+        transform: scale(1.1);
+    }
+</style>

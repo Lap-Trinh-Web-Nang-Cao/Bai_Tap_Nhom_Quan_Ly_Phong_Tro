@@ -1,0 +1,1036 @@
+﻿/* ===== RESET & BASE ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', 'Segoe UI', Tahoma, sans-serif;
+    background: #f5f5f5;
+    min-height: 100vh;
+}
+
+/* Body riêng cho auth pages */
+body.auth-body {
+    background: #1976D2; /* Màu xanh dương hiện đại */
+    overflow-x: hidden;
+}
+
+/* ===== COLOR PALETTE ===== */
+:root {
+    --primary-blue: #1976D2;
+    --primary-dark: #1565C0;
+    --primary-light: #E3F2FD;
+    --accent-red: #FF6B6B;
+    --text-primary: #222;
+    --text-secondary: #757575;
+    --border-color: #DBDBDB;
+    --bg-white: #FFFFFF;
+    --bg-light: #F5F5F5;
+}
+
+/* ===== HEADER - SHOPEE STYLE ===== */
+.auth-header {
+    background: var(--bg-white);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.auth-header-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 8px 30px;   /* Giảm từ 20px 30px xuống 8px 30px */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 0;       /* Đảm bảo không bị min-height dư thừa */
+}
+
+.auth-header-left {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+}
+
+.auth-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    transition: opacity 0.3s;
+}
+
+.auth-logo:hover {
+    opacity: 0.8;
+}
+
+.auth-logo img {
+    width: 150px;      
+    height: 50px;     
+    object-fit: contain;
+}
+
+.auth-logo span {
+    display: none;    /* Ẩn text "TroTot" */
+}
+
+.auth-title {
+    font-size: 22px;
+    font-weight: 400;
+    color: var(--text-primary);
+}
+
+.auth-header-right {
+    display: flex;
+    align-items: center;
+}
+
+.auth-help-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--primary-blue);
+    text-decoration: none;
+    font-size: 14px;
+    transition: color 0.3s;
+}
+
+.auth-help-link:hover {
+    color: var(--primary-dark);
+}
+
+.auth-help-link i {
+    font-size: 16px;
+}
+
+/* ===== MAIN CONTAINER ===== */
+.auth-main-container {
+    background: var(--primary-blue);
+    min-height: calc(100vh - 90px);
+    padding: 40px 0;
+}
+
+.auth-content-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 30px;
+    display: grid;
+    grid-template-columns: 1fr 450px;
+    gap: 60px;
+    align-items: center;
+}
+
+/* ===== CỘT TRÁI - BANNER ===== */
+.auth-left-banner {
+    text-align: center;
+    color: white;
+}
+
+.banner-illustration {
+    margin-bottom: 40px;
+}
+
+.banner-illustration img {
+    max-width: 100%;
+    height: auto;
+    max-height: 450px;
+    object-fit: contain;
+    filter: drop-shadow(0 10px 30px rgba(0,0,0,0.3));
+}
+
+.banner-title {
+    font-size: 40px;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: 20px;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+
+.banner-subtitle {
+    font-size: 18px;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.95);
+    text-shadow: 0 1px 5px rgba(0,0,0,0.15);
+}
+
+/* ===== CỘT PHẢI - FORM ===== */
+.auth-right-form {
+    background: var(--bg-white);
+    border-radius: 4px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+}
+
+.auth-form-card {
+    padding: 40px;
+}
+
+/* Form Header */
+.form-header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.form-header h2 {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.form-header p {
+    font-size: 15px;
+    color: var(--text-secondary);
+}
+
+/* Form Groups */
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.form-input {
+    width: 100%;
+    height: 44px;
+    padding: 0 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+    font-size: 14px;
+    font-family: inherit;
+    transition: all 0.3s;
+    background: var(--bg-white);
+}
+
+.form-input:hover {
+    border-color: #888;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.1);
+}
+
+.form-input::placeholder {
+    color: #CCC;
+}
+
+/* Password Field */
+.password-field {
+    position: relative;
+}
+
+.password-field .form-input {
+    padding-right: 45px;  /* Để chừa chỗ cho nút toggle */
+}
+
+.toggle-password {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #999;
+    font-size: 18px;
+    padding: 8px;
+    transition: color 0.3s;
+}
+
+.toggle-password:hover {
+    color: var(--primary-blue);
+}
+
+/* Validation Errors */
+.field-error {
+    font-size: 12px;
+    color: #D32F2F;
+    margin-top: 4px;
+}
+
+/* Alerts */
+.alert {
+    padding: 12px 14px;
+    border-radius: 3px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.alert i {
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.alert-error {
+    background: #FFEBEE;
+    color: #C62828;
+    border: 1px solid #EF9A9A;
+}
+
+.alert-success {
+    background: #E8F5E9;
+    color: #2E7D32;
+    border: 1px solid #A5D6A7;
+}
+
+/* Submit Button */
+.btn-submit {
+    width: 100%;
+    height: 44px;
+    background: var(--primary-blue);
+    color: white;
+    border: none;
+    border-radius: 3px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 8px;
+}
+
+.btn-submit:hover {
+    background: var(--primary-dark);
+    box-shadow: 0 2px 8px rgba(25, 118, 210, 0.4);
+}
+
+.btn-submit:disabled {
+    background: #CCC;
+    cursor: not-allowed;
+}
+
+/* Form Footer Links */
+.form-footer-links {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+}
+
+.forgot-link,
+.help-login-link {
+    font-size: 13px;
+    color: var(--primary-blue);
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.forgot-link:hover,
+.help-login-link:hover {
+    color: var(--primary-dark);
+    text-decoration: underline;
+}
+
+/* Divider */
+.or-divider {
+    text-align: center;
+    margin: 24px 0;
+    position: relative;
+}
+
+.or-divider span {
+    display: inline-block;
+    background: white;
+    padding: 0 16px;
+    color: var(--text-secondary);
+    font-size: 13px;
+    position: relative;
+    z-index: 1;
+}
+
+.or-divider::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 1px;
+    background: var(--border-color);
+}
+
+/* Social Login */
+.social-login-btns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.social-btn {
+    height: 40px;
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+    background: white;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.social-btn:hover {
+    background: var(--bg-light);
+}
+
+.facebook-btn {
+    color: #1877F2;
+}
+
+.facebook-btn:hover {
+    border-color: #1877F2;
+}
+
+.google-btn {
+    color: #DB4437;
+}
+
+.google-btn:hover {
+    border-color: #DB4437;
+}
+
+.social-btn i {
+    font-size: 16px;
+}
+
+/* Register Section */
+.register-section {
+    text-align: center;
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border-color);
+}
+
+.register-section p {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin: 10px 0;
+}
+
+.register-link {
+    color: var(--primary-blue);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s;
+}
+
+.register-link:hover {
+    color: var(--primary-dark);
+    text-decoration: underline;
+}
+
+.landlord-promo {
+    background: linear-gradient(135deg, rgba(255, 107, 107, 0.1) 0%, rgba(255, 107, 107, 0.05) 100%);
+    padding: 12px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 107, 107, 0.3);
+    margin-top: 12px;
+}
+
+.landlord-link {
+    color: var(--accent-red);
+    text-decoration: none;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: color 0.3s;
+}
+
+.landlord-link:hover {
+    color: #E55555;
+    text-decoration: underline;
+}
+
+.switch-type {
+    font-size: 13px !important;
+    margin-top: 12px !important;
+}
+
+/* ===== FOOTER trong Auth Page ===== */
+.app-footer {
+    background: white;
+    margin-top: 0;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1024px) {
+    .auth-content-wrapper {
+        grid-template-columns: 1fr;
+        gap: 40px;
+    }
+
+    .auth-left-banner {
+        display: none;
+    }
+
+    .auth-right-form {
+        max-width: 450px;
+        margin: 0 auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .auth-header-container {
+        padding: 16px 20px;
+    }
+
+    .auth-logo span {
+        font-size: 24px;
+    }
+
+    .auth-title {
+        display: none;
+    }
+
+    .auth-help-link {
+        font-size: 13px;
+    }
+
+    .auth-main-container {
+        padding: 20px 0;
+    }
+
+    .auth-content-wrapper {
+        padding: 0 20px;
+    }
+
+    .auth-form-card {
+        padding: 30px 24px;
+    }
+
+    .form-header h2 {
+        font-size: 22px;
+    }
+
+    .social-login-btns {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .auth-header-container {
+        padding: 14px 16px;
+    }
+
+    .auth-logo span {
+        font-size: 20px;
+    }
+
+    .auth-form-card {
+        padding: 24px 20px;
+    }
+
+    .form-input {
+        height: 40px;
+        font-size: 16px;
+    }
+
+    .btn-submit {
+        height: 42px;
+        font-size: 14px;
+    }
+}
+
+/* ===== CHECKBOX GROUP ===== */
+.checkbox-group {
+    margin: 18px 0;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 14px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    line-height: 1.6;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: var(--primary-blue);
+    margin-top: 3px;
+    flex-shrink: 0;
+}
+
+.checkbox-label a {
+    color: var(--primary-blue);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.checkbox-label a:hover {
+    text-decoration: underline;
+}
+
+.link-primary {
+    color: var(--primary-blue);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s;
+}
+
+.link-primary:hover {
+    color: var(--primary-dark);
+    text-decoration: underline;
+}
+
+/* ===== SELLER REGISTRATION STYLES ===== */
+
+/* Seller Header */
+.seller-header {
+    background: var(--bg-white);
+    border-bottom: 1px solid var(--border-color);
+    padding: 12px 0;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.seller-header-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.seller-logo {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+.seller-logo img {
+    height: 45px;
+    object-fit: contain;
+}
+
+.seller-header-title {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-left: 20px;
+}
+
+.seller-user-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.seller-user-info i {
+    font-size: 16px;
+    color: var(--primary-blue);
+}
+
+/* Progress Container */
+.progress-container {
+    background: var(--bg-white);
+    border-bottom: 1px solid var(--border-color);
+    padding: 30px 0;
+}
+
+.progress-wrapper {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 30px;
+}
+
+.progress-steps {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+}
+
+.progress-steps::before {
+    content: '';
+    position: absolute;
+    top: 20px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--border-color);
+    z-index: 0;
+}
+
+.progress-line {
+    position: absolute;
+    top: 20px;
+    left: 0;
+    height: 2px;
+    background: var(--primary-blue);
+    transition: width 0.3s ease;
+    z-index: 1;
+}
+
+.progress-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+    z-index: 2;
+    flex: 1;
+}
+
+.step-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--bg-white);
+    border: 2px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--text-secondary);
+    transition: all 0.3s;
+}
+
+.progress-step.active .step-circle {
+    background: var(--primary-blue);
+    border-color: var(--primary-blue);
+    color: white;
+}
+
+.progress-step.completed .step-circle {
+    background: #4CAF50;
+    border-color: #4CAF50;
+    color: white;
+}
+
+.step-label {
+    font-size: 13px;
+    color: var(--text-secondary);
+    text-align: center;
+    font-weight: 500;
+}
+
+.progress-step.active .step-label {
+    color: var(--primary-blue);
+    font-weight: 600;
+}
+
+/* Seller Main Content */
+.seller-main {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 0 30px;
+    background: var(--bg-light);
+}
+
+.seller-card {
+    background: var(--bg-white);
+    border-radius: 4px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    padding: 40px;
+    margin-bottom: 30px;
+}
+
+.seller-form .step-content {
+    display: none;
+}
+
+.seller-form .step-content.active {
+    display: block;
+}
+
+/* Form Elements for Seller */
+.seller-form .section-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 25px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.seller-form .section-title i {
+    color: var(--primary-blue);
+    font-size: 20px;
+}
+
+.seller-form .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.seller-form .form-textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+    font-size: 14px;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 60px;
+}
+
+.seller-form .form-textarea:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.1);
+}
+
+/* Identity Options */
+.identity-options {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.identity-option {
+    flex: 1;
+    min-width: 150px;
+    padding: 12px 16px;
+    border: 2px solid var(--border-color);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.identity-option:hover {
+    border-color: var(--primary-blue);
+    background: var(--primary-light);
+}
+
+.identity-option input[type="radio"] {
+    accent-color: var(--primary-blue);
+    cursor: pointer;
+}
+
+/* Upload Area */
+.upload-area {
+    border: 2px dashed var(--border-color);
+    border-radius: 4px;
+    padding: 40px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.upload-area:hover {
+    border-color: var(--primary-blue);
+    background: var(--primary-light);
+}
+
+.upload-area i {
+    font-size: 48px;
+    color: var(--primary-blue);
+    display: block;
+    margin-bottom: 12px;
+}
+
+.upload-text {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+}
+
+.upload-hint {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.file-preview {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.file-preview-item {
+    position: relative;
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+
+.file-preview-item img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+}
+
+/* Info Box */
+.info-box {
+    padding: 14px;
+    border-radius: 4px;
+    font-size: 13px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.info-box i {
+    font-size: 16px;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.info-box-info {
+    background: var(--primary-light);
+    color: #1565C0;
+    border-left: 4px solid var(--primary-blue);
+}
+
+.info-box-warning {
+    background: #FFF8E1;
+    color: #F57C00;
+    border-left: 4px solid #FFA000;
+}
+
+/* Form Actions */
+.form-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+}
+
+.btn {
+    padding: 12px 24px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-secondary {
+    background: var(--bg-white);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+.btn-secondary:hover {
+    background: #F5F5F5;
+}
+
+.btn-primary {
+    background: var(--primary-blue);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--primary-dark);
+}
+
+.btn-success {
+    background: #4CAF50;
+    color: white;
+}
+
+.btn-success:hover {
+    background: #43A047;
+}
+
+/* Success Screen */
+.success-screen {
+    text-align: center;
+    padding: 60px 40px;
+}
+
+.success-icon {
+    font-size: 80px;
+    color: #4CAF50;
+    margin-bottom: 20px;
+}
+
+.success-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+}
+
+.success-message {
+    font-size: 15px;
+    color: var(--text-secondary);
+    margin-bottom: 30px;
+    line-height: 1.6;
+}
+
+/* Responsive Seller Registration */
+@media (max-width: 768px) {
+    .seller-header-title {
+        display: none;
+    }
+
+    .progress-container {
+        padding: 20px 0;
+    }
+
+    .step-label {
+        font-size: 11px;
+    }
+
+    .step-circle {
+        width: 35px;
+        height: 35px;
+        font-size: 14px;
+    }
+
+    .seller-card {
+        padding: 24px;
+    }
+
+    .seller-form .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .form-actions {
+        flex-direction: column-reverse;
+        gap: 12px;
+    }
+
+    .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}

@@ -1,0 +1,36 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
+using System.Web.Routing;
+
+namespace USER_QUANLYPHONGTRO
+{
+    public class RouteConfig
+    {
+        public static void RegisterRoutes(RouteCollection routes)
+        {
+            routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
+
+            // Route chi tiết phòng (Khách thuê)
+            routes.MapRoute(
+                name: "KhachThue_ChiTietPhong",
+                url: "KhachThue/ChiTietPhong/{id}",
+                defaults: new { controller = "KhachThue", action = "ChiTietPhong", id = UrlParameter.Optional }
+            );
+
+            routes.MapRoute(
+                name: "ChuTro_Dashboard",
+                url: "ChuTro/Dashboard",
+                defaults: new { controller = "ChuTro", action = "Dashboard" }
+            );
+
+            routes.MapRoute(
+                name: "Default",
+                url: "{controller}/{action}/{id}",
+                defaults: new { controller = "Guest", action = "Index", id = UrlParameter.Optional }
+            );
+        }
+    }
+}

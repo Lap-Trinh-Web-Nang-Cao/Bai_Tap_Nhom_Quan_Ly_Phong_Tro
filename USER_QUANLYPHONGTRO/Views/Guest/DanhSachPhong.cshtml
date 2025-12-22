@@ -1,0 +1,235 @@
+﻿@model IEnumerable<USER_QUANLYPHONGTRO.Models.Dtos.Rooms.PhongDto>
+
+@{
+    ViewBag.Title = "Room List - TimTro.vn";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section styles {
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .page-banner {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 60px 20px;
+            text-align: center;
+            color: white;
+            margin: 0 -15px 40px;
+            border-radius: 0 0 20px 20px;
+        }
+
+        .page-banner h1 {
+            font-size: 42px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .page-banner p {
+            font-size: 18px;
+            opacity: 0.9;
+        }
+
+        .room-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        .room-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .room-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .room-image {
+            width: 100%;
+            height: 220px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 4em;
+            position: relative;
+            background-size: cover;
+            background-position: center;
+            flex-shrink: 0;
+        }
+
+        .room-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.95);
+            color: #667eea;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .room-content {
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .room-title {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 12px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            min-height: 2.6em;
+        }
+
+        .room-address {
+            color: #777;
+            font-size: 0.9em;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: start;
+            gap: 8px;
+            min-height: 2.8em;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        .room-price {
+            font-size: 1.8em;
+            font-weight: 800;
+            color: #e74c3c;
+            margin: 15px 0;
+        }
+
+        .view-details-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 15px;
+            transition: all 0.3s;
+            margin-top: 15px;
+        }
+
+        .view-details-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(72, 187, 120, 0.3);
+            text-decoration: none;
+            color: white;
+        }
+
+        .no-rooms {
+            text-align: center;
+            padding: 80px 20px;
+            color: #999;
+        }
+
+        .no-rooms i {
+            font-size: 6em;
+            color: #e0e0e0;
+            margin-bottom: 25px;
+        }
+    </style>
+}
+
+<div class="room-list-container">
+    <div class="page-banner">
+        <h1><i class="fa fa-home"></i> T&#236;m Ph&#242;ng Tr&#7885; Ph&#249; H&#7907;p</h1>
+        <p>Kh&#225;m ph&#225; h&#224;ng ng&#224;n ph&#242;ng tr&#7885; ch&#7845;t l&#432;&#7907;ng v&#7899;i gi&#225;
+            t&#7889;t nh&#7845;t</p>
+    </div>
+
+    <div class="container">
+        @if (Model != null && Model.Any())
+        {
+            <div class="room-grid">
+                @foreach (var room in Model)
+                {
+                    <div class="room-card">
+                        <div class="room-image"
+                            style="background-image: url('@Url.Content(room.HinhAnhDaiDien ?? "~/images/banner-login.png")');">
+                            @if (room.IsDuyet && !room.IsBiKhoa)
+                            {
+                                <span class="room-badge">&#10003; &#272;&#227; Duy&#7879;t</span>
+                            }
+                        </div>
+
+                        <div class="room-content">
+                            <h3 class="room-title">@room.TieuDe</h3>
+
+                            @if (room.NhaTro != null && !string.IsNullOrEmpty(room.NhaTro.DiaChi))
+                            {
+                                <div class="room-address">
+                                    <i class="fa fa-map-marker-alt"></i>
+                                    <span>@room.NhaTro.DiaChi</span>
+                                </div>
+                            }
+
+                            <div class="room-price">
+                                @room.GiaTien.ToString("N0")&#273;
+                                <span style="font-size: 0.4em; color: #999;">/th&#225;ng</span>
+                            </div>
+
+                            <div style="flex-grow: 1;"></div>
+
+                            <a href="@Url.Action("ChiTietPhong", "Guest", new { id = room.PhongId })" class="view-details-btn">
+                                <i class="fa fa-eye"></i> Xem Chi Ti&#7871;t
+                            </a>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="no-rooms">
+                <i class="fa fa-search"></i>
+                <h2>Kh&#244;ng T&#236;m Th&#7845;y Ph&#242;ng Tr&#7885; Ph&#249; H&#7907;p</h2>
+                <p>Vui l&#242;ng th&#7917; l&#7841;i v&#7899;i b&#7897; l&#7885;c kh&#225;c</p>
+            </div>
+        }
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            $('.room-card').on('click', function (e) {
+                if ($(e.target).closest('a').length) return;
+                var url = $(this).find('.view-details-btn').attr('href');
+                if (url) window.location.href = url;
+            }).css('cursor', 'pointer');
+        });
+    </script>
+}

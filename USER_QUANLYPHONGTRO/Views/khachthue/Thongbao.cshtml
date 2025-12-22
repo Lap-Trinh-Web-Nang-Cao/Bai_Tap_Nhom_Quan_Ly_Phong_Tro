@@ -1,0 +1,444 @@
+﻿@model IEnumerable<USER_QUANLYPHONGTRO.Models.Dtos.ThongBaoDto>
+@{
+    ViewBag.Title = "Thông báo của tôi";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="noti-container">
+    <div class="noti-wrapper">
+        <!-- Header -->
+        <div class="noti-header">
+            <div class="noti-header-text">
+                <h1>Thông báo của bạn</h1>
+                <p>Theo dõi các cập nhật về lịch hẹn, hợp đồng và hóa đơn của bạn.</p>
+            </div>
+            <div class="noti-header-actions">
+                <button id="markAllRead" class="btn-clear-all">
+                    <i class="fa fa-check-double"></i> Đã xem tất cả
+                </button>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <!-- Sidebar -->
+            <div class="col-md-3">
+                <div class="noti-sidebar">
+                    <h5 class="sidebar-title"><i class="fa fa-filter"></i> Bộ lọc</h5>
+                    <div class="filter-list" id="notiFilters">
+                        <div class="filter-item active" data-filter="all">
+                            <i class="fa fa-list"></i> Tất cả
+                            <span class="badge">@Model.Count()</span>
+                        </div>
+                        <div class="filter-item" data-filter="unread">
+                            <i class="fa fa-envelope-o"></i> Chưa xem
+                            <span class="badge badge-error count-badge">@Model.Count(x => !x.DaXem)</span>
+                        </div>
+                        <div class="filter-item" data-filter="success">
+                            <i class="fa fa-check-circle-o text-success"></i> Thành công
+                        </div>
+                        <div class="filter-item" data-filter="info">
+                            <i class="fa fa-info-circle text-info"></i> Thông tin
+                        </div>
+                        <div class="filter-item" data-filter="warning">
+                            <i class="fa fa-exclamation-triangle text-warning"></i> Cảnh báo
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="col-md-9">
+                <div class="noti-content-card">
+                    <div class="noti-search-bar">
+                        <i class="fa fa-search"></i>
+                        <input type="text" id="notiSearch" placeholder="Tìm kiếm theo tiêu đề hoặc nội dung...">
+                    </div>
+
+                    <div class="noti-items-list" id="notiItems">
+                        @if (!Model.Any())
+                        {
+                            <div class="noti-empty">
+                                <i class="fa fa-bell-slash-o"></i>
+                                <h5>Hộp thư trống</h5>
+                                <p>Bạn chưa có thông báo nào vào lúc này.</p>
+                            </div>
+                        }
+                        else
+                        {
+                            foreach (var item in Model.OrderByDescending(x => x.ThoiGianTao))
+                            {
+                                string unreadClass = item.DaXem ? "" : "unread";
+                                string typeClass = item.Loai == "success" ? "success" : (item.Loai == "warning" ? "warning" : "info");
+                                string icon = item.Loai == "success" ? "fa-check-circle" : (item.Loai == "warning" ? "fa-exclamation-triangle" : "fa-info-circle");
+
+                                <div class="noti-item @unreadClass" 
+                                     data-type="@item.Loai" 
+                                     data-read="@item.DaXem.ToString().ToLower()"
+                                     data-id="@item.ThongBaoId">
+                                    <div class="noti-indicator @typeClass"></div>
+                                    <div class="noti-icon-box @typeClass">
+                                        <i class="fa @icon"></i>
+                                    </div>
+                                    <div class="noti-body">
+                                        <div class="noti-meta">
+                                            <span class="noti-type-tag @typeClass">@item.Loai</span>
+                                            <span class="noti-time">@item.ThoiGianTao.ToString("HH:mm, dd/MM/yyyy")</span>
+                                        </div>
+                                        <h4 class="noti-title">@item.TieuDe</h4>
+                                        <p class="noti-text">@item.NoiDung</p>
+                                        @if (!string.IsNullOrEmpty(item.RedirectUrl))
+                                        {
+                                            <a href="@item.RedirectUrl" class="noti-action-link">
+                                                Xem chi tiết <i class="fa fa-arrow-right"></i>
+                                            </a>
+                                        }
+                                    </div>
+                                    @if (!item.DaXem)
+                                    {
+                                        <div class="noti-unread-dot"></div>
+                                    }
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .noti-container {
+        background-color: #f0f2f5;
+        min-height: 100vh;
+        padding: 40px 0;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .noti-wrapper {
+        max-width: 1140px;
+        margin: 0 auto;
+        padding: 0 15px;
+    }
+
+    /* Header */
+    .noti-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        border-bottom: 2px solid #e1e4e8;
+        padding-bottom: 20px;
+        margin-bottom: 10px;
+    }
+    .noti-header h1 {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 800;
+        color: #1a1a1a;
+    }
+    .noti-header p {
+        margin: 5px 0 0 0;
+        color: #666;
+    }
+    .btn-clear-all {
+        background: white;
+        border: 1px solid #d1d5db;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #374151;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .btn-clear-all:hover {
+        background: #f9fafb;
+        border-color: #9ca3af;
+    }
+
+    /* Sidebar */
+    .noti-sidebar {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        position: sticky;
+        top: 20px;
+    }
+    .sidebar-title {
+        font-size: 16px;
+        font-weight: 700;
+        margin-bottom: 15px;
+        color: #111827;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .filter-item {
+        display: flex;
+        align-items: center;
+        padding: 12px 15px;
+        margin-bottom: 5px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        color: #4b5563;
+        transition: all 0.2s;
+        gap: 12px;
+    }
+    .filter-item i {
+        width: 18px;
+        text-align: center;
+        font-size: 16px;
+    }
+    .filter-item:hover {
+        background-color: #f3f4f6;
+    }
+    .filter-item.active {
+        background-color: #eff6ff;
+        color: #2563eb;
+        font-weight: 700;
+    }
+    .filter-item .badge {
+        margin-left: auto;
+        background: #e5e7eb;
+        color: #4b5563;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 11px;
+    }
+    .filter-item.active .badge {
+        background: #2563eb;
+        color: white;
+    }
+    .badge-error {
+        background: #fee2e2 !important;
+        color: #ef4444 !important;
+    }
+
+    /* Content Area */
+    .noti-content-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+    .noti-search-bar {
+        padding: 20px;
+        border-bottom: 1px solid #f3f4f6;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    .noti-search-bar i {
+        color: #9ca3af;
+    }
+    .noti-search-bar input {
+        border: none;
+        outline: none;
+        width: 100%;
+        font-size: 15px;
+        color: #111827;
+    }
+
+    .noti-item {
+        padding: 20px 25px;
+        border-bottom: 1px solid #f3f4f6;
+        display: flex;
+        gap: 20px;
+        position: relative;
+        transition: background 0.2s;
+        cursor: pointer;
+    }
+    .noti-item:last-child {
+        border-bottom: none;
+    }
+    .noti-item:hover {
+        background-color: #f9fafb;
+    }
+    .noti-item.unread {
+        background-color: #fff;
+    }
+    
+    .noti-indicator {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        opacity: 0;
+    }
+    .noti-item.unread .noti-indicator {
+        opacity: 1;
+    }
+    .noti-indicator.success { background-color: #10b981; }
+    .noti-indicator.info { background-color: #3b82f6; }
+    .noti-indicator.warning { background-color: #f59e0b; }
+
+    .noti-icon-box {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        flex-shrink: 0;
+    }
+    .noti-icon-box.success { background-color: #ecfdf5; color: #10b981; }
+    .noti-icon-box.info { background-color: #eff6ff; color: #3b82f6; }
+    .noti-icon-box.warning { background-color: #fffbeb; color: #f59e0b; }
+
+    .noti-body {
+        flex: 1;
+    }
+    .noti-meta {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 5px;
+    }
+    .noti-type-tag {
+        font-size: 10px;
+        text-transform: uppercase;
+        font-weight: 800;
+        padding: 2px 8px;
+        border-radius: 4px;
+    }
+    .noti-type-tag.success { background: #d1fae5; color: #065f46; }
+    .noti-type-tag.info { background: #dbeafe; color: #1e40af; }
+    .noti-type-tag.warning { background: #fef3c7; color: #92400e; }
+    
+    .noti-time {
+        font-size: 12px;
+        color: #9ca3af;
+    }
+    .noti-title {
+        margin: 0 0 5px 0;
+        font-size: 16px;
+        font-weight: 700;
+        color: #111827;
+    }
+    .noti-text {
+        margin: 0;
+        font-size: 14px;
+        color: #4b5563;
+        line-height: 1.5;
+    }
+    .noti-action-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        margin-top: 10px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #2563eb;
+        text-decoration: none !important;
+    }
+    .noti-action-link:hover {
+        color: #1d4ed8;
+    }
+
+    .noti-unread-dot {
+        position: absolute;
+        right: 25px;
+        top: 25px;
+        width: 10px;
+        height: 10px;
+        background-color: #3b82f6;
+        border-radius: 50%;
+    }
+
+    .noti-empty {
+        padding: 60px 20px;
+        text-align: center;
+        color: #9ca3af;
+    }
+    .noti-empty i {
+        font-size: 48px;
+        margin-bottom: 15px;
+        opacity: 0.3;
+    }
+    .noti-empty h5 {
+        color: #374151;
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+
+    /* Animation */
+    .noti-item { animation: slideIn 0.3s ease-out forwards; }
+    @@keyframes slideIn {
+        from { opacity: 0; transform: translateX(10px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+</style>
+
+@section scripts {
+<script>
+    $(document).ready(function() {
+        // Filter
+        $('.filter-item').click(function() {
+            const filter = $(this).data('filter');
+            $('.filter-item').removeClass('active');
+            $(this).addClass('active');
+
+            const $items = $('.noti-item');
+            if (filter === 'all') {
+                $items.show();
+            } else if (filter === 'unread') {
+                $items.hide();
+                $('.noti-item.unread').show();
+            } else {
+                $items.hide();
+                $(`.noti-item[data-type="${filter}"]`).show();
+            }
+        });
+
+        // Search
+        $('#notiSearch').on('input', function() {
+            const val = $(this).val().toLowerCase();
+            $('.noti-item').filter(function() {
+                $(this).toggle($(this).text().toLowerCase().indexOf(val) > -1);
+            });
+        });
+
+        // Read
+        $(document).on('click', '.noti-item.unread', function() {
+            const id = $(this).data('id');
+            const $this = $(this);
+            $.post('@Url.Action("MarkAsRead", "KhachThue")', { id: id }, function(res) {
+                if (res.success) {
+                    $this.removeClass('unread');
+                    $this.find('.noti-unread-dot').fadeOut();
+                    updateBadgeCount(-1);
+                }
+            });
+        });
+
+        function updateBadgeCount(delta) {
+            const $badge = $('.count-badge');
+            let count = parseInt($badge.text()) + delta;
+            $badge.text(count > 0 ? count : '0');
+            if (count <= 0) $badge.hide();
+            
+            const $headerBadge = $('#notiBadge');
+            if ($headerBadge.length) {
+                let hCount = parseInt($headerBadge.text()) + delta;
+                if (hCount <= 0) $headerBadge.hide();
+                else $headerBadge.text(hCount > 99 ? '99+' : hCount);
+            }
+        }
+
+        $('#markAllRead').click(function() {
+            if (confirm('Bỏ qua tất cả thông báo?')) {
+                $.post('@Url.Action("ClearNotifications", "KhachThue")', function() {
+                    $('.noti-item').removeClass('unread');
+                    $('.noti-unread-dot').hide();
+                    $('.count-badge').text('0').hide();
+                    if ($('#notiBadge').length) $('#notiBadge').hide();
+                });
+            }
+        });
+    });
+</script>
+}

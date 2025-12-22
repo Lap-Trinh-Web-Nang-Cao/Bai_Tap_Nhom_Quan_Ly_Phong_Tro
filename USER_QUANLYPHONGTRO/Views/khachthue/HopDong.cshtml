@@ -1,0 +1,195 @@
+﻿@{
+    ViewBag.Title = "Điều Khoản Hợp Đồng";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section styles {
+<style>
+    .contract-page {
+        padding: 50px 20px;
+        background: #f8fafc;
+        min-height: 100vh;
+    }
+
+    .contract-container {
+        background: white;
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 60px;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .contract-container::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 8px;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+    }
+
+    .contract-header {
+        text-align: center;
+        margin-bottom: 50px;
+    }
+
+    .contract-header h1 {
+        font-size: 32px;
+        font-weight: 800;
+        color: #1a202c;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .contract-header p {
+        color: #718096;
+        font-weight: 500;
+        margin-top: 5px;
+    }
+
+    .contract-section {
+        margin-bottom: 35px;
+    }
+
+    .section-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .section-title span {
+        background: #ebf4ff;
+        color: #3182ce;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+    }
+
+    .section-content {
+        color: #4a5568;
+        line-height: 1.8;
+        padding-left: 40px;
+    }
+
+    .section-content ul {
+        list-style: none;
+        padding-left: 0;
+    }
+
+    .section-content li {
+        margin-bottom: 10px;
+        display: flex;
+        gap: 10px;
+    }
+
+    .section-content li::before {
+        content: "•";
+        color: #667eea;
+        font-weight: bold;
+    }
+
+    .contract-footer {
+        margin-top: 60px;
+        padding-top: 30px;
+        border-top: 2px solid #edf2f7;
+        text-align: center;
+    }
+
+    .btn-download {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 15px 30px;
+        background: #2d3748;
+        color: white;
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 700;
+        transition: all 0.3s;
+    }
+
+    .btn-download:hover {
+        background: #1a202c;
+        transform: translateY(-2px);
+        color: white;
+    }
+</style>
+}
+
+<div class="contract-page">
+    <div class="contract-container">
+        <div class="contract-header">
+            <h1>Hợp Đồng Thuê Phòng Trọ</h1>
+            <p>Phiên bản mẫu chuẩn - Áp dụng cho các giao dịch trên hệ thống</p>
+        </div>
+
+        <div class="contract-section">
+            <h3 class="section-title"><span>1</span> ĐỐI TƯỢNG HỢP ĐỒNG</h3>
+            <div class="section-content">
+                Hợp đồng này quy định việc cho thuê bất động sản (phòng trọ/căn hộ mini) giữa Bên Cho Thuê (Chủ trọ) và Bên Thuê (Người dùng đã xác thực trên hệ thống).
+            </div>
+        </div>
+
+        <div class="contract-section">
+            <h3 class="section-title"><span>2</span> GIÁ THUÊ VÀ ĐẶT CỌC</h3>
+            <div class="section-content">
+                <ul>
+                    <li>Giá thuê được niêm yết công khai trên hệ thống tại thời điểm đặt phòng.</li>
+                    <li>Tiền đặt cọc thông thường tương đương 01 tháng tiền thuê (trừ khi có thỏa thuận khác).</li>
+                    <li>Tiền thuê nhà được thanh toán định kỳ vào ngày 01 đến ngày 05 hàng tháng.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="contract-section">
+            <h3 class="section-title"><span>3</span> QUYỀN VÀ NGHĨA VỤ CỦA BÊN THUÊ</h3>
+            <div class="section-content">
+                <ul>
+                    <li>Sử dụng phòng đúng mục đích để ở, không kinh doanh hàng cấm.</li>
+                    <li>Giữ gìn vệ sinh chung và an ninh trật tự khu phố.</li>
+                    <li>Thanh toán đầy đủ các loại hóa đơn (Điện, Nước, Dịch vụ) hàng tháng.</li>
+                    <li>Không được tự ý sửa chữa cấu trúc phòng khi chưa có sự đồng ý của chủ trọ.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="contract-section">
+            <h3 class="section-title"><span>4</span> QUYỀN VÀ NGHĨA VỤ CỦA CHỦ TRỌ</h3>
+            <div class="section-content">
+                <ul>
+                    <li>Bàn giao phòng sạch sẽ, các thiết bị điện nước hoạt động tốt.</li>
+                    <li>Đảm bảo an ninh, an toàn phòng cháy chữa cháy cho khu trọ.</li>
+                    <li>Thông báo trước ít nhất 30 ngày nếu có thay đổi về giá thuê.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="contract-section">
+            <h3 class="section-title"><span>5</span> KẾT THÚC HỢP ĐỒNG</h3>
+            <div class="section-content">
+                Bên thuê muốn trả phòng phải thông báo trước ít nhất 30 ngày. Nếu trả phòng trước thời hạn hoặc không thông báo đúng hạn sẽ bị mất tiền cọc theo quy định.
+            </div>
+        </div>
+
+        <div class="contract-footer">
+            <p style="font-style: italic; color: #a0aec0; margin-bottom: 25px;">
+                * Đây là bản tóm tắt các điều khoản cơ bản. Hợp đồng chi tiết sẽ được ký kết điện tử giữa hai bên sau khi chủ trọ xác nhận đặt phòng thành công.
+            </p>
+            <a href="#" class="btn-download">
+                <i class="fa fa-file-pdf-o"></i> Tải File Hợp Đồng Mẫu (.pdf)
+            </a>
+        </div>
+    </div>
+</div>

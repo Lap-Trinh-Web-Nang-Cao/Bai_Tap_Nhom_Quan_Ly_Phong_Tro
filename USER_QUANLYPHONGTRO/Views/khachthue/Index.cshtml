@@ -1,0 +1,330 @@
+﻿@model IEnumerable<USER_QUANLYPHONGTRO.Models.Dtos.Rooms.PhongDto>
+
+@{
+    ViewBag.Title = "Chào Mừng";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var userName = Session["HoTen"] as string ?? "Khách Hàng";
+}
+
+@section styles {
+    <style>
+        /* Base Reset & Variables */
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        /* Hero Section (Welcome & Quick Actions) */
+        .hero-section {
+            background: var(--primary-gradient);
+            padding: 100px 20px 140px;
+            text-align: center;
+            color: white;
+            margin: 0 -15px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-section::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 100px;
+            background: linear-gradient(to bottom, transparent, #fff);
+        }
+
+        .hero-content {
+            max-width: 1000px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        .welcome-icon {
+            font-size: 80px;
+            margin-bottom: 25px;
+            animation: bounce 2s infinite;
+        }
+
+        @@keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        .welcome-title {
+            font-size: 48px;
+            font-weight: 900;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .welcome-subtitle {
+            font-size: 22px;
+            margin-bottom: 40px;
+            opacity: 0.95;
+        }
+
+        /* Quick Actions Grid */
+        .quick-actions-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-top: 50px;
+        }
+
+        .action-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 25px 15px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            color: white;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .action-card:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            color: white;
+            text-decoration: none;
+        }
+
+        .card-icon-wrapper {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            font-size: 28px;
+            transition: all 0.3s;
+        }
+
+        .action-card:hover .card-icon-wrapper {
+            background: white;
+            color: #667eea;
+            transform: rotate(10deg) scale(1.1);
+        }
+
+        /* Featured Rooms Section (White background like Guest/Index) */
+        .featured-rooms-section {
+            padding: 80px 20px;
+            background: white;
+            margin-top: -60px;
+            position: relative;
+            z-index: 5;
+            border-radius: 40px 40px 0 0;
+            box-shadow: 0 -20px 40px rgba(0,0,0,0.05);
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .section-header h2 {
+            font-size: 42px;
+            font-weight: 800;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .section-header p {
+            font-size: 18px;
+            color: #666;
+        }
+
+        .rooms-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+            max-width: 1200px;
+            margin: 0 auto 50px;
+        }
+
+        .room-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
+            transition: all 0.4s;
+            display: flex;
+            flex-direction: column;
+            text-decoration: none;
+            border: 1px solid #f0f0f0;
+        }
+
+        .room-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
+            text-decoration: none;
+        }
+
+        .room-image {
+            width: 100%;
+            height: 200px;
+            background: var(--primary-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 40px;
+            position: relative;
+        }
+
+        .room-image::after {
+            content: '🏠'; opacity: 0.3; font-size: 60px;
+        }
+
+        .room-rating {
+            position: absolute; top: 15px; right: 15px;
+            background: white; color: #f59e0b; padding: 5px 12px;
+            border-radius: 20px; font-weight: 700; font-size: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            display: flex; align-items: center; gap: 4px;
+        }
+
+        .room-content { padding: 20px; }
+        .room-title { font-size: 16px; font-weight: 700; color: #333; margin-bottom: 12px; min-height: 48px; }
+        .room-price { font-size: 22px; font-weight: 800; color: #e74c3c; margin-bottom: 15px; }
+        .room-price span { font-size: 12px; color: #888; font-weight: 500; }
+
+        .view-all-container { text-align: center; }
+        .view-all-btn {
+            padding: 18px 45px; border-radius: 50px;
+            background: var(--primary-gradient); color: white;
+            font-weight: 700; text-decoration: none; transition: all 0.3s;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+        .view-all-btn:hover { transform: translateY(-3px); box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4); color: white; }
+
+        /* Responsive */
+        @@media (max-width: 992px) { 
+            .rooms-grid, .quick-actions-grid { grid-template-columns: repeat(2, 1fr); }
+            .welcome-title { font-size: 36px; }
+        }
+        @@media (max-width: 576px) { 
+            .rooms-grid, .quick-actions-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+}
+
+<div class="hero-section">
+    <div class="hero-content">
+        <div class="welcome-icon">👋</div>
+        <h1 class="welcome-title">Chào Mừng Trở Lại!</h1>
+        <p class="welcome-subtitle">Xin chào, <strong>@userName</strong>. Bạn đang tìm kiếm điều gì hôm nay?</p>
+
+        <div class="quick-actions-grid">
+            <a href="@Url.Action("DanhSachPhong", "KhachThue")" class="action-card">
+                <div class="card-icon-wrapper"><i class="fa fa-search"></i></div>
+                <h3>Tìm Phòng</h3>
+                <p>Khám phá phòng trọ lý tưởng ngay hôm nay</p>
+            </a>
+            <a href="@Url.Action("LichDaDat", "KhachThue")" class="action-card">
+                <div class="card-icon-wrapper"><i class="fa fa-calendar-check-o"></i></div>
+                <h3>Lịch Hẹn</h3>
+                <p>Quản lý các lịch xem phòng của bạn</p>
+            </a>
+            <a href="@Url.Action("HopDong", "KhachThue")" class="action-card">
+                <div class="card-icon-wrapper"><i class="fa fa-file-text-o"></i></div>
+                <h3>Hợp Đồng</h3>
+                <p>Theo dõi các thỏa thuận thuê phòng</p>
+            </a>
+            <a href="@Url.Action("HoaDon", "KhachThue")" class="action-card">
+                <div class="card-icon-wrapper"><i class="fa fa-credit-card"></i></div>
+                <h3>Hóa Đơn</h3>
+                <p>Quản lý thanh toán và hóa đơn</p>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="featured-rooms-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>🏘️ Phòng Trọ Nổi Bật</h2>
+            <p>Những phòng trọ chất lượng hàng đầu dành riêng cho bạn</p>
+        </div>
+
+        @if (Model != null && Model.Any())
+        {
+            <div class="rooms-grid">
+                @foreach (var room in Model)
+                {
+                    <a href="@Url.Action("ChiTietPhong", "KhachThue", new { id = room.PhongId })" class="room-card">
+                        <div class="room-image" style="background-image: url('@Url.Content(room.HinhAnhDaiDien ?? "~/images/banner-login.png")'); background-size: cover; background-position: center;">
+                            @if (room.DiemTrungBinh != null && room.DiemTrungBinh > 0)
+                            {
+                                <div class="room-rating">
+                                    <i class="fa fa-star"></i> @string.Format("{0:0.0}", room.DiemTrungBinh)
+                                </div>
+                            }
+                            @if (room.IsDuyet)
+                            {
+                                <div style="position: absolute; top: 15px; left: 15px; background: #48bb78; color: white; padding: 4px 10px; border-radius: 15px; font-size: 11px; font-weight: bold;">
+                                    ✓ Đã Duyệt
+                                </div>
+                            }
+                        </div>
+                        <div class="room-content">
+                            <h3 class="room-title">@room.TieuDe</h3>
+                            <div class="room-price">
+                                @string.Format("{0:N0}", room.GiaTien)đ <span>/tháng</span>
+                            </div>
+                            <div style="display: flex; gap: 15px; font-size: 13px; color: #718096;">
+                                <span><i class="fa fa-expand"></i> @(room.DienTich.HasValue ? room.DienTich.Value.ToString("N0") : "0") m²</span>
+                                <span><i class="fa fa-users"></i> @(room.SoNguoiToiDa ?? 1) người</span>
+                            </div>
+                        </div>
+                    </a>
+                }
+            </div>
+            <div class="view-all-container">
+                <a href="@Url.Action("DanhSachPhong", "KhachThue")" class="view-all-btn">
+                    Xem Tất Cả Phòng <i class="fa fa-arrow-right"></i>
+                </a>
+            </div>
+        }
+        else
+        {
+            <div style="text-align: center; padding: 40px; color: #999;">
+                <i class="fa fa-home" style="font-size: 48px; margin-bottom: 15px;"></i>
+                <p>Hiện chưa có phòng nổi bật để hiển thị.</p>
+            </div>
+        }
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Animation for cards (Fade in up)
+            const observerOptions = { threshold: 0.1 };
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
+
+            document.querySelectorAll('.action-card, .room-card').forEach(el => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(30px)';
+                el.style.transition = 'all 0.6s ease-out';
+                observer.observe(el);
+            });
+        });
+    </script>
+}

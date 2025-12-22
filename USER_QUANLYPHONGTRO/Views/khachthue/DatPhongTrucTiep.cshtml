@@ -1,0 +1,212 @@
+@{
+    ViewBag.Title = "Đặt Thuê Phòng Trực Tiếp";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section styles {
+<style>
+    .booking-page {
+        padding: 30px 0;
+        background: #f5f7fa;
+        min-height: 100vh;
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 50px 30px;
+        border-radius: 15px;
+        margin-bottom: 40px;
+        text-align: center;
+    }
+
+    .page-header h1 {
+        font-size: 36px;
+        font-weight: 800;
+        margin-bottom: 15px;
+    }
+
+    .booking-form-container {
+        background: white;
+        border-radius: 15px;
+        padding: 40px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .form-group {
+        margin-bottom: 25px;
+    }
+
+    .form-group label {
+        display: block;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 10px;
+        font-size: 15px;
+    }
+
+    .form-group label i {
+        color: #667eea;
+        margin-right: 8px;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 14px 18px;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        font-size: 15px;
+        transition: all 0.3s;
+    }
+
+    .form-control:focus {
+        border-color: #667eea;
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    }
+
+    .price-badge {
+        background: #fff5f5;
+        color: #e53e3e;
+        padding: 15px 25px;
+        border-radius: 12px;
+        display: inline-block;
+        font-size: 24px;
+        font-weight: 800;
+        margin-bottom: 30px;
+        border: 1px dashed #feb2b2;
+    }
+
+    .info-summary {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 25px;
+        margin-bottom: 35px;
+        border: 1px solid #edf2f7;
+    }
+
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 12px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .summary-item:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .summary-label { color: #718096; font-weight: 500; }
+    .summary-value { color: #2d3748; font-weight: 700; }
+
+    .btn-confirm {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 18px 40px;
+        border: none;
+        border-radius: 10px;
+        font-size: 18px;
+        font-weight: 700;
+        cursor: pointer;
+        width: 100%;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+    }
+
+    .btn-confirm:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+    }
+    
+    .required { color: #e53e3e; margin-left: 3px; }
+</style>
+}
+
+<div class="booking-page">
+    <div class="container">
+        <div class="page-header">
+            <h1><i class="fa fa-home"></i> Đặt Thuê Phòng Trực Tiếp</h1>
+            <p>Bước cuối cùng để sở hữu căn phòng mơ ước của bạn</p>
+        </div>
+
+        <div class="booking-form-container">
+            <div style="text-align: center;">
+                <h2 style="font-weight: 800; color: #1a202c; margin-bottom: 10px;">@ViewBag.RoomTitle</h2>
+                <div class="price-badge">@((ViewBag.RoomPrice ?? 0).ToString("N0"))đ / tháng</div>
+            </div>
+
+            <div class="info-summary">
+                <h4 style="margin-bottom: 20px; font-weight: 700;"><i class="fa fa-info-circle"></i> Tóm tắt thủ tục</h4>
+                <div class="summary-item">
+                    <span class="summary-label">Sản phẩm</span>
+                    <span class="summary-value">Hợp đồng thuê phòng dài hạn</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Phí dịch vụ</span>
+                    <span class="summary-value">Miễn phí</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Trạng thái</span>
+                    <span class="summary-value" style="color: #48bb78;">Sẵn sàng giao dịch</span>
+                </div>
+            </div>
+
+            <form method="post" action="@Url.Action("XacNhanDatPhong", "KhachThue")">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="roomId" value="@ViewBag.RoomId" />
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label><i class="fa fa-user"></i> Họ và tên người thuê <span class="required">*</span></label>
+                            <input type="text" name="hoTen" class="form-control" required value="@ViewBag.UserFullName" />
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label><i class="fa fa-phone"></i> Số điện thoại liên hệ <span class="required">*</span></label>
+                            <input type="tel" name="sdt" class="form-control" required value="@ViewBag.UserPhone" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fa fa-envelope"></i> Email xác nhận <span class="required">*</span></label>
+                    <input type="email" name="email" class="form-control" required value="@ViewBag.UserEmail" />
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fa fa-calendar-alt"></i> Ngày dự kiến chuyển vào <span class="required">*</span></label>
+                    <input type="date" name="ngayChuyenVao" class="form-control" required min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fa fa-sticky-note"></i> Ghi chú cho chủ trọ</label>
+                    <textarea name="ghiChu" class="form-control" style="min-height: 100px;"></textarea>
+                </div>
+
+                <div style="background: #ebf8ff; border-left: 4px solid #3182ce; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
+                    <p style="color: #2c5282; margin-bottom: 0; font-size: 14px;">
+                        <i class="fa fa-info-circle"></i> Bằng cách nhấn "Xác Nhận Đặt Phòng", bạn đồng ý với các điều khoản thuê nhà và chính sách của hệ thống.
+                    </p>
+                </div>
+
+                <button type="submit" class="btn-confirm">
+                    <i class="fa fa-check-circle"></i> Xác Nhận Đặt Thuê Phòng
+                </button>
+
+                <a href="@Url.Action("ChiTietPhong", "KhachThue", new { id = ViewBag.RoomId })" style="display: block; text-align: center; margin-top: 20px; color: #718096; text-decoration: none; font-weight: 600;">
+                    <i class="fa fa-arrow-left"></i> Quay lại chi tiết
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
