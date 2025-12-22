@@ -23,5 +23,6 @@ namespace USER_QUANLYPHONGTRO.Models.Dtos.Auth
 
         [JsonProperty("hoTen")]
         public string HoTen { get; set; }
+        public string Token { get; internal set; }
     }
 }

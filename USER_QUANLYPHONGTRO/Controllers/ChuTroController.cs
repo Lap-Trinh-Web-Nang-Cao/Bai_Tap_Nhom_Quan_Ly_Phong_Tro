@@ -479,31 +479,122 @@ namespace USER_QUANLYPHONGTRO.Controllers
         // ============================================================
         // 4. CÁC CHỨC NĂNG KHÁC (HỢP ĐỒNG, LỊCH HẸN, HÓA ĐƠN)
         // ============================================================
-        public ActionResult LichHen()
+        public async Task<ActionResult> LichHen()
         {
-            // Trong thực tế, bạn sẽ lấy dữ liệu từ Database tại đây
-            var model = new List<LichHenViewModel>
-    {
-        new LichHenViewModel {
-            TenKhachHang = "Nguyễn Văn A",
-            SoDienThoai = "0987 654 321",
-            TenPhong = "Phòng 102 - Studio cao cấp",
-            NgayXem = DateTime.Now.AddDays(1),
-            GioXem = "14:30",
-            TrangThai = "ChoXacNhan",
-            GhiChu = "Muốn xem phòng có ban công hướng Đông."
-        },
-        new LichHenViewModel {
-            TenKhachHang = "Trần Thị B",
-            SoDienThoai = "0905 123 456",
-            TenPhong = "Phòng 305 - Căn hộ 2PN",
-            NgayXem = DateTime.Now,
-            GioXem = "16:00",
-            TrangThai = "DaXacNhan"
-        }
-    };
+            // MVC tự kiểm tra Session (Đây là lớp bảo mật duy nhất)
+            if (Session["UserId"] == null) return RedirectToAction("Login", "Auth");
+            var userId = Guid.Parse(Session["UserId"].ToString());
 
-            return View(model);
+            try
+            {
+                using (var client = new HttpClient())
+                {
+                    client.BaseAddress = new Uri("http://localhost:5101/");
+
+                    // --- BỎ ĐOẠN NÀY ---
+                    // client.DefaultRequestHeaders.Authorization = ...
+                    // -------------------
+
+                    // --- SỬA ĐOẠN NÀY: Truyền userId vào URL ---
+                    var response = await client.GetAsync($"api/datphong/landlord-requests?userId={userId}");
+
+                    // Log kết quả để kiểm tra
+                    string jsonCheck = await response.Content.ReadAsStringAsync();
+                    System.Diagnostics.Debug.WriteLine($"---> [API] Result: {jsonCheck}");
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var dataRaw = Newtonsoft.Json.JsonConvert.DeserializeObject<List<dynamic>>(jsonCheck);
+                        var model = new List<LichHenViewModel>();
+
+                        foreach (var item in dataRaw)
+                        {
+                            DateTime ngayBatDau = (DateTime)item.batDau;
+
+                            string tenKhach = "Khách vãng lai";
+
+                            if (item.nguoiThue != null)
+                            {
+                                // 1. Thử lấy tên trong HoSoNguoiDung
+                                if (item.nguoiThue.hoSoNguoiDung != null && item.nguoiThue.hoSoNguoiDung.hoTen != null)
+                                {
+                                    tenKhach = (string)item.nguoiThue.hoSoNguoiDung.hoTen;
+                                }
+                                // 2. Nếu không có hồ sơ, thử lấy tên đăng nhập/Email (nếu bảng User có trường HoTen)
+                                else if (item.nguoiThue.hoTen != null)
+                                {
+                                    tenKhach = (string)item.nguoiThue.hoTen;
+                                }
+                                else if (item.nguoiThue.email != null)
+                                {
+                                    tenKhach = (string)item.nguoiThue.email;
+                                }
+                            }
+                            string sdt = "---";
+                            if (item.nguoiThue != null && item.nguoiThue.dienThoai != null)
+                            {
+                                sdt = (string)item.nguoiThue.dienThoai;
+                            }
+                            model.Add(new LichHenViewModel
+                            {
+                                LichHenId = item.datPhongId,
+                                // Null Check an toàn
+                                TenKhachHang = tenKhach,
+                                SoDienThoai = sdt,
+                                TenPhong = (item.phong != null && item.phong.tieuDe != null) ? item.phong.tieuDe : "Phòng đã xóa",
+                                NgayXem = ngayBatDau,
+                                GioXem = ngayBatDau.ToString("HH:mm"),
+                                GhiChu = item.ghiChu,
+                                TrangThai = MapTrangThaiDatPhong((int)item.trangThaiId)
+                            });
+                        }
+
+                        return View(model);
+                    }
+                    else
+                    {
+                        ViewBag.Error = $"Lỗi API: {jsonCheck}";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ViewBag.Error = "Lỗi hệ thống: " + ex.Message;
+            }
+
+            return View(new List<LichHenViewModel>());
+        }
+
+        // Action Xử lý (Sửa lại URL gọi API)
+        public async Task<ActionResult> XuLyLichHen(Guid id, int status)
+        {
+            if (Session["UserId"] == null) return RedirectToAction("Login", "Auth");
+            var userId = Guid.Parse(Session["UserId"].ToString());
+
+            try
+            {
+                using (var client = new HttpClient())
+                {
+                    client.BaseAddress = new Uri("http://localhost:5101/");
+
+                    // Gọi API Update, truyền thêm userId để Backend check quyền sở hữu
+                    var response = await client.PutAsync($"api/datphong/status/{id}?status={status}&userId={userId}", null);
+                }
+            }
+            catch { }
+            return RedirectToAction("LichHen");
+        }
+
+        // Hàm Map trạng thái số sang chữ để hiển thị (Dùng chung cho DatPhong)
+        private string MapTrangThaiDatPhong(int id)
+        {
+            switch (id)
+            {
+                case 1: return "ChoXacNhan";
+                case 2: return "DaXacNhan"; // Đã duyệt
+                case 3: return "DaHuy";     // Đã hủy/Từ chối
+                default: return "Khac";
+            }
         }
 
 

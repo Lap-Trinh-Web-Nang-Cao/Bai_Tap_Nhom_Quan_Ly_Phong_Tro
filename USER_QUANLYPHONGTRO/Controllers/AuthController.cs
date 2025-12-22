@@ -42,7 +42,7 @@ namespace USER_QUANLYPHONGTRO.Controllers
             {
                 var loginPayload = new { Email = model.Email, Password = model.Password };
 
-                // 1. Gọi API và hứng dữ liệu User trực tiếp
+                // 1. Gọi API
                 var user = await _apiClient.PostAsync<object, LoginResponseDto>("api/nguoidung/login", loginPayload);
 
                 System.Diagnostics.Debug.WriteLine($"API Trả về VaiTroId: {user?.VaiTroId}");
@@ -50,26 +50,29 @@ namespace USER_QUANLYPHONGTRO.Controllers
                 // 2. Kiểm tra dữ liệu trả về
                 if (user != null && user.NguoiDungId != Guid.Empty)
                 {
-                    // 3. LƯU SESSION TRỰC TIẾP (Cực kỳ đơn giản)
+                    // 3. LƯU SESSION
                     Session["UserId"] = user.NguoiDungId;
                     Session["UserName"] = user.Email;
-                    Session["UserRole"] = user.VaiTroId; // Lưu số 1, 2, 3
+                    Session["UserRole"] = user.VaiTroId;
                     Session["HoTen"] = user.HoTen;
 
-                    // Lưu AccessToken là "dummy" hoặc bỏ qua nếu API không còn yêu cầu Authorize Bearer
-                    Session["AccessToken"] = "session-based-auth";
+                    // --- SỬA QUAN TRỌNG TẠI ĐÂY ---
+                    // Lưu Token thật từ API vào Session
+                    Session["AccessToken"] = user.Token; 
+                    // ------------------------------
 
-                    // 4. ĐIỀU HƯỚNG THEO VAI TRÒ (So sánh số nguyên)
+                    System.Diagnostics.Debug.WriteLine($"---> [LOGIN SUCCESS] Token saved: {user.Token?.Substring(0, 10)}...");
+
+                    // 4. ĐIỀU HƯỚNG
                     if (user.VaiTroId == 2) // Chủ trọ
                     {
                         return RedirectToAction("Dashboard", "ChuTro");
                     }
                     else if (user.VaiTroId == 1) // Admin
                     {
-                        // return RedirectToAction("Index", "Admin");
                         return RedirectToAction("Index", "Home");
                     }
-                    else // Khách thuê (3)
+                    else // Khách thuê
                     {
                         return RedirectToAction("Index", "Home");
                     }
