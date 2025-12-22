@@ -2386,6 +2386,28 @@ IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_HoaDon_HopDong')
 ALTER TABLE dbo.HoaDon
 ADD CONSTRAINT FK_HoaDon_HopDong
 FOREIGN KEY (HopDongId) REFERENCES dbo.HopDong(HopDongId);
+IF OBJECT_ID(N'dbo.TR_HoaDon_TinhTongTien', N'TR') IS NOT NULL
+    DROP TRIGGER dbo.TR_HoaDon_TinhTongTien;
+GO
+
+CREATE TRIGGER dbo.TR_HoaDon_TinhTongTien
+ON dbo.HoaDon
+AFTER INSERT, UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    UPDATE hd
+    SET TongTien =
+          ISNULL(hd.TienPhong, 0)
+        + ISNULL(hd.TienDien, 0)
+        + ISNULL(hd.TienNuoc, 0)
+        + ISNULL(hd.TienDichVu, 0)
+    FROM dbo.HoaDon hd
+    INNER JOIN inserted i
+        ON hd.HoaDonId = i.HoaDonId;
+END;
+GO
 
 --------------------------------------------------
 -- 4. SEED HOPDONG (NẾU CHƯA CÓ)
@@ -2418,23 +2440,24 @@ END;
 IF NOT EXISTS (SELECT 1 FROM dbo.HoaDon)
 BEGIN
     INSERT INTO dbo.HoaDon (
-        HopDongId,
-        Thang, Nam,
+        HopDongId, Thang, Nam,
         TienPhong, TienDien, TienNuoc, TienDichVu,
         TongTien, TrangThai
     )
     SELECT TOP 1
         HopDongId,
-        1, 2025,
+        1,
+        2025,
         TienThue,
         200000,
         100000,
         50000,
-        TienThue + 350000,
+        0, -- để trigger tự tính
         N'ChuaThanhToan'
     FROM dbo.HopDong
     ORDER BY CreatedAt DESC;
 END;
+
 
 COMMIT TRANSACTION;
 END TRY
