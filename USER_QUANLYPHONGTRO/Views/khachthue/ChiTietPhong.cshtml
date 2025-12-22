@@ -62,7 +62,18 @@
             <div class="room-main-card">
                 <!-- Gallery Section -->
                 <div class="room-gallery">
-                    <img id="mainImage" src="@Url.Content(Model.HinhAnhDaiDien ?? "/images/banner-login.png")" class="room-img-main" alt="@Model.TieuDe" />
+                    @{
+                        var mainImgUrl = Model.HinhAnhDaiDien;
+                        if (string.IsNullOrEmpty(mainImgUrl) && Model.DanhSachHinhAnh != null && Model.DanhSachHinhAnh.Any())
+                        {
+                            mainImgUrl = Model.DanhSachHinhAnh.First();
+                        }
+                        if (string.IsNullOrEmpty(mainImgUrl))
+                        {
+                            mainImgUrl = "/images/banner-login.png";
+                        }
+                    }
+                    <img id="mainImage" src="@Url.Content(mainImgUrl)" class="room-img-main" alt="@Model.TieuDe" />
                     
                     @if (Model.IsDuyet)
                     {
@@ -71,20 +82,15 @@
                         </div>
                     }
 
-                    @if (Model.DanhSachHinhAnh != null && Model.DanhSachHinhAnh.Count > 1)
+                    @if (Model.DanhSachHinhAnh != null && Model.DanhSachHinhAnh.Any())
                     {
                         <div class="gallery-thumbs">
-                            <div class="thumb-item active" onclick="changeImage('@Url.Content(Model.HinhAnhDaiDien ?? "/images/banner-login.png")', this)">
-                                <img src="@Url.Content(Model.HinhAnhDaiDien ?? "/images/banner-login.png")" alt="Thumb" />
-                            </div>
-                            @foreach (var img in Model.DanhSachHinhAnh.Take(4))
+                            @for (int i = 0; i < Math.Min(Model.DanhSachHinhAnh.Count, 5); i++)
                             {
-                                if (img != Model.HinhAnhDaiDien)
-                                {
-                                    <div class="thumb-item" onclick="changeImage('@Url.Content(img)', this)">
-                                        <img src="@Url.Content(img)" alt="Thumb" />
-                                    </div>
-                                }
+                                var img = Model.DanhSachHinhAnh[i];
+                                <div class="thumb-item @(i == 0 ? "active" : "")" onclick="changeImage('@Url.Content(img)', this)">
+                                    <img src="@Url.Content(img)" alt="Thumb" />
+                                </div>
                             }
                         </div>
                     }
@@ -123,8 +129,8 @@
                     </div>
 
                     <div class="contact-section">
-                        <a href="tel:0909123456" class="btn-call">
-                            <i class="fa fa-phone"></i> Gọi cho chủ trọ
+                        <a href="tel:@(Model.NhaTro?.SdtChuTro ?? "0909123456")" class="btn-call">
+                            <i class="fa fa-phone"></i> Gọi cho chủ trọ (@(Model.NhaTro?.SdtChuTro ?? "Liên hệ"))
                         </a>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
                             <a href="@Url.Action("DatPhongTrucTiep", "KhachThue", new { roomId = Model.PhongId })" class="btn-booking" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 12px;">

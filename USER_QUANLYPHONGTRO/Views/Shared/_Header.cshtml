@@ -18,7 +18,7 @@
     string act = currentAction.ToUpper();
 
     // Flags cho navigation
-    bool isTenantContext = isLoggedIn || ctrl == "KHACHTHUE";
+    bool isTenantContext = isLoggedIn || ctrl == "KHACHTHUE";   
     string homeUrl = isTenantContext ? Url.Action("Index", "KhachThue") : Url.Action("Index", "Guest");
     string roomsUrl = isTenantContext ? Url.Action("DanhSachPhong", "KhachThue") : Url.Action("DanhSachPhong", "Guest");
 }

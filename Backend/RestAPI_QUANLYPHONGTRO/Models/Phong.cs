@@ -47,8 +47,11 @@ namespace RestAPI_QUANLYPHONGTRO.Models
         [Required]
         public bool IsBiKhoa { get; set; } // Có bị khóa do vi phạm không
 
+        public string? MoTa { get; set; }
+
         public virtual NhaTro NhaTro { get; set; }
 
+        public virtual ICollection<PhongTienIch> PhongTienIchs { get; set; } = new List<PhongTienIch>();
 
         public bool IsDeleted { get; set; } = false;
     }

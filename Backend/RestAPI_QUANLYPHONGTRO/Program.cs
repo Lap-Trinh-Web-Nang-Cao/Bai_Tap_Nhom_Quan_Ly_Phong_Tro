@@ -81,6 +81,8 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+builder.Services.AddScoped<RestAPI_QUANLYPHONGTRO.Data.IDbIntrospectionService, RestAPI_QUANLYPHONGTRO.Data.DbIntrospectionService>();
+
 var app = builder.Build();
 
 // Middleware order matters!

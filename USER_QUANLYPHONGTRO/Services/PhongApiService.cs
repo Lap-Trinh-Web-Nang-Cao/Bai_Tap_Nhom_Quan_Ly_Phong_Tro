@@ -292,6 +292,8 @@ namespace USER_QUANLYPHONGTRO.Services
                     DiemTrungBinh = room["diemTrungBinh"]?.Value<double?>() ?? room["DiemTrungBinh"]?.Value<double?>(),
                     SoLuongDanhGia = room["soLuongDanhGia"]?.Value<int?>() ?? room["SoLuongDanhGia"]?.Value<int?>(),
                     HinhAnhDaiDien = room.Value<string>("hinhAnhDaiDien") ?? room.Value<string>("HinhAnhDaiDien") ?? "/images/room-placeholder.jpg",
+                    DanhSachHinhAnh = room["danhSachHinhAnh"]?.ToObject<List<string>>() ?? room["DanhSachHinhAnh"]?.ToObject<List<string>>() ?? new List<string>(),
+                    MoTa = room.Value<string>("moTa") ?? room.Value<string>("MoTa") ?? "",
                     IsDuyet = room["isDuyet"]?.Value<bool?>() ?? room["IsDuyet"]?.Value<bool?>() ?? false,
                     IsBiKhoa = room["isBiKhoa"]?.Value<bool?>() ?? room["IsBiKhoa"]?.Value<bool?>() ?? false,
                     IsDeleted = room["isDeleted"]?.Value<bool?>() ?? room["IsDeleted"]?.Value<bool?>() ?? false,
@@ -311,7 +313,8 @@ namespace USER_QUANLYPHONGTRO.Services
                             NhaTroId = Guid.Parse(nhaTroObjId),
                             ChuTroId = Guid.Parse(nhaTroObj.Value<string>("chuTroId") ?? nhaTroObj.Value<string>("ChuTroId") ?? Guid.Empty.ToString()),
                             TieuDe = nhaTroObj.Value<string>("tieuDe") ?? nhaTroObj.Value<string>("TieuDe") ?? "",
-                            DiaChi = nhaTroObj.Value<string>("diaChi") ?? nhaTroObj.Value<string>("DiaChi") ?? ""
+                            DiaChi = nhaTroObj.Value<string>("diaChi") ?? nhaTroObj.Value<string>("DiaChi") ?? "",
+                            SdtChuTro = nhaTroObj.Value<string>("sdtChuTro") ?? nhaTroObj.Value<string>("SdtChuTro") ?? ""
                         };
                     }
                 }

@@ -66,6 +66,8 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
         {
             return await _context.Phongs
                 .Include(p => p.NhaTro)
+                .Include(p => p.PhongTienIchs)
+                    .ThenInclude(pti => pti.TienIch)
                 .FirstOrDefaultAsync(p => p.PhongId == id);
         }
 
@@ -285,5 +287,6 @@ namespace RestAPI_QUANLYPHONGTRO.Services.Implements
 
             return grouped;
         }
+
     }
 }

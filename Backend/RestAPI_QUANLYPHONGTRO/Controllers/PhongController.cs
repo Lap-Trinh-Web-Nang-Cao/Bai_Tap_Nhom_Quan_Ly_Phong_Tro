@@ -102,6 +102,9 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
             if (p == null)
                 return NotFound(new { Success = false, Data = (object)null, Message = "Không tìm thấy phòng" });
 
+            var images = await _service.GetRoomImagesAsync(new List<Guid> { id });
+            var roomDetailImages = images.TryGetValue(id, out var imgs) ? imgs : (null, new List<string>());
+
             var dto = new
             {
                 PhongId = p.PhongId,
@@ -116,15 +119,24 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
                 SoLuongDanhGia = p.SoLuongDanhGia ?? 0,
                 IsDuyet = p.IsDuyet,
                 IsBiKhoa = p.IsBiKhoa,
+                MoTa = p.MoTa ?? "",
                 CreatedAt = p.CreatedAt,
                 UpdatedAt = p.UpdatedAt,
+                HinhAnhDaiDien = roomDetailImages.Thumbnail,
+                DanhSachHinhAnh = roomDetailImages.All,
                 NhaTro = p.NhaTro == null ? null : new
                 {
                     NhaTroId = p.NhaTro.NhaTroId,
                     ChuTroId = p.NhaTro.ChuTroId,
                     TieuDe = p.NhaTro.TieuDe ?? "",
-                    DiaChi = p.NhaTro.DiaChi
-                }
+                    DiaChi = p.NhaTro.DiaChi,
+                    SdtChuTro = p.NhaTro.ChuTro?.DienThoai
+                },
+                PhongTienIchs = p.PhongTienIchs?.Select(pti => new
+                {
+                    TienIchId = pti.TienIchId,
+                    TienIch = new { Ten = pti.TienIch?.Ten ?? "" }
+                }).ToList()
             };
 
             return Ok(new { Success = true, Data = dto, Message = "Thành công" });

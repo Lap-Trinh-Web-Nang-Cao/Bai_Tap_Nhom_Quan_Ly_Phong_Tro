@@ -881,14 +881,14 @@
         }
       }
     },
-    "/api/HoaDon/nguoithue/{userId}": {
+    "/api/HoaDon/nguoithue/{nguoiThueId}": {
       "get": {
         "tags": [
           "HoaDon"
         ],
         "parameters": [
           {
-            "name": "userId",
+            "name": "nguoiThueId",
             "in": "path",
             "required": true,
             "schema": {
@@ -962,49 +962,14 @@
         }
       }
     },
-    "/api/HopDong/nguoithue/{userId}/hieuluc": {
+    "/api/HopDong/nguoithue/{nguoiThueId}/hieuluc": {
       "get": {
         "tags": [
           "HopDong"
         ],
         "parameters": [
           {
-            "name": "userId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/HopDong": {
-      "get": {
-        "tags": [
-          "HopDong"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/HopDong/{id}": {
-      "get": {
-        "tags": [
-          "HopDong"
-        ],
-        "parameters": [
-          {
-            "name": "id",
+            "name": "nguoiThueId",
             "in": "path",
             "required": true,
             "schema": {

@@ -177,7 +177,8 @@ BEGIN
         IsDuyet          BIT NOT NULL DEFAULT 0,
         NguoiDuyet       UNIQUEIDENTIFIER NULL,
         ThoiGianDuyet    DATETIMEOFFSET NULL,
-        IsBiKhoa         BIT NOT NULL DEFAULT 0
+        IsBiKhoa         BIT NOT NULL DEFAULT 0,
+        MoTa             NVARCHAR(MAX) NULL
     );
 END;
 GO
@@ -1808,6 +1809,7 @@ WHERE IsDeleted IS NULL;
 
 PRINT '✅ All existing Phong records updated with IsDeleted = 0';
 GO
+
 /* ==========================================================
    1. INSERT QUẬN / HUYỆN (ĐÀ NẴNG)
 ========================================================== */
@@ -1869,6 +1871,11 @@ DECLARE @ChuTro1    UNIQUEIDENTIFIER = '33333333-3333-3333-3333-333333333333';
 DECLARE @ChuTro2    UNIQUEIDENTIFIER = '44444444-4444-4444-4444-444444444444';
 DECLARE @Admin      UNIQUEIDENTIFIER = '55555555-5555-5555-5555-555555555555';
 
+-- Demo IDs used for testing "My Bookings" and Notifications
+DECLARE @TenantDemoId UNIQUEIDENTIFIER = '00000000-0000-0000-0000-000000000001';
+DECLARE @LandlordDemoId UNIQUEIDENTIFIER = '00000000-0000-0000-0000-000000000002';
+
+
 -- Lấy Role ID
 DECLARE @Role_Thue INT = (SELECT TOP 1 VaiTroId FROM VaiTro WHERE TenVaiTro='NguoiThue');
 DECLARE @Role_Chu INT = (SELECT TOP 1 VaiTroId FROM VaiTro WHERE TenVaiTro='ChuTro');
@@ -1894,6 +1901,16 @@ INSERT INTO HoSoNguoiDung (NguoiDungId, HoTen) SELECT @ChuTro2, N'Chủ Trọ B'
 INSERT INTO NguoiDung (NguoiDungId, Email, DienThoai, PasswordHash, VaiTroId)
 SELECT @Admin, 'admin@trotot.com','0905999999','adminhash', @Role_Admin WHERE NOT EXISTS (SELECT 1 FROM NguoiDung WHERE NguoiDungId=@Admin);
 INSERT INTO HoSoNguoiDung (NguoiDungId, HoTen) SELECT @Admin, N'Quản trị viên' WHERE NOT EXISTS (SELECT 1 FROM HoSoNguoiDung WHERE NguoiDungId=@Admin);
+
+-- INSERT DEMO USERS
+INSERT INTO NguoiDung (NguoiDungId, Email, DienThoai, PasswordHash, VaiTroId)
+SELECT @TenantDemoId, 'nguoithue@test.com','0911222333','hash123', @Role_Thue WHERE NOT EXISTS (SELECT 1 FROM NguoiDung WHERE NguoiDungId=@TenantDemoId);
+INSERT INTO HoSoNguoiDung (NguoiDungId, HoTen) SELECT @TenantDemoId, N'Trần Thị B (Người Thuê)' WHERE NOT EXISTS (SELECT 1 FROM HoSoNguoiDung WHERE NguoiDungId=@TenantDemoId);
+
+INSERT INTO NguoiDung (NguoiDungId, Email, DienThoai, PasswordHash, VaiTroId)
+SELECT @LandlordDemoId, 'chutro@test.com','0988777666','hash123', @Role_Chu WHERE NOT EXISTS (SELECT 1 FROM NguoiDung WHERE NguoiDungId=@LandlordDemoId);
+INSERT INTO HoSoNguoiDung (NguoiDungId, HoTen) SELECT @LandlordDemoId, N'Nguyễn Văn A (Chủ Trọ)' WHERE NOT EXISTS (SELECT 1 FROM HoSoNguoiDung WHERE NguoiDungId=@LandlordDemoId);
+
 
 /* ==========================================================
    4. NHÀ TRỌ & PHÒNG
@@ -2248,13 +2265,19 @@ BEGIN
     );
 END;
 GO
-ALTER TABLE dbo.PhongAnh
-ADD CONSTRAINT FK_PhongAnh_Phong
-FOREIGN KEY (PhongId) REFERENCES dbo.Phong(PhongId);
-
-ALTER TABLE dbo.PhongAnh
-ADD CONSTRAINT FK_PhongAnh_TapTin
-FOREIGN KEY (TapTinId) REFERENCES dbo.TapTin(TapTinId);
+IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = N'FK_DatPhong_Phong')
+BEGIN
+    ALTER TABLE dbo.PhongAnh
+		ADD CONSTRAINT FK_PhongAnh_Phong
+		FOREIGN KEY (PhongId) REFERENCES dbo.Phong(PhongId);
+END;
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = N'FK_DatPhong_Phong')
+BEGIN
+    ALTER TABLE dbo.PhongAnh
+	ADD CONSTRAINT FK_PhongAnh_TapTin
+	FOREIGN KEY (TapTinId) REFERENCES dbo.TapTin(TapTinId);
+END;
 GO
 
 INSERT INTO dbo.TapTin (DuongDan, MimeType)
@@ -2314,6 +2337,117 @@ WHERE p.IsDuyet = 1
 
 
 
+--------------------------------------------------
+-- 15. TẠO BẢNG HOPDONG, HOADON, PAYMENT (Merged from QuanLyPhongTro1.sql)
+--------------------------------------------------
+BEGIN TRY
+    BEGIN TRANSACTION;
+
+    -- 1. BẢNG HOPDONG
+    IF OBJECT_ID(N'dbo.HopDong', N'U') IS NULL
+    BEGIN
+        CREATE TABLE dbo.HopDong (
+            HopDongId UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID() PRIMARY KEY,
+            DatPhongId UNIQUEIDENTIFIER NOT NULL,
+            PhongId UNIQUEIDENTIFIER NOT NULL,
+            ChuTroId UNIQUEIDENTIFIER NOT NULL,
+            NguoiThueId UNIQUEIDENTIFIER NOT NULL,
+            NgayBatDau DATE NOT NULL,
+            NgayKetThuc DATE NULL,
+            TienThue BIGINT NOT NULL,
+            TienCoc BIGINT NULL,
+            TrangThai NVARCHAR(50) NOT NULL DEFAULT N'ConHieuLuc',
+            CreatedAt DATETIMEOFFSET NOT NULL DEFAULT SYSDATETIMEOFFSET()
+        );
+    END;
+
+    -- 2. KHÓA NGOẠI HOPDONG
+    IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_HopDong_DatPhong')
+        ALTER TABLE dbo.HopDong ADD CONSTRAINT FK_HopDong_DatPhong FOREIGN KEY (DatPhongId) REFERENCES dbo.DatPhong(DatPhongId);
+
+    IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_HopDong_Phong')
+        ALTER TABLE dbo.HopDong ADD CONSTRAINT FK_HopDong_Phong FOREIGN KEY (PhongId) REFERENCES dbo.Phong(PhongId);
+
+    IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_HopDong_ChuTro')
+        ALTER TABLE dbo.HopDong ADD CONSTRAINT FK_HopDong_ChuTro FOREIGN KEY (ChuTroId) REFERENCES dbo.NguoiDung(NguoiDungId);
+
+    IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_HopDong_NguoiThue')
+        ALTER TABLE dbo.HopDong ADD CONSTRAINT FK_HopDong_NguoiThue FOREIGN KEY (NguoiThueId) REFERENCES dbo.NguoiDung(NguoiDungId);
+
+    -- 3. BẢNG HOADON
+    IF OBJECT_ID(N'dbo.HoaDon', N'U') IS NULL
+    BEGIN
+        CREATE TABLE dbo.HoaDon (
+            HoaDonId UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID() PRIMARY KEY,
+            HopDongId UNIQUEIDENTIFIER NOT NULL,
+            Thang INT NOT NULL,
+            Nam INT NOT NULL,
+            TienPhong BIGINT NOT NULL,
+            TienDien BIGINT NULL,
+            TienNuoc BIGINT NULL,
+            TienDichVu BIGINT NULL,
+            TongTien BIGINT NOT NULL,
+            TrangThai NVARCHAR(50) NOT NULL DEFAULT N'ChuaThanhToan',
+            NgayLap DATETIMEOFFSET NOT NULL DEFAULT SYSDATETIMEOFFSET(),
+            NgayThanhToan DATETIMEOFFSET NULL
+        );
+    END;
+
+    IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_HoaDon_HopDong')
+        ALTER TABLE dbo.HoaDon ADD CONSTRAINT FK_HoaDon_HopDong FOREIGN KEY (HopDongId) REFERENCES dbo.HopDong(HopDongId);
+
+    -- 4. BẢNG PAYMENT
+    IF OBJECT_ID(N'dbo.Payment', N'U') IS NULL
+    BEGIN
+        CREATE TABLE dbo.Payment (
+            PaymentId uniqueidentifier NOT NULL PRIMARY KEY DEFAULT NEWID(),
+            HoaDonId uniqueidentifier NOT NULL,
+            Amount bigint NOT NULL,
+            Reference nvarchar(200) NULL,
+            QrImageUrl nvarchar(2000) NULL,
+            Status nvarchar(50) NOT NULL DEFAULT N'UNPAID',
+            EvidenceTapTinId uniqueidentifier NULL,
+            CreatedAt datetimeoffset NOT NULL DEFAULT SYSDATETIMEOFFSET(),
+            VerifiedAt datetimeoffset NULL,
+            VerifiedBy uniqueidentifier NULL
+        );
+    END;
+
+    IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_Payment_HoaDon')
+        ALTER TABLE dbo.Payment ADD CONSTRAINT FK_Payment_HoaDon FOREIGN KEY (HoaDonId) REFERENCES dbo.HoaDon(HoaDonId);
+
+    -- 5. SEED DATA (NẾU CHƯA CÓ)
+    -- Seed HopDong từ DatPhong mẫu
+    IF NOT EXISTS (SELECT 1 FROM dbo.HopDong)
+    BEGIN
+        INSERT INTO dbo.HopDong (DatPhongId, PhongId, ChuTroId, NguoiThueId, NgayBatDau, NgayKetThuc, TienThue, TienCoc, TrangThai)
+        SELECT TOP 1
+            dp.DatPhongId, dp.PhongId, nt.ChuTroId, dp.NguoiThueId,
+            '2025-01-01', '2025-12-31', p.GiaTien, p.GiaTien, N'ConHieuLuc'
+        FROM dbo.DatPhong dp
+        JOIN dbo.Phong p ON dp.PhongId = p.PhongId
+        JOIN dbo.NhaTro nt ON p.NhaTroId = nt.NhaTroId;
+    END;
+
+    -- Seed HoaDon từ HopDong mẫu
+    IF NOT EXISTS (SELECT 1 FROM dbo.HoaDon)
+    BEGIN
+        INSERT INTO dbo.HoaDon (HopDongId, Thang, Nam, TienPhong, TienDien, TienNuoc, TienDichVu, TongTien, TrangThai)
+        SELECT TOP 1
+            HopDongId, 1, 2025, TienThue, 200000, 100000, 50000, TienThue + 350000, N'ChuaThanhToan'
+        FROM dbo.HopDong
+        ORDER BY CreatedAt DESC;
+    END;
+
+    COMMIT TRANSACTION;
+END TRY
+BEGIN CATCH
+    IF XACT_STATE() <> 0 ROLLBACK TRANSACTION;
+    DECLARE @Mem_Err NVARCHAR(4000) = ERROR_MESSAGE();
+    PRINT N'Error merging Contract tables: ' + @Mem_Err;
+END CATCH;
+GO
+
 -- ADDED BY AGENT FOR REAL NOTIFICATIONS
 IF OBJECT_ID(N'dbo.ThongBao', N'U') IS NULL
 BEGIN
@@ -2329,9 +2463,21 @@ BEGIN
     );
 END;
 GO
-
+IF COL_LENGTH('dbo.DatPhong', 'ChuTroId') IS NULL
+BEGIN
+    ALTER TABLE dbo.DatPhong ADD ChuTroId UNIQUEIDENTIFIER NULL;
+END;
+go
+IF NOT EXISTS (SELECT * FROM sys.columns 
+               WHERE object_id = OBJECT_ID(N'dbo.DatPhong') 
+               AND name = N'GhiChu')
+BEGIN
+    ALTER TABLE dbo.DatPhong ADD GhiChu NVARCHAR(100) NULL;
+END
 -- SEED DATA FOR DEMO APPOINTMENTS (Lịch Hẹn)
 -- Lấy ID một vài phòng để làm mẫu
+DECLARE @TenantDemoId UNIQUEIDENTIFIER = '00000000-0000-0000-0000-000000000001';
+DECLARE @LandlordDemoId UNIQUEIDENTIFIER = '00000000-0000-0000-0000-000000000002';
 DECLARE @RoomA UNIQUEIDENTIFIER = (SELECT TOP 1 PhongId FROM dbo.Phong);
 DECLARE @RoomB UNIQUEIDENTIFIER = (SELECT TOP 1 PhongId FROM dbo.Phong WHERE PhongId != @RoomA);
 
@@ -2339,31 +2485,62 @@ IF @RoomA IS NOT NULL
 BEGIN
     INSERT INTO dbo.DatPhong (DatPhongId, PhongId, NguoiThueId, ChuTroId, Loai, BatDau, KetThuc, ThoiGianTao, TrangThaiId, GhiChu)
     VALUES 
-    (NEWID(), @RoomA, '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002', 'XemPhong', DATEADD(DAY, 1, SYSDATETIMEOFFSET()), NULL, SYSDATETIMEOFFSET(), 1, N'Tôi muốn xem phòng vào sáng mai lúc 9h.'),
-    (NEWID(), @RoomB, '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002', 'XemPhong', DATEADD(DAY, 2, SYSDATETIMEOFFSET()), NULL, DATEADD(HOUR, -10, SYSDATETIMEOFFSET()), 2, N'Lịch hẹn này đã được chủ trọ xác nhận.');
+    (NEWID(), @RoomA, @TenantDemoId, @LandlordDemoId, 'XemPhong', DATEADD(DAY, 1, SYSDATETIMEOFFSET()), NULL, SYSDATETIMEOFFSET(), 1, N'Tôi muốn xem phòng vào sáng mai lúc 9h.'),
+    (NEWID(), @RoomB, @TenantDemoId, @LandlordDemoId, 'XemPhong', DATEADD(DAY, 2, SYSDATETIMEOFFSET()), NULL, DATEADD(HOUR, -10, SYSDATETIMEOFFSET()), 2, N'Lịch hẹn này đã được chủ trọ xác nhận.');
 END
 GO
 
-IF COL_LENGTH('dbo.DatPhong', 'ChuTroId') IS NULL
-BEGIN
-    ALTER TABLE dbo.DatPhong ADD ChuTroId UNIQUEIDENTIFIER NULL;
-END;
-GO
-
 -- SEED DATA FOR DEMO NOTIFICATIONS
-DECLARE @LandlordDemoId UNIQUEIDENTIFIER = '00000000-0000-0000-0000-000000000002';
-DECLARE @TenantDemoId UNIQUEIDENTIFIER = '00000000-0000-0000-0000-000000000001';
+DECLARE @TenantDemoId_N UNIQUEIDENTIFIER = '00000000-0000-0000-0000-000000000001';
+DECLARE @LandlordDemoId_N UNIQUEIDENTIFIER = '00000000-0000-0000-0000-000000000002';
+
+IF NOT EXISTS (SELECT 1 FROM dbo.NguoiDung WHERE NguoiDungId = @TenantDemoId_N)
+BEGIN
+    PRINT '⚠️ Warning: Demo Tenant user missing!';
+END
 
 -- Notifications for Landlord
 INSERT INTO dbo.ThongBao (ThongBaoId, NguoiDungId, TieuDe, NoiDung, Loai, ThoiGianTao, DaXem)
 VALUES 
-(NEWID(), @LandlordDemoId, N'Yêu cầu đặt phòng mới', N'Khách hàng Nguyễn Văn A vừa gửi yêu cầu đặt lịch xem phòng 101.', 'info', SYSDATETIMEOFFSET(), 0),
-(NEWID(), @LandlordDemoId, N'Yêu cầu đặt phòng mới', N'Khách hàng Trần Thị B muốn đặt phòng 202 từ tháng sau.', 'info', DATEADD(HOUR, -2, SYSDATETIMEOFFSET()), 0),
-(NEWID(), @LandlordDemoId, N'Thanh toán thành công', N'Người thuê phòng 305 đã gửi biên lai thanh toán tiền nhà tháng 12.', 'success', DATEADD(DAY, -1, SYSDATETIMEOFFSET()), 1);
+(NEWID(), @LandlordDemoId_N, N'Yêu cầu đặt phòng mới', N'Khách hàng Nguyễn Văn A vừa gửi yêu cầu đặt lịch xem phòng 101.', 'info', SYSDATETIMEOFFSET(), 0),
+(NEWID(), @LandlordDemoId_N, N'Yêu cầu đặt phòng mới', N'Khách hàng Trần Thị B muốn đặt phòng 202 từ tháng sau.', 'info', DATEADD(HOUR, -2, SYSDATETIMEOFFSET()), 0),
+(NEWID(), @LandlordDemoId_N, N'Thanh toán thành công', N'Người thuê phòng 305 đã gửi biên lai thanh toán tiền nhà tháng 12.', 'success', DATEADD(DAY, -1, SYSDATETIMEOFFSET()), 1);
 
 -- Notifications for Tenant
 INSERT INTO dbo.ThongBao (ThongBaoId, NguoiDungId, TieuDe, NoiDung, Loai, ThoiGianTao, DaXem)
 VALUES 
-(NEWID(), @TenantDemoId, N'Đã xác nhận lịch hẹn', N'Chủ trọ đã đồng ý lịch xem phòng vào 9h sáng mai.', 'success', SYSDATETIMEOFFSET(), 0),
-(NEWID(), @TenantDemoId, N'Yêu cầu thanh toán', N'Đã có hóa đơn tiền điện nước tháng 12, vui lòng thanh toán đúng hạn.', 'warning', DATEADD(HOUR, -5, SYSDATETIMEOFFSET()), 0);
+(NEWID(), @TenantDemoId_N, N'Đã xác nhận lịch hẹn', N'Chủ trọ đã đồng ý lịch xem phòng vào 9h sáng mai.', 'success', SYSDATETIMEOFFSET(), 0),
+(NEWID(), @TenantDemoId_N, N'Yêu cầu thanh toán', N'Đã có hóa đơn tiền điện nước tháng 12, vui lòng thanh toán đúng hạn.', 'warning', DATEADD(HOUR, -5, SYSDATETIMEOFFSET()), 0);
+GO
+-- AGENT: Ensure all rooms have descriptions and utilities
+PRINT N'--- CẬP NHẬT MÔ TẢ VÀ TIỆN ÍCH CHO TẤT CẢ PHÒNG ---';
+
+-- 1. Thêm cột MoTa nếu chưa có (Idempotent)
+IF COL_LENGTH('dbo.Phong', 'MoTa') IS NULL
+BEGIN
+    ALTER TABLE dbo.Phong ADD MoTa NVARCHAR(MAX) NULL;
+END
+
+-- 2. Cập nhật mô tả mẫu cho các phòng chưa có
+UPDATE dbo.Phong
+SET MoTa = CASE 
+    WHEN DienTich > 30 THEN N'Phòng trọ cao cấp, không gian rộng rãi, thoáng mát, đầy đủ tiện nghi. Tọa lạc tại vị trí đắc địa, giao thông thuận tiện, an ninh đảm bảo 24/7. Phù hợp cho hộ gia đình hoặc nhóm bạn ở từ 3-4 người.'
+    WHEN GiaTien > 3000000 THEN N'Phòng trọ studio hiện đại, thiết kế tinh tế, tối ưu diện tích. Nội thất đầy đủ bao gồm giường, tủ, máy lạnh. Khu vực yên tĩnh, dân trí cao, gần chợ và các trường đại học.'
+    ELSE N'Phòng trọ giá rẻ, sạch sẽ, an ninh tốt. Điện nước tính theo giá nhà nước, chủ nhà thân thiện. Rất phù hợp cho sinh viên và người lao động muốn tiết kiệm chi phí mà vẫn đảm bảo chất lượng sống.'
+END
+WHERE MoTa IS NULL OR MoTa = '';
+
+-- 3. Đảm bảo mỗi phòng có ít nhất 3 tiện ích ngẫu nhiên
+INSERT INTO dbo.PhongTienIch (PhongId, TienIchId)
+SELECT p.PhongId, ti.TienIchId
+FROM dbo.Phong p
+CROSS JOIN dbo.TienIch ti
+WHERE NOT EXISTS (SELECT 1 FROM dbo.PhongTienIch pti WHERE pti.PhongId = p.PhongId AND pti.TienIchId = ti.TienIchId)
+AND ti.TienIchId IN (
+    SELECT TOP 3 TienIchId 
+    FROM dbo.TienIch 
+    ORDER BY ABS(CAST(BINARY_CHECKSUM(p.PhongId, ti.TienIchId, NEWID()) AS INT))
+);
+
+PRINT N'✅ Đã cập nhật xong dữ liệu mô tả và tiện ích.';
 GO

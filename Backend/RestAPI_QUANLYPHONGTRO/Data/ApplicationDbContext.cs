@@ -47,6 +47,9 @@ namespace RestAPI_QUANLYPHONGTRO.Data
         public DbSet<TrangThaiDatPhong> TrangThaiDatPhongs { get; set; }
         public DbSet<ViPham> ViPhams { get; set; }
         public DbSet<YeuCauHoTro> YeuCauHoTros { get; set; }
+
+        public DbSet<HopDong> HopDongs { get; set; }
+        public DbSet<HoaDon> HoaDons { get; set; }
         public DbSet<ThongBao> ThongBaos { get; set; }
     }
 }

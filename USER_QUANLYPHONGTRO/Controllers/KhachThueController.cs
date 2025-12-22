@@ -9,6 +9,7 @@ using USER_QUANLYPHONGTRO.Models.Dtos;
 using USER_QUANLYPHONGTRO.Models.Dtos.Bookings;
 using USER_QUANLYPHONGTRO.Models.ViewModels.KhachThue;
 using USER_QUANLYPHONGTRO.Services;
+using USER_QUANLYPHONGTRO.Services;
 
 namespace USER_QUANLYPHONGTRO.Controllers
 {
@@ -16,11 +17,15 @@ namespace USER_QUANLYPHONGTRO.Controllers
     {
         private readonly IPhongApiService _phongApiService;
         private readonly ApiClient _apiClient;
+        private readonly IContractsApiService _contractsApiService;
+        private readonly IInvoicesApiService _invoicesApiService;
 
         public KhachThueController()
         {
             _phongApiService = new PhongApiService();
             _apiClient = new ApiClient();
+            _contractsApiService = new ContractsApiService();
+            _invoicesApiService = new InvoicesApiService();
         }
 
         #region HELPER METHODS (ROBUST MAPPING)
@@ -406,11 +411,6 @@ namespace USER_QUANLYPHONGTRO.Controllers
             return View();
         }
 
-        public ActionResult HopDong()
-        {
-            return View();
-        }
-
         public ActionResult TinNhan()
         {
             return View();
@@ -511,6 +511,72 @@ namespace USER_QUANLYPHONGTRO.Controllers
             {
                 System.Diagnostics.Debug.WriteLine($"❌ KhachThue LichDaDat Error: {ex.Message}");
                 return View(new List<TenantScheduleViewModel>());
+            }
+        }
+
+        /// <summary>
+        /// Hợp đồng của tôi (người thuê)
+        /// Backend hiện expose: GET /api/hopdong/nguoithue/{userId}/hieuluc
+        /// </summary>
+        public async Task<ActionResult> HopDong()
+        {
+            try
+            {
+                // TODO: khi có auth thật, lấy userId từ token/session. Tạm thời ưu tiên Session["UserId"] nếu có.
+                var userIdObj = Session["UserId"];
+                if (userIdObj == null || !Guid.TryParse(userIdObj.ToString(), out var userId))
+                {
+                    // Chưa có userId -> hiển thị empty state
+                    return View(model: null);
+                }
+
+                var bearer = Session["AccessToken"]?.ToString();
+                var apiRes = await _contractsApiService.GetActiveContractByTenantAsync(userId, bearer);
+
+                if (apiRes == null || !apiRes.Success)
+                {
+                    ViewBag.ErrorMessage = apiRes?.Message ?? "Không thể tải hợp đồng";
+                    return View(model: null);
+                }
+
+                return View(apiRes.Data);
+            }
+            catch (Exception ex)
+            {
+                ViewBag.ErrorMessage = "Có lỗi khi tải hợp đồng: " + ex.Message;
+                return View(model: null);
+            }
+        }
+
+        /// <summary>
+        /// Hóa đơn của tôi (người thuê)
+        /// Backend hiện expose: GET /api/hoadon/nguoithue/{userId}
+        /// </summary>
+        public async Task<ActionResult> HoaDon()
+        {
+            try
+            {
+                var userIdObj = Session["UserId"];
+                if (userIdObj == null || !Guid.TryParse(userIdObj.ToString(), out var userId))
+                {
+                    return View(new List<Models.ViewModels.KhachThue.TenantInvoiceViewModel>());
+                }
+
+                var bearer = Session["AccessToken"]?.ToString();
+                var apiRes = await _invoicesApiService.GetInvoicesByTenantAsync(userId, bearer);
+
+                if (apiRes == null || !apiRes.Success)
+                {
+                    ViewBag.ErrorMessage = apiRes?.Message ?? "Không thể tải hóa đơn";
+                    return View(new List<Models.ViewModels.KhachThue.TenantInvoiceViewModel>());
+                }
+
+                return View(apiRes.Data ?? new List<Models.ViewModels.KhachThue.TenantInvoiceViewModel>());
+            }
+            catch (Exception ex)
+            {
+                ViewBag.ErrorMessage = "Có lỗi khi tải hóa đơn: " + ex.Message;
+                return View(new List<Models.ViewModels.KhachThue.TenantInvoiceViewModel>());
             }
         }
     }

@@ -1,8 +1,11 @@
 ﻿@model List<USER_QUANLYPHONGTRO.Models.ViewModels.KhachThue.TenantInvoiceViewModel>
+@using System.Linq
 
 @{
     ViewBag.Title = "Hóa Đơn Của Tôi";
     Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var invoiceList = Model ?? new List<USER_QUANLYPHONGTRO.Models.ViewModels.KhachThue.TenantInvoiceViewModel>();
 }
 
 @section styles {
@@ -258,22 +261,22 @@
         <div class="summary-cards">
             <div class="summary-card total">
                 <div class="summary-label">Tổng Hóa Đơn</div>
-                <div class="summary-value">@(Model?.Count ?? 0)</div>
+                <div class="summary-value">@invoiceList.Count</div>
             </div>
             <div class="summary-card paid">
                 <div class="summary-label">Đã Thanh Toán</div>
-                <div class="summary-value">@(Model?.Count(x => x.TrangThai == "Đã thanh toán") ?? 0)</div>
+                <div class="summary-value">@invoiceList.Count(x => x.TrangThai == "Đã thanh toán")</div>
             </div>
             <div class="summary-card unpaid">
                 <div class="summary-label">Chưa Thanh Toán</div>
-                <div class="summary-value">@(Model?.Count(x => x.TrangThai == "Chưa thanh toán") ?? 0)</div>
+                <div class="summary-value">@invoiceList.Count(x => x.TrangThai == "Chưa thanh toán")</div>
             </div>
         </div>
 
         <div class="invoice-list">
-            @if (Model != null && Model.Any())
+            @if (invoiceList.Any())
             {
-                foreach (var item in Model)
+                foreach (var item in invoiceList)
                 {
                     <div class="invoice-item">
                         <div class="invoice-header">

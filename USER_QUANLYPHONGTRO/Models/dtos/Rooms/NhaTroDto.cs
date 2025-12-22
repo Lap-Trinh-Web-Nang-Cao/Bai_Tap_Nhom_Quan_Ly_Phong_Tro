@@ -12,6 +12,7 @@ namespace USER_QUANLYPHONGTRO.Models.Dtos.Rooms
 
         public string TieuDe { get; set; }
         public string DiaChi { get; set; }
+        public string SdtChuTro { get; set; }
         public int? QuanHuyenId { get; set; }
         public int? PhuongId { get; set; }
 
