@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using USER_QUANLYPHONGTRO.Models.ViewModels.ChuTro;
@@ -155,28 +157,155 @@ namespace USER_QUANLYPHONGTRO.Controllers
 
             return View(model);
         }
-        public ActionResult TaoPhong()
+        // GET: Hiện form tạo phòng
+        public async Task<ActionResult> TaoPhong()
         {
-            // Sử dụng PhongTroEditViewModel.cs cho trang đăng tin
-            var model = new PhongTroEditViewModel
+            if (Session["UserId"] == null) return RedirectToAction("Login", "Auth");
+            var userId = Guid.Parse(Session["UserId"].ToString());
+
+            var model = new TaoPhongViewModel();
+
+            // 1. Load danh sách Khu trọ vào Dropdown
+            try
             {
-                AvailableAmenities = new List<SelectListItem>() // Khởi tạo danh sách tiện ích rỗng
-            };
+                // Gọi API lấy danh sách nhà trọ (Cần đảm bảo API này tồn tại)
+                var listNhaTro = await _apiClient.GetAsync<List<dynamic>>($"api/nhatro/dropdown/{userId}");
+                if (listNhaTro != null)
+                {
+                    foreach (var item in listNhaTro)
+                    {
+                        // Dynamic mapping
+                        string id = item.nhaTroId ?? item.NhaTroId;
+                        string ten = item.tieuDe ?? item.TieuDe;
+                        model.DanhSachNhaTro.Add(new SelectListItem { Value = id, Text = ten });
+                    }
+                }
+            }
+            catch
+            {
+                // Không làm gì, dropdown sẽ trống
+            }
+
             return View(model);
         }
 
-        // POST: Xử lý dữ liệu khi nhấn "Lưu" trên form tạo phòng
+        // POST: Tạo phòng
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult TaoPhong(PhongTroEditViewModel model)
+        public async Task<ActionResult> TaoPhong(TaoPhongViewModel model)
         {
-            if (ModelState.IsValid)
+            // --- DEBUG 1: Xác nhận request đã vào Controller ---
+            System.Diagnostics.Debug.WriteLine("--------------------------------------------------");
+            System.Diagnostics.Debug.WriteLine($"---> [DEBUG] Bắt đầu xử lý Tạo Phòng cho User: {Session["UserId"]}");
+
+            if (Session["UserId"] == null) return RedirectToAction("Login", "Auth");
+            var userId = Guid.Parse(Session["UserId"].ToString());
+
+            // --- DEBUG 2: Kiểm tra lỗi Validation ---
+            if (!ModelState.IsValid)
             {
-                // Logic xử lý upload ảnh từ ImageFiles và lưu vào Database tại đây
-                // ...
-                return RedirectToAction("QuanLyPhong");
+                // In chi tiết lỗi ra cửa sổ Output
+                var errors = string.Join("; ", ModelState.Values
+                                                .SelectMany(v => v.Errors)
+                                                .Select(e => e.ErrorMessage));
+                System.Diagnostics.Debug.WriteLine($"---> [DEBUG] Lỗi Validation (ModelState): {errors}");
+
+                // QUAN TRỌNG: Load lại Dropdown trước khi trả về View (để không bị mất danh sách)
+                await LoadDropdownNhaTro(userId, model);
+
+                // Hiển thị lỗi lên màn hình để bạn thấy
+                ViewBag.Error = "Dữ liệu nhập vào chưa đúng: " + errors;
+                return View(model);
             }
+
+            try
+            {
+                System.Diagnostics.Debug.WriteLine("---> [DEBUG] Dữ liệu hợp lệ, bắt đầu gọi API...");
+
+                using (var content = new MultipartFormDataContent())
+                {
+                    content.Add(new StringContent(model.NhaTroId.ToString()), "NhaTroId");
+                    content.Add(new StringContent(model.TieuDe ?? ""), "TieuDe");
+                    content.Add(new StringContent(model.GiaTien.ToString()), "GiaTien");
+                    content.Add(new StringContent(model.DienTich?.ToString() ?? "0"), "DienTich");
+                    content.Add(new StringContent(model.TienCoc?.ToString() ?? "0"), "TienCoc");
+                    content.Add(new StringContent(model.SoNguoiToiDa?.ToString() ?? "1"), "SoNguoiToiDa");
+
+                    if (model.HinhAnhUpload != null && model.HinhAnhUpload.ContentLength > 0)
+                    {
+                        var fileStream = model.HinhAnhUpload.InputStream;
+                        var fileContent = new StreamContent(fileStream);
+                        content.Add(fileContent, "HinhAnhUpload", model.HinhAnhUpload.FileName);
+                    }
+
+                    using (var client = new HttpClient())
+                    {
+                        // ⚠️ LƯU Ý: KIỂM TRA LẠI CỔNG API CỦA BẠN (Ví dụ: 7123 hoặc 5101)
+                        // Bạn có thể xem cổng này khi chạy project API lên (trên thanh địa chỉ trình duyệt)
+                        client.BaseAddress = new Uri("http://localhost:5101/");
+
+                        System.Diagnostics.Debug.WriteLine($"---> [DEBUG] Đang gửi đến API: {client.BaseAddress}api/phong?userId={userId}");
+
+                        var response = await client.PostAsync($"api/phong?userId={userId}", content);
+                        string responseContent = await response.Content.ReadAsStringAsync();
+
+                        System.Diagnostics.Debug.WriteLine($"---> [DEBUG] Kết quả API: {response.StatusCode} - {responseContent}");
+
+                        if (response.IsSuccessStatusCode)
+                        {
+                            TempData["SuccessMessage"] = "Thêm phòng thành công!";
+                            return RedirectToAction("QuanLyPhong");
+                        }
+                        else
+                        {
+                            ViewBag.Error = $"Lỗi từ API ({response.StatusCode}): {responseContent}";
+                            await LoadDropdownNhaTro(userId, model); // Load lại dropdown nếu lỗi API
+                            return View(model);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"---> [DEBUG] Lỗi Exception: {ex.Message}");
+                ViewBag.Error = "Lỗi hệ thống: " + ex.Message;
+                await LoadDropdownNhaTro(userId, model); // Load lại dropdown nếu lỗi Exception
+            }
+
             return View(model);
+        }
+
+        // Hàm phụ trợ để load lại Dropdown (Tránh lặp code)
+        private async Task LoadDropdownNhaTro(Guid userId, TaoPhongViewModel model)
+        {
+            try
+            {
+                using (var client = new HttpClient())
+                {
+                    // Sửa lại cổng cho đúng với API của bạn
+                    client.BaseAddress = new Uri("http://localhost:5101/");
+                    var response = await client.GetAsync($"api/nhatro/dropdown/{userId}");
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var json = await response.Content.ReadAsStringAsync();
+                        var listNhaTro = Newtonsoft.Json.JsonConvert.DeserializeObject<List<dynamic>>(json);
+                        if (listNhaTro != null)
+                        {
+                            model.DanhSachNhaTro = new List<SelectListItem>(); // Reset list
+                            foreach (var item in listNhaTro)
+                            {
+                                string id = item.nhaTroId ?? item.NhaTroId;
+                                string ten = item.tieuDe ?? item.TieuDe;
+                                model.DanhSachNhaTro.Add(new SelectListItem { Value = id, Text = ten });
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"---> [DEBUG] Lỗi Load Dropdown: {ex.Message}");
+            }
         }
 
         // ============================================================
@@ -334,6 +463,7 @@ namespace USER_QUANLYPHONGTRO.Controllers
         {
             return View(new LandlordProfileViewModel());
         }
+
 
 
     }

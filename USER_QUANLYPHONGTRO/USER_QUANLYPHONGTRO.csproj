@@ -256,6 +256,7 @@
     <Compile Include="Models\ViewModels\ChuTro\LichHenViewModel.cs" />
     <Compile Include="Models\ViewModels\ChuTro\PhongTroEditViewModel.cs" />
     <Compile Include="Models\ViewModels\ChuTro\QuanLyPhongViewModel.cs" />
+    <Compile Include="Models\ViewModels\ChuTro\TaoPhongViewModel.cs" />
     <Compile Include="Models\ViewModels\ChuTro\YeuCauHoTroViewModel.cs" />
     <Compile Include="Models\ViewModels\Home\HomeIndexViewModel.cs" />
     <Compile Include="Models\ViewModels\Home\PhongSearchViewModel.cs" />
