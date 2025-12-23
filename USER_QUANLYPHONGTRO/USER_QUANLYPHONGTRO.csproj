@@ -178,6 +178,7 @@
     <Compile Include="Services\PhongApiService.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="COMPREHENSIVE_FIX_SUMMARY.txt" />
     <Content Include="Content\auth.css" />
     <Content Include="Content\chutro.css" />
     <Content Include="Content\footer.css" />
@@ -198,6 +199,7 @@
     <Content Include="Content\bootstrap.min.css" />
     <Content Include="Content\bootstrap.rtl.css" />
     <Content Include="Content\bootstrap.rtl.min.css" />
+    <Content Include="FIX_BACKEND_500_WORKAROUNDS.txt" />
     <Content Include="images\Background_vien.jpg" />
     <Content Include="images\banner-login.png" />
     <Content Include="images\banner-register-host.png" />

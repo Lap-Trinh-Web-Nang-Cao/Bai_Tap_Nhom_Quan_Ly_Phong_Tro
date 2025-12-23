@@ -259,17 +259,49 @@ namespace USER_QUANLYPHONGTRO.Services
                 }
 
                 var jsonContent = await response.Content.ReadAsStringAsync();
+                System.Diagnostics.Debug.WriteLine($"📥 GetRoomDetail Response Length: {jsonContent.Length}");
+                
                 var root = JObject.Parse(jsonContent);
 
-                // Backend trả dạng wrapper: { Success, Data, Message }
-                var dataToken = root["data"] ?? root["Data"];
-                if (dataToken == null || dataToken.Type == JTokenType.Null)
+                // ✅ Backend có thể trả về cả 2 format:
+                // 1. Wrapped: { success, data: {...} }
+                // 2. Direct: { phongId, nhaTroId, ... }
+                
+                JObject room = null;
+                
+                // Check if response has "success" field (wrapped format)
+                var hasSuccessField = root["success"] != null || root["Success"] != null;
+                
+                if (hasSuccessField)
                 {
-                    System.Diagnostics.Debug.WriteLine("❌ GetRoomDetailAsync: missing Data in response");
-                    return null;
+                    // Wrapped format
+                    var dataToken = root["data"] ?? root["Data"];
+                    if (dataToken != null && dataToken.Type != JTokenType.Null && dataToken is JObject)
+                    {
+                        room = (JObject)dataToken;
+                        System.Diagnostics.Debug.WriteLine("📦 Using wrapped format (data property)");
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine("❌ GetRoomDetailAsync: missing Data in wrapped response");
+                        return null;
+                    }
                 }
-
-                var room = (JObject)dataToken;
+                else
+                {
+                    // Direct format - check if root has phongId/PhongId field
+                    if (root["phongId"] != null || root["PhongId"] != null)
+                    {
+                        room = root;
+                        System.Diagnostics.Debug.WriteLine("📦 Using direct format (root object)");
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine("❌ GetRoomDetailAsync: cannot find room data in response");
+                        System.Diagnostics.Debug.WriteLine($"📋 Response preview: {jsonContent.Substring(0, Math.Min(300, jsonContent.Length))}");
+                        return null;
+                    }
+                }
 
                 var phongIdStr = room.Value<string>("phongId") ?? room.Value<string>("PhongId");
                 var nhaTroIdStr = room.Value<string>("nhaTroId") ?? room.Value<string>("NhaTroId");
@@ -343,6 +375,7 @@ namespace USER_QUANLYPHONGTRO.Services
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"❌ Error getting room detail: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"   Stack: {ex.StackTrace}");
                 return null;
             }
         }

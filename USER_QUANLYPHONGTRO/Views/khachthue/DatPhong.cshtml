@@ -182,9 +182,8 @@
                 </ul>
             </div>
 
-            <form method="post" action="@Url.Action("DatPhong", "KhachThue")">
+            <form method="post" action="@Url.Action("DatPhong", "KhachThue", new { roomId = ViewBag.RoomId })">
                 @Html.AntiForgeryToken()
-                <input type="hidden" name="roomId" value="@ViewBag.RoomId" />
 
                 <div class="form-row">
                     <div class="form-group">

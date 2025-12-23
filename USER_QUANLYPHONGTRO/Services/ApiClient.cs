@@ -28,7 +28,7 @@ namespace USER_QUANLYPHONGTRO.Services
             // Fallback to default if not configured
             if (string.IsNullOrWhiteSpace(_baseUrl))
             {
-                _baseUrl = "http://localhost:7039"; // Backend API URL
+                _baseUrl = "http://159.65.10.209:7039"; // Backend API URL
             }
 
             // ===== SSL/TLS Configuration =====
@@ -74,7 +74,14 @@ namespace USER_QUANLYPHONGTRO.Services
             {
                 if (System.Web.HttpContext.Current?.Session != null)
                 {
-                    var sessionToken = System.Web.HttpContext.Current.Session["AccessToken"]?.ToString();
+                    // ✅ Try both "AuthToken" (saved by AuthService) and "AccessToken" (legacy)
+                    var sessionToken = System.Web.HttpContext.Current.Session["AuthToken"]?.ToString();
+                    
+                    if (string.IsNullOrEmpty(sessionToken))
+                    {
+                        sessionToken = System.Web.HttpContext.Current.Session["AccessToken"]?.ToString();
+                    }
+                    
                     if (!string.IsNullOrEmpty(sessionToken))
                     {
                         System.Diagnostics.Debug.WriteLine($"✅ Token loaded from Session");
@@ -172,41 +179,40 @@ namespace USER_QUANLYPHONGTRO.Services
                         };
                     }
 
-                    // ✅ TRY TO DESERIALIZE AS ApiResponse<T> FIRST
+                    // ✅ FIRST: Check if response has "success" field (wrapped format)
                     try
                     {
-                        var result = JsonConvert.DeserializeObject<ApiResponse<T>>(content);
-                        if (result != null && (result.Success || result.Data != null))
+                        var jObj = Newtonsoft.Json.Linq.JObject.Parse(content);
+                        var hasSuccessField = jObj["success"] != null || jObj["Success"] != null;
+                        
+                        if (hasSuccessField)
                         {
-                            System.Diagnostics.Debug.WriteLine($"✅ GetAsync success (ApiResponse<T> format)");
+                            // Response has "success" field - deserialize as ApiResponse<T>
+                            var result = JsonConvert.DeserializeObject<ApiResponse<T>>(content);
+                            System.Diagnostics.Debug.WriteLine($"✅ GetAsync success (ApiResponse<T> wrapper format)");
                             System.Diagnostics.Debug.WriteLine($"   Success: {result.Success}");
                             System.Diagnostics.Debug.WriteLine($"   Message: {result.Message}");
                             System.Diagnostics.Debug.WriteLine($"   Data is null: {result.Data == null}");
                             return result;
                         }
-                        // else fallthrough to try raw data
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"⚠️ Failed to deserialize as ApiResponse<T>: {ex.Message}");
-                    }
-
-                    // ✅ IF FAILS, DESERIALIZE AS RAW T AND WRAP IN ApiResponse
-                    try
-                    {
-                        var rawData = JsonConvert.DeserializeObject<T>(content);
-                        System.Diagnostics.Debug.WriteLine($"✅ GetAsync success (raw data format, wrapping in ApiResponse)");
-                        System.Diagnostics.Debug.WriteLine($"   Raw data is null: {rawData == null}");
-                        return new ApiResponse<T>
+                        else
                         {
-                            Success = true,
-                            Data = rawData,
-                            Message = "Success"
-                        };
+                            // No "success" field - response is raw data, wrap it
+                            System.Diagnostics.Debug.WriteLine($"⚠️ Response does not have 'success' field - treating as raw data");
+                            var rawData = JsonConvert.DeserializeObject<T>(content);
+                            System.Diagnostics.Debug.WriteLine($"✅ GetAsync success (raw data format, wrapping in ApiResponse)");
+                            System.Diagnostics.Debug.WriteLine($"   Raw data is null: {rawData == null}");
+                            return new ApiResponse<T>
+                            {
+                                Success = true,
+                                Data = rawData,
+                                Message = "Success"
+                            };
+                        }
                     }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"❌ Failed to deserialize as raw T: {ex.Message}");
+                        System.Diagnostics.Debug.WriteLine($"❌ Failed to parse response: {ex.Message}");
                         return ApiResponse<T>.ErrorResult($"Failed to parse response: {ex.Message}", content, (int)response.StatusCode);
                     }
                 }

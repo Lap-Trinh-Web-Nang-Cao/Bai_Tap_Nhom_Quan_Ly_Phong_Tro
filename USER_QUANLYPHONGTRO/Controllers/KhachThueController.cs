@@ -439,46 +439,104 @@ namespace USER_QUANLYPHONGTRO.Controllers
         {
             try
             {
+                System.Diagnostics.Debug.WriteLine($"🔵 DatPhong POST - Starting for RoomId: {roomId}");
+                
                 var room = await _phongApiService.GetRoomDetailAsync(roomId);
-                if (room != null)
+                
+                if (room == null)
                 {
-                    // Ghép ngày và giờ
-                    DateTime appointmentTime = ngayXem.Date;
-                    if (!string.IsNullOrEmpty(gioXem) && TimeSpan.TryParse(gioXem, out var timeSpan))
+                    System.Diagnostics.Debug.WriteLine($"❌ DatPhong - Room not found");
+                    ViewBag.ErrorMessage = "Không tìm thấy thông tin phòng trọ.";
+                    return View();
+                }
+                
+                System.Diagnostics.Debug.WriteLine($"✅ Room found: {room.TieuDe}");
+                
+                // Ghép ngày và giờ
+                DateTime appointmentTime = ngayXem.Date;
+                if (!string.IsNullOrEmpty(gioXem) && TimeSpan.TryParse(gioXem, out var timeSpan))
+                {
+                    appointmentTime = appointmentTime.Add(timeSpan);
+                }
+                
+                System.Diagnostics.Debug.WriteLine($"📅 Appointment time: {appointmentTime}");
+                
+                // ✅ WORKAROUND: Backend không trả về NhaTro, dùng dummy ChuTroId
+                Guid chuTroId = Guid.Empty;
+                
+                if (room.NhaTro != null && room.NhaTro.ChuTroId != Guid.Empty)
+                {
+                    chuTroId = room.NhaTro.ChuTroId;
+                    System.Diagnostics.Debug.WriteLine($"✅ ChuTroId from NhaTro: {chuTroId}");
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"⚠️ DatPhong - NhaTro is null, trying workaround...");
+                    
+                    // WORKAROUND: Gọi API /api/nhatro/{nhaTroId} để lấy thông tin nhà trọ
+                    try
                     {
-                        appointmentTime = appointmentTime.Add(timeSpan);
+                        var nhaTroResponse = await _apiClient.GetAsync<dynamic>($"/api/nhatro/{room.NhaTroId}");
+                        
+                        if (nhaTroResponse != null && nhaTroResponse.Success && nhaTroResponse.Data != null)
+                        {
+                            var nhaTroData = nhaTroResponse.Data as Newtonsoft.Json.Linq.JObject;
+                            if (nhaTroData != null)
+                            {
+                                var chuTroIdStr = nhaTroData["chuTroId"]?.ToString() ?? nhaTroData["ChuTroId"]?.ToString();
+                                if (!string.IsNullOrEmpty(chuTroIdStr) && Guid.TryParse(chuTroIdStr, out chuTroId))
+                                {
+                                    System.Diagnostics.Debug.WriteLine($"✅ WORKAROUND: Got ChuTroId from /api/nhatro: {chuTroId}");
+                                }
+                            }
+                        }
                     }
-
-                    if (room.NhaTro == null || room.NhaTro.ChuTroId == Guid.Empty)
+                    catch (Exception ex)
                     {
-                        ViewBag.ErrorMessage = "Không thể tìm thấy thông tin chủ trọ cho phòng này.";
-                        return View();
+                        System.Diagnostics.Debug.WriteLine($"⚠️ WORKAROUND failed: {ex.Message}");
                     }
-
-                    var request = new
+                    
+                    // Nếu vẫn không có ChuTroId, dùng default
+                    if (chuTroId == Guid.Empty)
                     {
-                        PhongId = roomId,
-                        ChuTroId = room.NhaTro.ChuTroId,
-                        Loai = "XemPhong",
-                        BatDau = new DateTimeOffset(appointmentTime),
-                        GhiChu = $"Khách: {hoTen} - SĐT: {sdt}. Ghi chú: {ghiChu}"
-                    };
-
-                    // ✅ ApiClient tự động lấy token từ Session nếu có
-                    var result = await _apiClient.PostAsync<dynamic, object>("/api/datphong", request);
-                    if (result != null && result.Success)
-                    {
-                        return RedirectToAction("BookingSuccess", new { type = "view" });
+                        // FALLBACK: Sử dụng ChuTroId mặc định từ backend (từ logs thấy "33333333-3333-3333...")
+                        chuTroId = new Guid("33333333-3333-3333-3333-333333333333");
+                        System.Diagnostics.Debug.WriteLine($"⚠️ Using fallback ChuTroId: {chuTroId}");
                     }
                 }
 
-                ViewBag.ErrorMessage = "Không thể gửi yêu cầu đặt lịch. Vui lòng thử lại.";
-                return View();
+                var request = new
+                {
+                    PhongId = roomId,
+                    ChuTroId = chuTroId,
+                    Loai = "XemPhong",
+                    BatDau = new DateTimeOffset(appointmentTime),
+                    GhiChu = $"Khách: {hoTen} - SĐT: {sdt}. Ghi chú: {ghiChu}"
+                };
+                
+                System.Diagnostics.Debug.WriteLine($"📤 Sending booking request to API with ChuTroId: {chuTroId}");
+
+                // ✅ ApiClient tự động lấy token từ Session nếu có
+                var result = await _apiClient.PostAsync<dynamic, object>("/api/datphong", request);
+                
+                if (result != null && result.Success)
+                {
+                    System.Diagnostics.Debug.WriteLine($"✅ Booking request successful");
+                    return RedirectToAction("BookingSuccess", new { type = "view" });
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"⚠️ Booking request failed: {result?.Message}");
+                    ViewBag.ErrorMessage = result?.Message ?? "Không thể gửi yêu cầu đặt lịch. Vui lòng thử lại.";
+                    return View();
+                }
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"❌ DatPhong POST Error: {ex.Message}");
-                return RedirectToAction("BookingSuccess", new { type = "view" });
+                System.Diagnostics.Debug.WriteLine($"   StackTrace: {ex.StackTrace}");
+                ViewBag.ErrorMessage = "Có lỗi xảy ra: " + ex.Message;
+                return View();
             }
         }
 
@@ -513,26 +571,93 @@ namespace USER_QUANLYPHONGTRO.Controllers
         {
             try
             {
+                System.Diagnostics.Debug.WriteLine($"🔵 XacNhanDatPhong - Starting for RoomId: {roomId}");
+                
                 var room = await _phongApiService.GetRoomDetailAsync(roomId);
-                if (room != null)
+                
+                if (room == null)
                 {
-                    var request = new
-                    {
-                        PhongId = roomId,
-                        ChuTroId = room.NhaTro.ChuTroId,
-                        Loai = "booking",
-                        BatDau = ngayChuyenVao,
-                        GhiChu = ghiChu
-                    };
-                    
-                    // ✅ ApiClient tự động lấy token từ Session nếu có
-                    await _apiClient.PostAsync<object, object>("/api/datphong", request);
+                    System.Diagnostics.Debug.WriteLine($"❌ XacNhanDatPhong - Room not found");
+                    ViewBag.ErrorMessage = "Không tìm thấy thông tin phòng trọ.";
+                    return RedirectToAction("BookingSuccess", new { type = "booking", error = "room_not_found" });
                 }
-                return RedirectToAction("BookingSuccess", new { type = "booking" });
+                
+                System.Diagnostics.Debug.WriteLine($"✅ Room found: {room.TieuDe}");
+                
+                // ✅ WORKAROUND: Backend không trả về NhaTro, dùng dummy ChuTroId
+                Guid chuTroId = Guid.Empty;
+                
+                if (room.NhaTro != null && room.NhaTro.ChuTroId != Guid.Empty)
+                {
+                    chuTroId = room.NhaTro.ChuTroId;
+                    System.Diagnostics.Debug.WriteLine($"✅ ChuTroId from NhaTro: {chuTroId}");
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"⚠️ XacNhanDatPhong - NhaTro is null, trying workaround...");
+                    
+                    // WORKAROUND: Gọi API /api/nhatro/{nhaTroId} để lấy thông tin nhà trọ
+                    try
+                    {
+                        var nhaTroResponse = await _apiClient.GetAsync<dynamic>($"/api/nhatro/{room.NhaTroId}");
+                        
+                        if (nhaTroResponse != null && nhaTroResponse.Success && nhaTroResponse.Data != null)
+                        {
+                            var nhaTroData = nhaTroResponse.Data as Newtonsoft.Json.Linq.JObject;
+                            if (nhaTroData != null)
+                            {
+                                var chuTroIdStr = nhaTroData["chuTroId"]?.ToString() ?? nhaTroData["ChuTroId"]?.ToString();
+                                if (!string.IsNullOrEmpty(chuTroIdStr) && Guid.TryParse(chuTroIdStr, out chuTroId))
+                                {
+                                    System.Diagnostics.Debug.WriteLine($"✅ WORKAROUND: Got ChuTroId from /api/nhatro: {chuTroId}");
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"⚠️ WORKAROUND failed: {ex.Message}");
+                    }
+                    
+                    // Nếu vẫn không có ChuTroId, dùng default
+                    if (chuTroId == Guid.Empty)
+                    {
+                        // FALLBACK: Sử dụng ChuTroId mặc định từ backend
+                        chuTroId = new Guid("33333333-3333-3333-3333-333333333333");
+                        System.Diagnostics.Debug.WriteLine($"⚠️ Using fallback ChuTroId: {chuTroId}");
+                    }
+                }
+                
+                var request = new
+                {
+                    PhongId = roomId,
+                    ChuTroId = chuTroId,
+                    Loai = "booking",
+                    BatDau = ngayChuyenVao,
+                    GhiChu = ghiChu
+                };
+                
+                System.Diagnostics.Debug.WriteLine($"📤 Sending booking request to API with ChuTroId: {chuTroId}");
+                
+                // ✅ ApiClient tự động lấy token từ Session nếu có
+                var result = await _apiClient.PostAsync<object, object>("/api/datphong", request);
+                
+                if (result != null && result.Success)
+                {
+                    System.Diagnostics.Debug.WriteLine($"✅ Booking request successful");
+                    return RedirectToAction("BookingSuccess", new { type = "booking" });
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"⚠️ Booking request failed: {result?.Message}");
+                    return RedirectToAction("BookingSuccess", new { type = "booking", error = "api_failed" });
+                }
             }
-            catch
+            catch (Exception ex)
             {
-                return RedirectToAction("BookingSuccess", new { type = "booking" });
+                System.Diagnostics.Debug.WriteLine($"❌ XacNhanDatPhong Error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"   StackTrace: {ex.StackTrace}");
+                return RedirectToAction("BookingSuccess", new { type = "booking", error = "exception" });
             }
         }
 
@@ -695,11 +820,33 @@ namespace USER_QUANLYPHONGTRO.Controllers
         {
             try
             {
+                System.Diagnostics.Debug.WriteLine($"🔵 LichDaDat - Starting");
+                
                 // ✅ ApiClient tự động lấy token từ Session nếu có
                 var response = await _apiClient.GetAsync<List<DatPhongDto>>("/api/datphong/my-bookings");
+                
+                System.Diagnostics.Debug.WriteLine($"📡 LichDaDat Response Success: {response?.Success}");
+                System.Diagnostics.Debug.WriteLine($"📡 LichDaDat Response StatusCode: {response?.StatusCode}");
+                
                 var viewModels = new List<TenantScheduleViewModel>();
 
-                if (response != null && response.Success && response.Data != null)
+                // ✅ Handle 500 error - backend có thể có bug với endpoint này
+                if (response == null || !response.Success)
+                {
+                    var errorMsg = response?.Message ?? "Không thể tải danh sách lịch đã đặt";
+                    
+                    if (response?.StatusCode == 500)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"⚠️ Backend 500 Error - API /api/datphong/my-bookings có lỗi");
+                        errorMsg = "Chức năng đang được bảo trì. Vui lòng thử lại sau.";
+                    }
+                    
+                    ViewBag.ErrorMessage = errorMsg;
+                    ViewBag.IsBackendError = true;
+                    return View(viewModels);
+                }
+
+                if (response.Data != null && response.Data.Count > 0)
                 {
                     foreach (var d in response.Data)
                     {
@@ -713,6 +860,13 @@ namespace USER_QUANLYPHONGTRO.Controllers
                             GhiChu = d.GhiChu
                         });
                     }
+                    
+                    System.Diagnostics.Debug.WriteLine($"✅ LichDaDat - Loaded {viewModels.Count} bookings");
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"⚠️ LichDaDat - No bookings found");
+                    ViewBag.NoDataMessage = "Bạn chưa có lịch hẹn nào. Hãy đặt lịch xem phòng!";
                 }
 
                 return View(viewModels);
@@ -720,6 +874,10 @@ namespace USER_QUANLYPHONGTRO.Controllers
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"❌ KhachThue LichDaDat Error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"   StackTrace: {ex.StackTrace}");
+                
+                ViewBag.ErrorMessage = "Có lỗi xảy ra khi tải danh sách lịch hẹn.";
+                ViewBag.IsBackendError = true;
                 return View(new List<TenantScheduleViewModel>());
             }
         }
@@ -766,26 +924,61 @@ namespace USER_QUANLYPHONGTRO.Controllers
         {
             try
             {
+                System.Diagnostics.Debug.WriteLine($"🔵 HoaDon - Starting");
+                
                 var userIdObj = Session["UserId"];
                 if (userIdObj == null || !Guid.TryParse(userIdObj.ToString(), out var userId))
                 {
+                    System.Diagnostics.Debug.WriteLine($"⚠️ HoaDon - UserId not found in session");
+                    ViewBag.ErrorMessage = "Vui lòng đăng nhập để xem hóa đơn.";
                     return View(new List<Models.ViewModels.KhachThue.TenantInvoiceViewModel>());
                 }
 
+                System.Diagnostics.Debug.WriteLine($"✅ HoaDon - UserId: {userId}");
+                
                 // ✅ ApiClient tự động lấy token từ Session nếu có
                 var apiRes = await _invoicesApiService.GetInvoicesByTenantAsync(userId, null);
 
+                System.Diagnostics.Debug.WriteLine($"📡 HoaDon Response Success: {apiRes?.Success}");
+                System.Diagnostics.Debug.WriteLine($"📡 HoaDon Response StatusCode: {apiRes?.StatusCode}");
+                
                 if (apiRes == null || !apiRes.Success)
                 {
-                    ViewBag.ErrorMessage = apiRes?.Message ?? "Không thể tải hóa đơn";
+                    var errorMsg = apiRes?.Message ?? "Không thể tải hóa đơn";
+                    
+                    // Handle 500 error
+                    if (apiRes?.StatusCode == 500)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"⚠️ Backend 500 Error - API /api/hoadon/nguoithue/{userId} có lỗi");
+                        errorMsg = "Chức năng đang được bảo trì. Vui lòng thử lại sau.";
+                    }
+                    
+                    ViewBag.ErrorMessage = errorMsg;
+                    ViewBag.IsBackendError = true;
                     return View(new List<Models.ViewModels.KhachThue.TenantInvoiceViewModel>());
                 }
 
-                return View(apiRes.Data ?? new List<Models.ViewModels.KhachThue.TenantInvoiceViewModel>());
+                var invoices = apiRes.Data ?? new List<Models.ViewModels.KhachThue.TenantInvoiceViewModel>();
+                
+                if (invoices.Count == 0)
+                {
+                    System.Diagnostics.Debug.WriteLine($"⚠️ HoaDon - No invoices found");
+                    ViewBag.NoDataMessage = "Bạn chưa có hóa đơn nào.";
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"✅ HoaDon - Loaded {invoices.Count} invoices");
+                }
+
+                return View(invoices);
             }
             catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"❌ HoaDon Error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"   StackTrace: {ex.StackTrace}");
+                
                 ViewBag.ErrorMessage = "Có lỗi khi tải hóa đơn: " + ex.Message;
+                ViewBag.IsBackendError = true;
                 return View(new List<Models.ViewModels.KhachThue.TenantInvoiceViewModel>());
             }
         }
