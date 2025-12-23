@@ -1,5 +1,4 @@
 ﻿@model List<USER_QUANLYPHONGTRO.Models.ViewModels.KhachThue.TenantInvoiceViewModel>
-@using System.Linq
 
 @{
     ViewBag.Title = "Hóa Đơn Của Tôi";
@@ -87,6 +86,7 @@
             background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .invoice-details {
@@ -99,17 +99,15 @@
             margin-top: 15px;
         }
 
-        .detail-row {
+        .detail-item {
             display: flex;
             justify-content: space-between;
             padding: 10px 0;
             border-bottom: 1px solid #e2e8f0;
         }
 
-        .detail-row:last-child {
+        .detail-item:last-child {
             border-bottom: none;
-            font-weight: 700;
-            font-size: 16px;
         }
 
         .detail-label {
@@ -136,11 +134,6 @@
         .badge-danger {
             background: rgba(252, 129, 129, 0.15);
             color: #fc8181;
-        }
-
-        .badge-warning {
-            background: rgba(246, 173, 85, 0.15);
-            color: #f6ad55;
         }
 
         .btn-pay {
@@ -247,6 +240,21 @@
             font-weight: 800;
             color: #2d3748;
         }
+
+        .alert-maintenance {
+            background: linear-gradient(135deg, #f6ad55 0%, #ed8936 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .alert-maintenance i {
+            font-size: 24px;
+        }
     </style>
 }
 
@@ -257,77 +265,85 @@
             <p>Quản lý và thanh toán hóa đơn tiền thuê, điện, nước</p>
         </div>
 
+        @if (ViewBag.IsBackendError == true)
+        {
+            <div class="alert-maintenance">
+                <i class="fa fa-wrench"></i>
+                <div>
+                    <strong>Thông báo:</strong> @ViewBag.ErrorMessage
+                </div>
+            </div>
+        }
+
         <!-- Summary Cards -->
-        <div class="summary-cards">
-            <div class="summary-card total">
-                <div class="summary-label">Tổng Hóa Đơn</div>
-                <div class="summary-value">@invoiceList.Count</div>
+        @if (invoiceList.Any())
+        {
+            var paidCount = invoiceList.Count(x => x.DaThanhToan);
+            var unpaidCount = invoiceList.Count - paidCount;
+            
+            <div class="summary-cards">
+                <div class="summary-card total">
+                    <div class="summary-label">Tổng Hóa Đơn</div>
+                    <div class="summary-value">@invoiceList.Count</div>
+                </div>
+                <div class="summary-card paid">
+                    <div class="summary-label">Đã Thanh Toán</div>
+                    <div class="summary-value">@paidCount</div>
+                </div>
+                <div class="summary-card unpaid">
+                    <div class="summary-label">Chưa Thanh Toán</div>
+                    <div class="summary-value">@unpaidCount</div>
+                </div>
             </div>
-            <div class="summary-card paid">
-                <div class="summary-label">Đã Thanh Toán</div>
-                <div class="summary-value">@invoiceList.Count(x => x.TrangThai == "Đã thanh toán")</div>
-            </div>
-            <div class="summary-card unpaid">
-                <div class="summary-label">Chưa Thanh Toán</div>
-                <div class="summary-value">@invoiceList.Count(x => x.TrangThai == "Chưa thanh toán")</div>
-            </div>
-        </div>
+        }
 
         <div class="invoice-list">
             @if (invoiceList.Any())
             {
-                foreach (var item in invoiceList)
+                @foreach (var item in invoiceList)
                 {
                     <div class="invoice-item">
                         <div class="invoice-header">
                             <div class="invoice-info">
-                                <h3>Hóa Đơn Tháng @item.ThangNam</h3>
+                                <h3>Hóa Đơn: @(item.SoHoaDon ?? "N/A")</h3>
                                 <div class="invoice-period">
                                     <i class="fa fa-calendar"></i>
-                                    Kỳ thanh toán: @item.ThangNam
+                                    Từ ngày @item.ThoiGianTao.ToString("dd/MM/yyyy") - Hạn @item.ThoiGianDaoHan.ToString("dd/MM/yyyy")
                                 </div>
                             </div>
                             <div class="invoice-amount">
-                                <div class="amount-label">Tổng tiền</div>
-                                <div class="amount-value">@item.TongTien.ToString("N0")đ</div>
+                                <div class="amount-label">Cần Thanh Toán</div>
+                                <div class="amount-value">@item.SoTienConLai.ToString("N0")đ</div>
                             </div>
                         </div>
 
                         <div class="invoice-details">
-                            <div class="detail-row">
-                                <span class="detail-label">Tiền thuê:</span>
-                                <span class="detail-value">@item.TienThue.ToString("N0")đ</span>
+                            <div class="detail-item">
+                                <span class="detail-label">Tiền thuê phòng:</span>
+                                <span class="detail-value">@item.SoTienTrongKy.ToString("N0")đ</span>
                             </div>
-                            <div class="detail-row">
-                                <span class="detail-label">Tiền điện:</span>
-                                <span class="detail-value">@item.TienDien.ToString("N0")đ</span>
+                            <div class="detail-item">
+                                <span class="detail-label">Tổng tiền:</span>
+                                <span class="detail-value">@item.TongTien.ToString("N0")đ</span>
                             </div>
-                            <div class="detail-row">
-                                <span class="detail-label">Tiền nước:</span>
-                                <span class="detail-value">@item.TienNuoc.ToString("N0")đ</span>
-                            </div>
-                            <div class="detail-row">
-                                <span class="detail-label">Phí khác:</span>
-                                <span class="detail-value">@item.PhiKhac.ToString("N0")đ</span>
+                            <div class="detail-item">
+                                <span class="detail-label">Đã thanh toán:</span>
+                                <span class="detail-value">@item.TienDaThanhToan.ToString("N0")đ</span>
                             </div>
                         </div>
 
                         <div class="invoice-actions">
-                            <span class="badge badge-@(item.TrangThai == "Đã thanh toán" ? "success" : "danger")">
-                                <i class="fa fa-@(item.TrangThai == "Đã thanh toán" ? "check-circle" : "exclamation-circle")"></i>
-                                @item.TrangThai
+                            <span class="badge badge-@(item.DaThanhToan ? "success" : "danger")">
+                                <i class="fa fa-@(item.DaThanhToan ? "check-circle" : "exclamation-circle")"></i>
+                                @(item.DaThanhToan ? "Đã thanh toán" : "Chưa thanh toán")
                             </span>
 
-                            @if (item.TrangThai != "Đã thanh toán")
+                            @if (!item.DaThanhToan)
                             {
-                                <button class="btn-pay">
+                                <button class="btn-pay" onclick="alert('Chức năng thanh toán sẽ sớm được cập nhật');">
                                     <i class="fa fa-credit-card"></i> Thanh Toán Ngay
                                 </button>
                             }
-
-                            <button class="btn-download">
-                                <i class="fa fa-download"></i> Tải Hóa Đơn
-                            </button>
                         </div>
                     </div>
                 }
@@ -336,8 +352,8 @@
             {
                 <div class="empty-state">
                     <i class="fa fa-receipt"></i>
-                    <h3>Chưa có hóa đơn nào</h3>
-                    <p>Các hóa đơn sẽ được tạo tự động vào đầu mỗi tháng</p>
+                    <h3>@(ViewBag.NoDataMessage ?? "Chưa có hóa đơn nào")</h3>
+                    <p>Các hóa đơn sẽ được tạo tự động vào đầu mỗi tháng sau khi bạn có hợp đồng thuê phòng.</p>
                 </div>
             }
         </div>

@@ -1,7 +1,143 @@
-﻿
+﻿@model List<USER_QUANLYPHONGTRO.Models.ViewModels.ChuTro.QuanLyPhongViewModel>
+
 @{
-    ViewBag.Title = "DanhSachPhong";
+    ViewBag.Title = "Quản Lý Phòng Trọ";
+    Layout = "~/Views/Shared/_ChutroLayout.cshtml"; // Đảm bảo bạn có Layout cho chủ trọ
 }
 
-<h2>DanhSachPhong</h2>
+<div class="container-fluid dashboard-content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary font-weight-bold">🏠 Danh Sách Phòng Của Bạn</h2>
+        <a href="@Url.Action("TaoPhong", "ChuTro")" class="btn btn-primary shadow-sm">
+            <i class="fa fa-plus-circle"></i> Đăng Phòng Mới
+        </a>
+    </div>
 
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+        </div>
+    }
+    @if (ViewBag.Error != null || TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @(ViewBag.Error ?? TempData["ErrorMessage"])
+            <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+        </div>
+    }
+
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            @if (Model != null && Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle" id="dataTable" width="100%" cellspacing="0">
+                        <thead class="thead-light">
+                            <tr>
+                                <th width="10%">Ảnh</th>
+                                <th width="30%">Thông Tin Phòng</th>
+                                <th width="15%">Giá / Diện tích</th>
+                                <th width="15%">Khu Trọ</th>
+                                <th width="15%">Trạng Thái</th>
+                                <th width="15%" class="text-center">Hành Động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="rounded overflow-hidden border" style="width: 80px; height: 60px;">
+                                            <img src="@(!string.IsNullOrEmpty(item.HinhAnh) ? item.HinhAnh : "/images/default-room.png")"
+                                                 alt="Room Img"
+                                                 style="width: 100%; height: 100%; object-fit: cover;">
+                                        </div>
+                                    </td>
+
+                                    <td>
+                                        <div class="font-weight-bold text-dark mb-1">@item.TieuDe</div>
+                                        <small class="text-muted">ID: @item.PhongId.ToString().Substring(0, 8)...</small>
+                                    </td>
+
+                                    <td>
+                                        <div class="text-danger font-weight-bold">@item.GiaTien.ToString("N0") đ</div>
+                                        <small class="text-secondary">@item.DienTich?.ToString("N0") m²</small>
+                                    </td>
+
+                                    <td>
+                                        <div>@(string.IsNullOrEmpty(item.TenNhaTro) ? "Chưa cập nhật" : item.TenNhaTro)</div>
+                                    </td>
+
+                                    <td>
+                                        <span class="badge @item.BadgeClass px-3 py-2" style="font-size: 0.85rem; border-radius: 20px;">
+                                            @item.HienThiTrangThai
+                                        </span>
+                                    </td>
+
+                                    <td class="text-center">
+                                        <div class="btn-group" role="group">
+                                            <a href="@Url.Action("SuaPhong", "ChuTro", new { id = item.PhongId })"
+                                               class="btn btn-sm btn-outline-info" title="Sửa">
+                                                <i class="fa fa-edit"></i>
+                                            </a>
+
+                                            <button type="button" class="btn btn-sm btn-outline-danger"
+                                                    onclick="confirmDelete('@item.PhongId', '@item.TieuDe')" title="Xóa">
+                                                <i class="fa fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <img src="~/images/empty-box.png" alt="Empty" style="width: 100px; opacity: 0.5;">
+                    <h5 class="text-muted mt-3">Bạn chưa đăng phòng trọ nào.</h5>
+                    <a href="@Url.Action("TaoPhong", "ChuTro")" class="btn btn-primary mt-2">Đăng ngay</a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<script>
+    function confirmDelete(id, title) {
+        if (confirm('Bạn có chắc chắn muốn xóa phòng "' + title + '" không?\nHành động này không thể hoàn tác!')) {
+            window.location.href = '@Url.Action("XoaPhong", "ChuTro")/' + id;
+        }
+    }
+</script>
+
+<style>
+    /* CSS Tùy chỉnh nhỏ cho bảng */
+    .table td {
+        vertical-align: middle;
+    }
+
+    .badge-success {
+        background-color: #28a745;
+        color: white;
+    }
+
+    .badge-warning {
+        background-color: #ffc107;
+        color: #212529;
+    }
+
+    .badge-danger {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    .badge-secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+</style>

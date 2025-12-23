@@ -23,6 +23,7 @@ namespace USER_QUANLYPHONGTRO.Models.Dtos.Bookings
         public string TieuDePhong { get; set; }
         public string DiaChi { get; set; }
         public string SdtChuTro { get; set; }
+        public string HoTenChuTro { get; set; }
         public string HoTenNguoiThue { get; set; }
         public string SdtNguoiThue { get; set; }
 

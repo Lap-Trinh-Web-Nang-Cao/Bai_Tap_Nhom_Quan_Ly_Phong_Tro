@@ -1,0 +1,241 @@
+﻿﻿@model IEnumerable<USER_QUANLYPHONGTRO.Models.ViewModels.ChuTro.DonDatPhongViewModel>
+
+@{
+    Layout = "~/Views/Shared/_ChutroLayout.cshtml";
+    ViewBag.Title = "Quản lý Đơn đặt phòng";
+
+    // TÍNH TOÁN SỐ LIỆU THỐNG KÊ MỚI
+    int total = Model != null ? Model.Count() : 0;
+
+    // Status 1: Chờ duyệt
+    int pending = Model != null ? Model.Count(m => m.TrangThai == "ChoXacNhan") : 0;
+
+    // Status 2: Đã cọc (Quan trọng)
+    int deposited = Model != null ? Model.Count(m => m.TrangThai == "DaXacNhan") : 0;
+
+    // Status 3: Đã thành Hợp đồng chính thức
+    int contracts = Model != null ? Model.Count(m => m.TrangThai == "DaThanhToan") : 0;
+}
+
+<style>
+    /* CSS Card nhỏ gọn 1 hàng */
+    .stat-card {
+        background: #fff;
+        border-radius: 8px;
+        padding: 15px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        height: 100%;
+        border-left: 4px solid transparent;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+        .stat-card.primary {
+            border-left-color: #4e73df;
+        }
+        /* Tổng */
+        .stat-card.warning {
+            border-left-color: #f6c23e;
+        }
+        /* Chờ */
+        .stat-card.info {
+            border-left-color: #36b9cc;
+        }
+        /* Đã cọc (Màu xanh dương nhạt) */
+        .stat-card.success {
+            border-left-color: #1cc88a;
+        }
+    /* Hợp đồng */
+
+    .stat-title {
+        color: #8898aa;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+    }
+
+    .stat-value {
+        color: #333;
+        font-size: 1.8rem;
+        font-weight: 700;
+        line-height: 1.2;
+    }
+
+    .text-primary-custom {
+        color: #4e73df;
+    }
+
+    .text-warning-custom {
+        color: #f6c23e;
+    }
+
+    .text-info-custom {
+        color: #36b9cc;
+    }
+
+    .text-success-custom {
+        color: #1cc88a;
+    }
+
+    .table-custom thead th {
+        background-color: #f8f9fc;
+        color: #5a5c69;
+        font-size: 0.9rem;
+        border-top: none;
+    }
+
+    /* Badge trạng thái mới */
+    .badge-deposit {
+        background-color: #e0f2fe;
+        color: #0284c7;
+        border: 1px solid #bae6fd;
+    }
+</style>
+
+<div class="container-fluid mb-5">
+    <div class="d-sm-flex align-items-center justify-content-between mb-3">
+        <h1 class="h4 mb-0 text-gray-800">Quản lý Đơn đặt phòng</h1>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success py-2 mb-3 small"><i class="fas fa-check mr-2"></i>@TempData["SuccessMessage"]</div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger py-2 mb-3 small"><i class="fas fa-exclamation-triangle mr-2"></i>@TempData["ErrorMessage"]</div>
+    }
+
+    <div class="row mb-4">
+        <div class="col-md-3 mb-2">
+            <div class="stat-card primary">
+                <div class="stat-title">TỔNG SỐ ĐƠN</div>
+                <div class="stat-value text-primary-custom">@total</div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-2">
+            <div class="stat-card warning">
+                <div class="stat-title">CHỜ XÁC NHẬN</div>
+                <div class="stat-value text-warning-custom">@pending</div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-2">
+            <div class="stat-card info">
+                <div class="stat-title">ĐÃ CỌC (GIỮ CHỖ)</div>
+                <div class="stat-value text-info-custom">@deposited</div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-2">
+            <div class="stat-card success">
+                <div class="stat-title">HỢP ĐỒNG / ĐANG Ở</div>
+                <div class="stat-value text-success-custom">@contracts</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 bg-white">
+            <h6 class="m-0 font-weight-bold text-primary">Danh sách yêu cầu</h6>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                @if (Model != null && Model.Count() > 0)
+                {
+                    <table class="table table-custom table-hover mb-0" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>MÃ</th>
+                                <th>KHÁCH HÀNG</th>
+                                <th>PHÒNG</th>
+                                <th>NGÀY THUÊ</th>
+                                <th>TRẠNG THÁI</th>
+                                <th class="text-right pr-4">THAO TÁC</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="font-weight-bold small">#@item.SoDatPhong</td>
+                                    <td>
+                                        <div class="font-weight-bold text-dark">@item.TenKhachHang</div>
+                                        <small class="text-muted">@item.LoaiDatPhong</small>
+                                    </td>
+                                    <td class="small">@item.TenPhong</td>
+                                    <td class="small">@item.NgayBatDau.ToString("dd/MM/yyyy")</td>
+
+                                    <td>
+                                        @if (item.TrangThai == "ChoXacNhan")
+                                        {
+                                            <span class="badge badge-warning px-2 py-1">Chờ duyệt</span>
+                                        }
+                                        else if (item.TrangThai == "DaXacNhan")
+                                        {
+                                            <span class="badge badge-deposit px-2 py-1">
+                                                <i class="fas fa-money-bill-wave mr-1"></i>Đã cọc
+                                            </span>
+                                        }
+                                        else if (item.TrangThai == "DaThanhToan")
+                                        {
+                                            <span class="badge badge-success px-2 py-1">Hợp đồng</span>
+                                        }
+                                        else if (item.TrangThai == "DaHuy")
+                                        {
+                                            <span class="badge badge-danger px-2 py-1">Đã hủy</span>
+                                        }
+                                        else
+                                        { <span class="badge badge-secondary">@item.TrangThai</span>}
+                                    </td>
+
+                                    <td class="text-right pr-4">
+
+                                        @if (item.TrangThai == "ChoXacNhan")
+                                        {
+                                            <a href="@Url.Action("DuyetDon", "ChuTro", new { id = item.DatPhongId, status = 2 })"
+                                               class="btn btn-success btn-sm btn-circle mr-1" title="Xác nhận đã nhận cọc">
+                                                <i class="fas fa-check"></i>
+                                            </a>
+
+                                            <a href="@Url.Action("DuyetDon", "ChuTro", new { id = item.DatPhongId, status = 5 })"
+                                               class="btn btn-warning btn-sm btn-circle text-white mr-1" title="Từ chối đơn"
+                                               onclick="return confirm('Từ chối đơn này?');">
+                                                <i class="fas fa-times"></i>
+                                            </a>
+                                        }
+
+                                        else if (item.TrangThai == "DaXacNhan")
+                                        {
+                                            <a href="@Url.Action("DuyetDon", "ChuTro", new { id = item.DatPhongId, status = 3 })"
+                                               class="btn btn-primary btn-sm px-2 py-1 small shadow-sm"
+                                               title="Xác nhận thanh toán đủ & Hiệu lực hợp đồng"
+                                               onclick="return confirm('Xác nhận khách đã đóng đủ tiền và chuyển sang Hợp đồng chính thức?');">
+                                                <i class="fas fa-file-signature mr-1"></i>Ký HĐ
+                                            </a>
+                                        }
+
+                                        <a href="@Url.Action("XoaDon", "ChuTro", new { id = item.DatPhongId })"
+                                           class="btn btn-danger btn-sm btn-circle ml-1" title="Xóa"
+                                           onclick="return confirm('CẢNH BÁO: Xóa đơn này sẽ mất dữ liệu vĩnh viễn.\nBạn có chắc chắn muốn xóa?');">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <div class="text-center py-5 text-gray-500">
+                        <p>Chưa có dữ liệu</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

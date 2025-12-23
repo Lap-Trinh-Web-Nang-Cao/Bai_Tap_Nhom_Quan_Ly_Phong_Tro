@@ -1,0 +1,99 @@
+﻿@model USER_QUANLYPHONGTRO.Models.ViewModels.ChuTro.ThongKeDanhGiaViewModel
+
+@{
+    ViewBag.Title = "Đánh giá";
+    Layout = "~/Views/Shared/_ChutroLayout.cshtml";
+}
+
+<div class="container-fluid mb-5">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-star text-warning mr-2"></i>Đánh giá từ khách thuê
+        </h1>
+    </div>
+
+    <!-- Summary Card -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card shadow text-center py-4">
+                <div class="card-body">
+                    <h1 class="display-4 font-weight-bold text-warning">@Model.DiemTrungBinh.ToString("0.0")</h1>
+                    <div class="mb-2">
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            if (i <= (int)Model.DiemTrungBinh)
+                            {
+                                <i class="fas fa-star text-warning"></i>
+                            }
+                            else if (i - Model.DiemTrungBinh < 1)
+                            {
+                                <i class="fas fa-star-half-alt text-warning"></i>
+                            }
+                            else
+                            {
+                                <i class="far fa-star text-warning"></i>
+                            }
+                        }
+                    </div>
+                    <p class="text-muted mb-0">Dựa trên @Model.TongLuotDanhGia đánh giá</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reviews List -->
+    <div class="card shadow">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Danh sách đánh giá</h6>
+        </div>
+        <div class="card-body">
+            @if (Model.DanhSachDanhGia != null && Model.DanhSachDanhGia.Count > 0)
+            {
+                foreach (var review in Model.DanhSachDanhGia)
+                {
+                    var initial = !string.IsNullOrEmpty(review.TenNguoiDanhGia) ? review.TenNguoiDanhGia.Substring(0, 1).ToUpper() : "?";
+                    
+                    <div class="border-bottom pb-3 mb-3">
+                        <div class="d-flex align-items-start">
+                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mr-3" 
+                                 style="width: 50px; height: 50px; font-size: 1.2rem; font-weight: bold;">
+                                @initial
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-0 font-weight-bold">@review.TenNguoiDanhGia</h6>
+                                        <small class="text-muted">@review.TenPhong</small>
+                                    </div>
+                                    <small class="text-muted">@review.ThoiGian.ToString("dd/MM/yyyy")</small>
+                                </div>
+                                <div class="my-1">
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        if (i <= review.Diem)
+                                        {
+                                            <i class="fas fa-star text-warning"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="far fa-star text-warning"></i>
+                                        }
+                                    }
+                                </div>
+                                <p class="mb-0 text-gray-700">@review.NoiDung</p>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <img src="https://cdn-icons-png.flaticon.com/512/7486/7486744.png" width="100" class="mb-3 opacity-50" />
+                    <h5 class="text-muted">Chưa có đánh giá nào</h5>
+                    <p class="text-muted">Đánh giá từ khách thuê sẽ xuất hiện ở đây.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>

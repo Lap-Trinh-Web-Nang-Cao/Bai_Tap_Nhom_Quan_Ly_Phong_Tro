@@ -16,7 +16,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
             try
             {
                 var response = await GetAsync<JObject>(
-                    $"phong/pending?pageIndex={pageIndex}&pageSize={pageSize}&keyword={Uri.EscapeDataString(keyword ?? "")}"
+                    $"api/phong/pending?pageIndex={pageIndex}&pageSize={pageSize}&keyword={Uri.EscapeDataString(keyword ?? "")}"
                 );
 
                 if (response == null)
@@ -48,7 +48,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
             try
             {
                 var response = await GetAsync<JObject>(
-                    $"phong?pageIndex={pageIndex}&pageSize={pageSize}&keyword={Uri.EscapeDataString(keyword ?? "")}"
+                    $"api/phong?pageIndex={pageIndex}&pageSize={pageSize}&keyword={Uri.EscapeDataString(keyword ?? "")}"
                 );
 
                 if (response == null)
@@ -79,7 +79,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
         {
             try
             {
-                return await GetAsync<PhongDto>($"phong/{id}");
+                return await GetAsync<PhongDto>($"api/phong/{id}");
             }
             catch (Exception ex)
             {
@@ -95,7 +95,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
         {
             try
             {
-                return await PutAsync<ApiResponse<bool>>($"phong/approve/{id}", null);
+                return await PutAsync<ApiResponse<bool>>($"api/phong/approve/{id}", null);
             }
             catch (Exception ex)
             {
@@ -111,7 +111,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
         {
             try
             {
-                return await PutAsync<ApiResponse<bool>>($"phong/{id}/reject", new { reason });
+                return await PutAsync<ApiResponse<bool>>($"api/phong/{id}/reject", new { reason });
             }
             catch (Exception ex)
             {
@@ -127,7 +127,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
         {
             try
             {
-                return await PutAsync<ApiResponse<bool>>($"phong/lock/{id}?isLocked={isLocked}", null);
+                return await PutAsync<ApiResponse<bool>>($"api/phong/lock/{id}?isLocked={isLocked}", null);
             }
             catch (Exception ex)
             {
@@ -143,7 +143,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
         {
             try
             {
-                var response = await GetAsync<JObject>("phong/stats");
+                var response = await GetAsync<JObject>("api/phong/stats");
 
                 if (response == null)
                     return new RoomStatsDto { Total = 0, Pending = 0, Approved = 0, Locked = 0 };

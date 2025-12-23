@@ -21,7 +21,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
         {
             try
             {
-                var response = await PostAsync<LoginResponse>("nguoidung/login", request);
+                var response = await PostAsync<LoginResponse>("api/nguoidung/login", request);
                 Debug.WriteLine($"✅ Login response: Token = {response?.Token?.Substring(0, 20)}...");
                 return response;
             }
@@ -41,7 +41,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
         {
             try
             {
-                string url = $"nguoidung?pageIndex={pageIndex}&pageSize={pageSize}";
+                string url = $"api/nguoidung?pageIndex={pageIndex}&pageSize={pageSize}";
 
                 if (!string.IsNullOrWhiteSpace(keyword))
                     url += $"&keyword={Uri.EscapeDataString(keyword)}";
@@ -106,7 +106,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
             try
             {
                 Debug.WriteLine($"📡 GetUserById: {id}");
-                return await GetAsync<ApiResponse<NguoiDungDetailDto>>($"nguoidung/{id}");
+                return await GetAsync<ApiResponse<NguoiDungDetailDto>>($"api/nguoidung/{id}");
             }
             catch (Exception ex)
             {
@@ -123,7 +123,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
             try
             {
                 Debug.WriteLine($"📡 CreateUser: {request.Email}, VaiTro: {request.VaiTroId}");
-                return await PostAsync<ApiResponse<CreateUserResponse>>("nguoidung/admin-create", request);
+                return await PostAsync<ApiResponse<CreateUserResponse>>("api/nguoidung/admin-create", request);
             }
             catch (Exception ex)
             {
@@ -134,7 +134,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
 
         public async Task<ApiResponse<bool>> ToggleLockUser(string id)
         {
-            return await PutAsync<ApiResponse<bool>>($"nguoidung/{id}/toggle-lock", null);
+            return await PutAsync<ApiResponse<bool>>($"api/nguoidung/{id}/toggle-lock", null);
         }
 
         /// <summary>
@@ -144,7 +144,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
         {
             try
             {
-                var url = $"nguoidung/{userId}/lock";
+                var url = $"api/nguoidung/{userId}/lock";
                 var result = await PutAsync<ApiResponse<bool>>(url, new { });
                 Debug.WriteLine($"✅ LockUser success");
                 return result;
@@ -163,7 +163,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
         {
             try
             {
-                var url = $"nguoidung/{userId}/unlock";
+                var url = $"api/nguoidung/{userId}/unlock";
                 var result = await PutAsync<ApiResponse<bool>>(url, new { });
                 Debug.WriteLine($"✅ UnlockUser success");
                 return result;
@@ -183,7 +183,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
             try
             {
                 Debug.WriteLine($"📡 GetUserStatistics");
-                return await GetAsync<UserStatisticsResponse>("nguoidung/statistics");
+                return await GetAsync<UserStatisticsResponse>("api/nguoidung/statistics");
             }
             catch (Exception ex)
             {

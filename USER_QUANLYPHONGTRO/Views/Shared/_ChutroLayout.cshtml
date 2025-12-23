@@ -1,13 +1,16 @@
 ﻿<!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@ViewBag.Title - TroTot Chủ Trọ</title>
 
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
 
     <!-- CSS Files -->
     <link href="~/Content/chutro.css?v=2.0" rel="stylesheet" />
@@ -20,12 +23,17 @@
 
     @RenderSection("styles", required: false)
 </head>
+
 <body>
     @{
         string userName = Session["HoTen"] as string ?? Session["UserName"] as string ?? "Chủ Trọ";
         string avatarUrl = Session["AvatarUrl"] as string ?? "/images/default-avatar.png";
         int notificationCount = Session["NotificationCount"] as int? ?? 0;
         int messageCount = Session["MessageCount"] as int? ?? 0;
+
+        // Xác định trang hiện tại
+        string currentController = ViewContext.RouteData.Values["controller"] as string ?? "";
+        string currentAction = ViewContext.RouteData.Values["action"] as string ?? "";
     }
 
     <!-- Top Navigation Bar -->
@@ -51,22 +59,23 @@
                 <span class="material-icons-round">notifications</span>
                 @if (notificationCount > 0)
                 {
-                    <span class="icon-badge">@notificationCount</span>
+                <span class="icon-badge">@notificationCount</span>
                 }
             </div>
 
             <!-- Messages -->
-            <div class="navbar-icon">
+            <a href="@Url.Action("ChuTro", "Chat")" class="navbar-icon" title="Tin nhắn">
                 <span class="material-icons-round">chat_bubble</span>
                 @if (messageCount > 0)
                 {
-                    <span class="icon-badge">@messageCount</span>
+                <span class="icon-badge">@messageCount</span>
                 }
-            </div>
+            </a>
 
             <!-- User Profile -->
             <div class="user-profile">
-                <img src="@Url.Content(!string.IsNullOrEmpty(avatarUrl) && !avatarUrl.Contains("default-avatar") ? avatarUrl : "/images/logo.png")" alt="Avatar" class="user-avatar" />
+                <img src="@Url.Content(!string.IsNullOrEmpty(avatarUrl) && !avatarUrl.Contains("default-avatar") ? avatarUrl : "/images/logo.png")"
+                    alt="Avatar" class="user-avatar" />
                 <div class="user-info">
                     <span class="user-name">@userName</span>
                     <span class="user-role">Chủ trọ</span>
@@ -75,7 +84,7 @@
 
                 <!-- Dropdown Menu -->
                 <div class="user-dropdown">
-                    <a href="#" class="dropdown-item">
+                    <a href="@Url.Action("ThongTinCaNhan", "ChuTro")" class="dropdown-item">
                         <span class="material-icons-round">person</span>
                         Hồ sơ cá nhân
                     </a>
@@ -104,12 +113,12 @@
                 <div class="nav-section">
                     <span class="nav-section-title">TỔNG QUAN</span>
 
-                    <a href="@Url.Action("Dashboard", "ChuTro")" class="nav-item active">
+                    <a href="@Url.Action("Dashboard", "ChuTro")" class="nav-item @(currentAction == "Dashboard" ? "active" : "")">
                         <span class="nav-icon"><span class="material-icons-round">dashboard</span></span>
                         <span class="nav-text">Dashboard</span>
                     </a>
 
-                    <a href="#" class="nav-item">
+                    <a href="@Url.Action("ThongKe", "ChuTro")" class="nav-item @(currentAction == "ThongKe" ? "active" : "")">
                         <span class="nav-icon"><span class="material-icons-round">analytics</span></span>
                         <span class="nav-text">Thống kê</span>
                     </a>
@@ -118,34 +127,32 @@
                 <div class="nav-section">
                     <span class="nav-section-title">QUẢN LÝ</span>
 
-                    <div class="nav-item has-submenu">
+                    <div class="nav-item has-submenu @(currentAction == "QuanLyPhong" || currentAction == "TaoPhong" || currentAction == "SuaPhong" ? "active" : "")">
                         <span class="nav-icon"><span class="material-icons-round">apartment</span></span>
                         <span class="nav-text">Quản lý phòng</span>
                         <span class="nav-arrow material-icons-round">chevron_right</span>
                     </div>
                     <div class="nav-submenu">
-                        <a href="#" class="nav-submenu-item">Danh sách phòng</a>
-                        <a href="#" class="nav-submenu-item">Thêm phòng mới</a>
-                        <a href="#" class="nav-submenu-item">Chờ duyệt <span class="submenu-badge">3</span></a>
+                        <a href="@Url.Action("QuanLyPhong", "ChuTro")" class="nav-submenu-item">Danh sách phòng</a>
+                        <a href="@Url.Action("TaoPhong", "ChuTro")" class="nav-submenu-item">Thêm phòng mới</a>
                     </div>
 
-                    <div class="nav-item has-submenu">
+                    <div class="nav-item has-submenu @(currentAction == "LichHen" || currentAction == "DonDatPhong" ? "active" : "")">
                         <span class="nav-icon"><span class="material-icons-round">calendar_month</span></span>
-                        <span class="nav-text">Lịch xem phòng</span>
+                        <span class="nav-text">Đặt phòng</span>
                         <span class="nav-arrow material-icons-round">chevron_right</span>
                     </div>
                     <div class="nav-submenu">
-                        <a href="#" class="nav-submenu-item">Chờ xác nhận <span class="submenu-badge warning">5</span></a>
-                        <a href="#" class="nav-submenu-item">Hôm nay</a>
-                        <a href="#" class="nav-submenu-item">Tất cả lịch hẹn</a>
+                        <a href="@Url.Action("LichHen", "ChuTro")" class="nav-submenu-item">Lịch xem phòng</a>
+                        <a href="@Url.Action("DonDatPhong", "ChuTro")" class="nav-submenu-item">Đơn đặt phòng</a>
                     </div>
 
-                    <a href="#" class="nav-item">
+                    <a href="@Url.Action("HopDong", "ChuTro")" class="nav-item @(currentAction == "HopDong" || currentAction == "ChiTietHopDong" ? "active" : "")">
                         <span class="nav-icon"><span class="material-icons-round">description</span></span>
                         <span class="nav-text">Hợp đồng</span>
                     </a>
 
-                    <a href="#" class="nav-item">
+                    <a href="@Url.Action("HoaDon", "ChuTro")" class="nav-item @(currentAction == "HoaDon" ? "active" : "")">
                         <span class="nav-icon"><span class="material-icons-round">receipt_long</span></span>
                         <span class="nav-text">Hóa đơn</span>
                     </a>
@@ -154,22 +161,21 @@
                 <div class="nav-section">
                     <span class="nav-section-title">TƯƠNG TÁC</span>
 
-                    <a href="#" class="nav-item">
+                    <a href="@Url.Action("ChuTro", "Chat")" class="nav-item @(currentController == "Chat" ? "active" : "")">
                         <span class="nav-icon"><span class="material-icons-round">chat</span></span>
                         <span class="nav-text">Tin nhắn</span>
                         @if (messageCount > 0)
                         {
-                            <span class="nav-badge">@messageCount</span>
+                        <span class="nav-badge">@messageCount</span>
                         }
                     </a>
 
-                    <a href="#" class="nav-item">
+                    <a href="@Url.Action("YeuCauHoTro", "ChuTro")" class="nav-item @(currentAction == "YeuCauHoTro" ? "active" : "")">
                         <span class="nav-icon"><span class="material-icons-round">build</span></span>
-                        <span class="nav-text">Yêu cầu sửa chữa</span>
-                        <span class="nav-badge warning">2</span>
+                        <span class="nav-text">Yêu cầu hỗ trợ</span>
                     </a>
 
-                    <a href="#" class="nav-item">
+                    <a href="@Url.Action("DanhGia", "ChuTro")" class="nav-item @(currentAction == "DanhGia" ? "active" : "")">
                         <span class="nav-icon"><span class="material-icons-round">star</span></span>
                         <span class="nav-text">Đánh giá</span>
                     </a>
@@ -197,4 +203,5 @@
     <script src="~/Scripts/dashboard-charts.js?v=2.0"></script>
     @RenderSection("scripts", required: false)
 </body>
+
 </html>

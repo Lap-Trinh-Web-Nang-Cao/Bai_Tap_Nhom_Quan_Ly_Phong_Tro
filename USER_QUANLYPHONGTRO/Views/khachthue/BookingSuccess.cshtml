@@ -1,130 +1,233 @@
-@{
-    ViewBag.Title = "Thành Công";
+﻿@{
+    ViewBag.Title = "Đặt Phòng Thành Công";
     Layout = "~/Views/Shared/_Layout.cshtml";
-    string type = ViewBag.Type as string;
+
+    var type = ViewBag.Type as string ?? "view";
+    var isPending = ViewBag.IsPending == true;
+
+    var isViewAppointment = type == "view";
+    var title = isViewAppointment ? "Đặt Lịch Xem Phòng" : "Đặt Phòng";
+    var icon = isPending ? "fa-clock-o" : "fa-check-circle";
+    var iconColor = isPending ? "#f6ad55" : "#48bb78";
 }
 
 @section styles {
-<style>
+    <style>
     .success-page {
-        padding: 80px 20px;
-        text-align: center;
-        background: #f7fafc;
         min-height: 80vh;
         display: flex;
         align-items: center;
         justify-content: center;
+        background: linear-gradient(135deg, #f5f7fa 0%, #e4e9f2 100%);
+        padding: 40px 20px;
     }
 
     .success-card {
         background: white;
-        padding: 50px;
-        border-radius: 20px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-        max-width: 600px;
+        border-radius: 24px;
+        padding: 60px 50px;
+        text-align: center;
+        max-width: 550px;
         width: 100%;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
     }
 
     .success-icon {
         width: 100px;
         height: 100px;
-        background: #f0fff4;
-        color: #48bb78;
         border-radius: 50%;
+        background: linear-gradient(135deg, @iconColor 0%, @(isPending ? "#ed8936" : "#38a169") 100%);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 50px;
         margin: 0 auto 30px;
-        animation: scaleIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        animation: scaleIn 0.5s ease-out;
+    }
+
+    .success-icon i {
+        font-size: 50px;
+        color: white;
     }
 
     @@keyframes scaleIn {
-        from { transform: scale(0); opacity: 0; }
-        to { transform: scale(1); opacity: 1; }
+        0% { transform: scale(0); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
     }
 
     .success-title {
-        font-size: 32px;
+        font-size: 28px;
         font-weight: 800;
-        color: #1a202c;
+        color: #2d3748;
         margin-bottom: 15px;
     }
 
     .success-message {
+        font-size: 16px;
         color: #718096;
-        font-size: 18px;
-        line-height: 1.6;
-        margin-bottom: 40px;
+        line-height: 1.7;
+        margin-bottom: 35px;
+    }
+
+    .pending-notice {
+        background: #fffaf0;
+        border: 1px solid #f6ad55;
+        border-radius: 12px;
+        padding: 15px 20px;
+        margin-bottom: 25px;
+        color: #c05621;
+        font-size: 14px;
+    }
+
+    .pending-notice i {
+        margin-right: 8px;
+    }
+
+    .info-box {
+        background: #f7fafc;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 30px;
+        text-align: left;
+    }
+
+    .info-box h4 {
+        font-size: 14px;
+        color: #4a5568;
+        margin-bottom: 15px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px dashed #e2e8f0;
+    }
+
+    .info-item:last-child {
+        border-bottom: none;
+    }
+
+    .info-item i {
+        width: 30px;
+        color: #667eea;
+        font-size: 16px;
+    }
+
+    .info-item span {
+        color: #2d3748;
+        font-weight: 500;
     }
 
     .action-buttons {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
+        display: flex;
         gap: 15px;
+        justify-content: center;
+        flex-wrap: wrap;
     }
 
-    .btn-action {
-        padding: 15px 25px;
-        border-radius: 12px;
-        font-weight: 700;
-        text-decoration: none;
-        transition: all 0.3s;
-    }
-
-    .btn-home {
+    .btn-primary-custom {
+        padding: 14px 35px;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 700;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
     }
 
-    .btn-home:hover {
+    .btn-primary-custom:hover {
         transform: translateY(-3px);
-        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
         color: white;
+        text-decoration: none;
     }
 
-    .btn-list {
+    .btn-secondary-custom {
+        padding: 14px 35px;
         background: white;
-        color: #4a5568;
-        border: 2px solid #e2e8f0;
+        color: #667eea;
+        border: 2px solid #667eea;
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 700;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
     }
 
-    .btn-list:hover {
-        background: #f7fafc;
-        border-color: #cbd5e0;
+    .btn-secondary-custom:hover {
+        background: #667eea;
+        color: white;
+        text-decoration: none;
     }
-</style>
+    </style>
 }
 
 <div class="success-page">
     <div class="success-card">
         <div class="success-icon">
-            <i class="fa fa-check"></i>
+            <i class="fa @icon"></i>
         </div>
 
-        @if (type == "booking")
+        @if (isPending)
         {
-            <h1 class="success-title">Đặt Phòng Thành Công!</h1>
-            <p class="success-message">
-                Yêu cầu đặt thuê phòng của bạn đã được gửi tới chủ trọ. 
-                Chúng tôi sẽ liên hệ với bạn trong vòng 24 giờ tới để hoàn tất thủ tục hợp đồng.
-            </p>
+            <h1 class="success-title">Yêu Cầu Đang Được Xử Lý</h1>
+            <div class="pending-notice">
+                <i class="fa fa-info-circle"></i>
+                Yêu cầu của bạn đã được ghi nhận và đang chờ xử lý. Chúng tôi sẽ liên hệ lại với bạn sớm nhất.
+            </div>
         }
         else
         {
-            <h1 class="success-title">Đã Đặt Lịch Xem!</h1>
-            <p class="success-message">
-                Lịch hẹn xem phòng của bạn đã được ghi nhận. 
-                Chủ trọ sẽ sớm xác nhận thời gian chính xác với bạn qua số điện thoại đã cung cấp.
-            </p>
+            <h1 class="success-title">@title Thành Công!</h1>
         }
 
+        <p class="success-message">
+            @if (isViewAppointment)
+            {
+                <text>
+                    Yêu cầu xem phòng của bạn đã được gửi đi.
+                    Chủ trọ sẽ xác nhận và liên hệ với bạn trong thời gian sớm nhất.
+                </text>
+            }
+            else
+            {
+                <text>
+                    Yêu cầu đặt phòng của bạn đã được gửi đi.
+                    Chủ trọ sẽ xác nhận và liên hệ với bạn để hoàn tất thủ tục thuê phòng.
+                </text>
+            }
+        </p>
+
+        <div class="info-box">
+            <h4><i class="fa fa-lightbulb-o"></i> Bước tiếp theo</h4>
+            <div class="info-item">
+                <i class="fa fa-phone"></i>
+                <span>Chờ chủ trọ xác nhận và liên hệ</span>
+            </div>
+            <div class="info-item">
+                <i class="fa fa-calendar-check-o"></i>
+                <span>Theo dõi lịch hẹn trong trang "Lịch đã đặt"</span>
+            </div>
+            <div class="info-item">
+                <i class="fa fa-bell"></i>
+                <span>Bật thông báo để nhận cập nhật</span>
+            </div>
+        </div>
+
         <div class="action-buttons">
-            <a href="@Url.Action("Index", "KhachThue")" class="btn-action btn-home">
-                <i class="fa fa-home"></i> Về Trang Chủ
+            <a href="@Url.Action("LichDaDat", "KhachThue")" class="btn-primary-custom">
+                <i class="fa fa-calendar"></i> Xem Lịch Đã Đặt
             </a>
-            <a href="@Url.Action("LichDaDat", "KhachThue")" class="btn-action btn-list">
-                <i class="fa fa-list-alt"></i> Xem Lịch Đã Đặt
+            <a href="@Url.Action("DanhSachPhong", "KhachThue")" class="btn-secondary-custom">
+                <i class="fa fa-search"></i> Tìm Phòng Khác
             </a>
         </div>
     </div>

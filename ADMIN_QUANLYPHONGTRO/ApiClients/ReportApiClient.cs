@@ -14,7 +14,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
     /// </summary>
     public class ReportApiClient : BaseApiClient
     {
-        private const string BASE_ENDPOINT = "baocaovipham";
+        private const string BASE_ENDPOINT = "api/baocaovipham";
 
         /// <summary>
         /// Lấy danh sách tất cả báo cáo vi phạm
@@ -223,7 +223,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
             try
             {
                 var request = new { id = id, ketQua = ketQua };
-                var response = await PostAsync<dynamic>("baocaovipham/resolve", request);
+                var response = await PostAsync<dynamic>("api/baocaovipham/resolve", request);
                 
                 if (response != null && response.success == true)
                 {
@@ -247,7 +247,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
             try
             {
                 var request = new { id = id, lyDo = lyDo };
-                var response = await PostAsync<dynamic>("baocaovipham/reject", request);
+                var response = await PostAsync<dynamic>("api/baocaovipham/reject", request);
                 
                 if (response != null && response.success == true)
                 {
@@ -271,7 +271,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
             try
             {
                 var request = new { id = id };
-                var response = await PostAsync<dynamic>("baocaovipham/delete", request);
+                var response = await PostAsync<dynamic>("api/baocaovipham/delete", request);
                 return response != null && response.success == true;
             }
             catch (Exception ex)
@@ -292,7 +292,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
                 if (trangThai == "DANG_XU_LY")
                 {
                     var request = new { id = id };
-                    var response = await PostAsync<dynamic>("baocaovipham/start", request);
+                    var response = await PostAsync<dynamic>("api/baocaovipham/start", request);
                     
                     if (response != null && response.success == true)
                     {
@@ -319,7 +319,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
         {
             try
             {
-                var result = await GetAsync<List<ViPhamDto>>("vipham");
+                var result = await GetAsync<List<ViPhamDto>>("api/vipham");
                 return result != null ? result : new List<ViPhamDto>();
             }
             catch (Exception ex)
@@ -338,7 +338,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
             try
             {
                 // Call Backend API: GET /api/baocaovipham/statistics
-                var token = await GetAsync<JToken>("baocaovipham/statistics");
+                var token = await GetAsync<JToken>("api/baocaovipham/statistics");
                 if (token == null)
                 {
                     System.Diagnostics.Debug.WriteLine("⚠️ ReportApiClient.GetStatistics: response token is null");

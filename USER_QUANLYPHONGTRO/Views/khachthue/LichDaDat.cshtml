@@ -52,6 +52,8 @@
             justify-content: space-between;
             align-items: start;
             margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
         }
 
         .schedule-title {
@@ -87,6 +89,7 @@
         .detail-item i {
             color: #667eea;
             font-size: 18px;
+            min-width: 20px;
         }
 
         .detail-item strong {
@@ -116,6 +119,11 @@
             color: #fc8181;
         }
 
+        .badge-info {
+            background: rgba(102, 126, 234, 0.15);
+            color: #667eea;
+        }
+
         .empty-state {
             text-align: center;
             padding: 80px 20px;
@@ -143,6 +151,7 @@
             align-items: center;
             gap: 10px;
             transition: all 0.3s;
+            border: none;
         }
 
         .btn-primary:hover {
@@ -150,6 +159,21 @@
             box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
             text-decoration: none;
             color: white;
+        }
+
+        .alert-maintenance {
+            background: linear-gradient(135deg, #f6ad55 0%, #ed8936 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .alert-maintenance i {
+            font-size: 24px;
         }
     </style>
 }
@@ -161,11 +185,52 @@
             <p>Quản lý các lịch hẹn xem phòng của bạn</p>
         </div>
 
+        @if (ViewBag.IsBackendError == true)
+        {
+            <div class="alert-maintenance">
+                <i class="fa fa-wrench"></i>
+                <div>
+                    <strong>Thông báo:</strong> @ViewBag.ErrorMessage
+                </div>
+            </div>
+        }
+
         <div class="schedule-list">
             @if (Model != null && Model.Any())
             {
-                foreach (var item in Model)
+                <!-- Thống kê -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid #e2e8f0;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 24px; font-weight: 700; color: #667eea;">@Model.Count</div>
+                        <div style="color: #718096; font-size: 13px;">Tổng lịch hẹn</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 24px; font-weight: 700; color: #f6ad55;">@Model.Count(x => x.TrangThaiId == 1)</div>
+                        <div style="color: #718096; font-size: 13px;">Chờ xác nhận</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 24px; font-weight: 700; color: #48bb78;">@Model.Count(x => x.TrangThaiId == 2)</div>
+                        <div style="color: #718096; font-size: 13px;">Đã xác nhận</div>
+                    </div>
+                </div>
+
+                <!-- Danh sách lịch hẹn -->
+                @foreach (var item in Model)
                 {
+                    var badgeClass = "info";
+                    if (item.TrangThaiId == 2)
+                    {
+                        badgeClass = "success";
+                    }
+                    else if (item.TrangThaiId == 1)
+                    {
+                        badgeClass = "warning";
+                    }
+                    else if (item.TrangThaiId == 5)
+                    {
+                        badgeClass = "danger";
+                    }
+                
                     <div class="schedule-item">
                         <div class="schedule-header">
                             <div>
@@ -175,7 +240,7 @@
                                     <span>@item.DiaChi</span>
                                 </div>
                             </div>
-                            <span class="badge badge-@(item.TrangThai == "Đã xác nhận" ? "success" : item.TrangThai == "Chờ xác nhận" ? "warning" : "danger")">
+                            <span class="badge badge-@badgeClass">
                                 @item.TrangThai
                             </span>
                         </div>
@@ -192,14 +257,14 @@
                                 <i class="fa fa-phone"></i>
                                 <div>
                                     <strong>Liên hệ:</strong><br />
-                                    @item.SdtChuTro
+                                    @(string.IsNullOrEmpty(item.SdtChuTro) || item.SdtChuTro == "N/A" ? "Chủ trọ sẽ liên hệ" : item.SdtChuTro)
                                 </div>
                             </div>
                             <div class="detail-item">
                                 <i class="fa fa-sticky-note"></i>
                                 <div>
                                     <strong>Ghi chú:</strong><br />
-                                    @(string.IsNullOrEmpty(item.GhiChu) ? "Không có" : item.GhiChu)
+                                    @(string.IsNullOrEmpty(item.GhiChu) ? "Không có" : (item.GhiChu.Length > 30 ? item.GhiChu.Substring(0, 30) + "..." : item.GhiChu))
                                 </div>
                             </div>
                         </div>
@@ -210,9 +275,9 @@
             {
                 <div class="empty-state">
                     <i class="fa fa-calendar-times"></i>
-                    <h3>Chưa có lịch hẹn nào</h3>
+                    <h3>@(ViewBag.NoDataMessage ?? "Chưa có lịch hẹn nào")</h3>
                     <p>Hãy tìm phòng trọ và đặt lịch xem phòng ngay!</p>
-                    <a href="@Url.Action("DanhSachPhong", "Guest")" class="btn-primary">
+                    <a href="@Url.Action("DanhSachPhong", "KhachThue")" class="btn-primary">
                         <i class="fa fa-search"></i> Tìm Phòng Ngay
                     </a>
                 </div>

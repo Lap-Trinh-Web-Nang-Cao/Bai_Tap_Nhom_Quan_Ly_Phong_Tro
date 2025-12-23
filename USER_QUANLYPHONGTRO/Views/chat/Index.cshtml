@@ -1,0 +1,460 @@
+﻿@model USER_QUANLYPHONGTRO.Models.ViewModels.Chat.ChatPageViewModel
+
+@{
+    ViewBag.Title = "Tin nhắn";
+    Layout = Model.CurrentUserRole == "ChuTro" ? "~/Views/Shared/_ChutroLayout.cshtml" : "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <link href="~/Content/css/chat.css" rel="stylesheet" />
+}
+
+<div class="chat-container">
+    <!-- Sidebar -->
+    <div class="chat-sidebar">
+        <div class="chat-sidebar-header">
+            <h4><i class="fas fa-comments mr-2"></i>Tin nhắn</h4>
+            <small>
+                <span class="connection-status connecting" id="connectionStatus">
+                    <i class="fas fa-circle"></i> Đang kết nối...
+                </span>
+            </small>
+        </div>
+        
+        <div class="search-box">
+            <input type="text" id="searchContact" placeholder="Tìm kiếm..." />
+        </div>
+        
+        <div class="contact-list" id="contactList">
+            @if (Model.Contacts != null && Model.Contacts.Count > 0)
+            {
+                foreach (var contact in Model.Contacts)
+                {
+                    var initial = !string.IsNullOrEmpty(contact.UserName) ? contact.UserName.Substring(0, 1).ToUpper() : "?";
+                    <div class="contact-item" data-user-id="@contact.UserId" data-user-name="@contact.UserName" data-user-role="@contact.Role">
+                        <div class="contact-avatar">
+                            @initial
+                            <span class="online-indicator" style="display: none;" id="online-@contact.UserId"></span>
+                        </div>
+                        <div class="contact-info">
+                            <div class="contact-name">
+                                @contact.UserName
+                                <span class="contact-role">@contact.RoleDisplay</span>
+                            </div>
+                            <div class="contact-last-message">@contact.LastMessage</div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="text-center py-5 text-muted">
+                    <i class="fas fa-user-friends fa-3x mb-3" style="opacity: 0.3;"></i>
+                    <p style="font-size: 13px; margin: 0;">Chưa có liên hệ nào</p>
+                    <small style="color: #94a3b8;">Bắt đầu với đơn đặt phòng</small>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Main Chat Area -->
+    <div class="chat-main">
+        <div class="empty-chat" id="emptyChat">
+            <i class="fas fa-comments"></i>
+            <h5>Chọn một cuộc trò chuyện</h5>
+            <p>Nhấn vào liên hệ để bắt đầu nhắn tin</p>
+        </div>
+
+        <div class="chat-header" id="chatHeader" style="display: none;">
+            <div class="contact-avatar" style="width: 36px; height: 36px; font-size: 13px; margin-right: 12px;">
+                <span id="chatHeaderInitial">?</span>
+            </div>
+            <div class="chat-header-info">
+                <h5 id="chatHeaderName">Chọn liên hệ</h5>
+                <small id="chatHeaderStatus">Offline</small>
+            </div>
+        </div>
+
+        <div class="chat-messages" id="chatMessages" style="display: none;"></div>
+
+        <div class="typing-indicator" id="typingIndicator">
+            <span id="typingUserName"></span> đang nhập
+            <div class="typing-dots">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            </div>
+        </div>
+
+        <div class="chat-input-container" id="chatInputContainer" style="display: none;">
+            <div class="chat-input-wrapper">
+                <textarea class="chat-input" id="messageInput" placeholder="Nhập tin nhắn..." rows="1"></textarea>
+                <button class="btn-send" id="btnSend" title="Gửi (Enter)">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Online Users Panel -->
+    <div class="online-users-panel">
+        <div class="online-users-header">
+            <i class="fas fa-circle text-success mr-1" style="font-size: 6px;"></i>
+            Trực tuyến (<span id="onlineCount">0</span>)
+        </div>
+        <div class="online-users-list" id="onlineUsersList"></div>
+    </div>
+</div>
+
+<input type="hidden" id="currentUserId" value="@Model.CurrentUserId" />
+<input type="hidden" id="currentUserName" value="@Model.CurrentUserName" />
+<input type="hidden" id="currentUserRole" value="@Model.CurrentUserRole" />
+<input type="hidden" id="currentUserAvatar" value="@Model.CurrentUserAvatar" />
+<input type="hidden" id="signalRHubUrl" value="@Model.SignalRHubUrl" />
+<input type="hidden" id="apiBaseUrl" value="@(System.Configuration.ConfigurationManager.AppSettings["ApiBaseUrl"] ?? "http://localhost:7039/")" />
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.0/signalr.min.js"></script>
+    
+    <script>
+        $(function () {
+            var currentUserId = $('#currentUserId').val();
+            var currentUserName = $('#currentUserName').val();
+            var currentUserRole = $('#currentUserRole').val();
+            var hubUrl = $('#signalRHubUrl').val();
+            var apiBaseUrl = $('#apiBaseUrl').val();
+            var selectedUserId = null;
+            var selectedUserName = null;
+            var connection = null;
+            var typingTimer = null;
+            var messagesLoaded = false;
+
+            console.log('🚀 Chat initialized');
+
+            function connectSignalR() {
+                updateConnectionStatus('connecting');
+                connection = new signalR.HubConnectionBuilder()
+                    .withUrl(hubUrl)
+                    .withAutomaticReconnect([0, 2000, 5000, 10000, 30000])
+                    .configureLogging(signalR.LogLevel.Warning)
+                    .build();
+
+                connection.on("ReceiveMessage", function (message) {
+                    console.log('📩 Received:', message);
+                    if (message.fromUserId === selectedUserId) {
+                        appendMessage(message, false);
+                        scrollToBottom();
+                        markMessageAsRead(message.fromUserId);
+                    } else {
+                        showNotification(message.fromUserName, message.content);
+                        updateContactBadge(message.fromUserId);
+                        updateContactLastMessage(message.fromUserId, message.content);
+                    }
+                });
+
+                connection.on("MessageSent", function (message) {
+                    console.log('✅ Message sent confirmed:', message);
+                });
+
+                connection.on("UserOnline", function (user) {
+                    console.log('🟢 User online:', user);
+                    $('#online-' + user.userId).show();
+                    updateOnlineUsersList(user, true);
+                    
+                    if (user.userId === selectedUserId) {
+                        $('#chatHeaderStatus').text('Đang trực tuyến').removeClass('text-muted').addClass('text-success');
+                    }
+                });
+
+                connection.on("UserOffline", function (userId) {
+                    console.log('🔴 User offline:', userId);
+                    $('#online-' + userId).hide();
+                    updateOnlineUsersList({ userId: userId }, false);
+                    
+                    if (userId === selectedUserId) {
+                        $('#chatHeaderStatus').text('Offline').removeClass('text-success').addClass('text-muted');
+                    }
+                });
+
+                connection.on("OnlineUsers", function (users) {
+                    console.log('👥 Online users list:', users);
+                    $('#onlineCount').text(users.length);
+                    $('#onlineUsersList').html(''); // Clear list
+                    
+                    users.forEach(function (u) {
+                        $('#online-' + u.userId).show();
+                        updateOnlineUsersList(u, true);
+                    });
+                });
+
+                connection.on("UserTyping", function (userId) {
+                    if (userId === selectedUserId) {
+                        $('#typingUserName').text(selectedUserName);
+                        $('#typingIndicator').show();
+                    }
+                });
+
+                connection.on("UserStoppedTyping", function (userId) {
+                    if (userId === selectedUserId) {
+                        $('#typingIndicator').hide();
+                    }
+                });
+
+                connection.onreconnecting(function () {
+                    console.log('🔄 SignalR reconnecting...');
+                    updateConnectionStatus('connecting');
+                });
+
+                connection.onreconnected(function () {
+                    console.log('✅ SignalR reconnected!');
+                    updateConnectionStatus('connected');
+                    registerUser();
+                });
+
+                connection.onclose(function (error) {
+                    console.log('❌ SignalR connection closed:', error);
+                    updateConnectionStatus('disconnected');
+                    setTimeout(connectSignalR, 5000);
+                });
+
+                connection.start()
+                    .then(function () {
+                        console.log('✅ SignalR connected');
+                        updateConnectionStatus('connected');
+                        registerUser();
+                    })
+                    .catch(function (err) {
+                        console.error('❌ SignalR error:', err);
+                        updateConnectionStatus('disconnected');
+                    });
+            }
+
+            function registerUser() {
+                if (connection && connection.state === signalR.HubConnectionState.Connected) {
+                    console.log('📝 Registering user:', currentUserName);
+                    connection.invoke("RegisterUser", currentUserId, currentUserName, currentUserRole)
+                        .catch(function (err) { console.error('Register error:', err); });
+                }
+            }
+
+            function updateConnectionStatus(status) {
+                var $el = $('#connectionStatus');
+                $el.removeClass('connected disconnected connecting');
+                if (status === 'connected') {
+                    $el.addClass('connected').html('<i class="fas fa-circle"></i> Đã kết nối');
+                } else if (status === 'disconnected') {
+                    $el.addClass('disconnected').html('<i class="fas fa-circle"></i> Mất kết nối');
+                } else {
+                    $el.addClass('connecting').html('<i class="fas fa-spinner fa-spin"></i> Đang kết nối...');
+                }
+            }
+
+            // Click contact
+            $(document).on('click', '.contact-item', function () {
+                var $this = $(this);
+                selectedUserId = $this.data('user-id').toString();
+                selectedUserName = $this.data('user-name');
+
+                $('.contact-item').removeClass('active');
+                $this.addClass('active');
+                $this.find('.unread-badge').remove();
+
+                $('#emptyChat').hide();
+                $('#chatHeader, #chatMessages, #chatInputContainer').show();
+
+                var initial = selectedUserName ? selectedUserName[0].toUpperCase() : '?';
+                $('#chatHeaderInitial').text(initial);
+                $('#chatHeaderName').text(selectedUserName);
+
+                var isOnline = $('#online-' + selectedUserId).is(':visible');
+                $('#chatHeaderStatus').text(isOnline ? 'Đang trực tuyến' : 'Offline')
+                    .toggleClass('text-success', isOnline)
+                    .toggleClass('text-muted', !isOnline);
+
+                $('#chatMessages').html('<div class="text-center py-4"><i class="fas fa-spinner fa-spin"></i></div>');
+                messagesLoaded = false;
+                loadMessageHistory(selectedUserId);
+                markMessageAsRead(selectedUserId);
+                $('#messageInput').focus();
+            });
+
+            // Send message
+            function sendMessage() {
+                var message = $('#messageInput').val().trim();
+                if (!message && !selectedUserId) return;
+
+                var localMessage = {
+                    fromUserId: currentUserId,
+                    toUserId: selectedUserId,
+                    content: message,
+                    timestamp: new Date().toISOString()
+                };
+                appendMessage(localMessage, true);
+                scrollToBottom();
+
+                if (connection && connection.state === signalR.HubConnectionState.Connected) {
+                    connection.invoke("SendPrivateMessage", selectedUserId, message, "text")
+                        .catch(function (err) { console.error('Send error:', err); });
+                }
+
+                saveMessageToDatabase(selectedUserId, message);
+                $('#messageInput').val('');
+                updateContactLastMessage(selectedUserId, message);
+            }
+
+            $('#btnSend').on('click', sendMessage);
+            $('#messageInput').on('keypress', function (e) {
+                if (e.which === 13 && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            // Search
+            $('#searchContact').on('input', function () {
+                var keyword = $(this).val().toLowerCase();
+                $('.contact-item').each(function () {
+                    var name = $(this).data('user-name').toString().toLowerCase();
+                    $(this).toggle(name.indexOf(keyword) > -1);
+                });
+            });
+
+            function saveMessageToDatabase(toUserId, content) {
+                $.ajax({
+                    url: '@Url.Action("SaveMessage", "Chat")',
+                    type: 'POST',
+                    data: { toUserId: toUserId, content: content, messageType: 'text' },
+                    error: function(xhr) { console.error('Save error:', xhr); }
+                });
+            }
+
+            function appendMessage(msg, isSent) {
+                if (!$('#chatMessages').is(':visible')) return;
+                
+                // Fix timestamp parsing
+                var timestamp = msg.timestamp;
+                var date = new Date(timestamp);
+                
+                // Nếu invalid, dùng current time
+                if (isNaN(date.getTime())) {
+                    date = new Date();
+                }
+                
+                var timeStr = date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+                var html = '<div class="message-wrapper ' + (isSent ? 'sent' : 'received') + '">' +
+                    '<div class="message-bubble">' +
+                        '<div class="message-content">' + escapeHtml(msg.content) + '</div>' +
+                        '<div class="message-time">' + timeStr + '</div>' +
+                    '</div>' +
+                '</div>';
+                
+                $('#chatMessages').append(html);
+            }
+
+            function scrollToBottom() {
+                var $m = $('#chatMessages');
+                $m.scrollTop($m.prop('scrollHeight'));
+            }
+
+            function loadMessageHistory(userId) {
+                $.ajax({
+                    url: '@Url.Action("GetMessageHistory", "Chat")',
+                    type: 'GET',
+                    data: { withUserId: userId },
+                    success: function(response) {
+                        $('#chatMessages').html('');
+                        if (response.success && response.data && response.data.length > 0) {
+                            $.each(response.data, function(i, msg) {
+                                appendMessage(msg, msg.fromUserId === currentUserId);
+                            });
+                        } else {
+                            $('#chatMessages').html('<div class="text-center py-5 text-muted"><i class="fas fa-comments fa-2x mb-2" style="opacity:0.2;"></i><p>Chưa có tin nhắn</p></div>');
+                        }
+                        messagesLoaded = true;
+                        scrollToBottom();
+                    },
+                    error: function() {
+                        $('#chatMessages').html('<div class="text-center py-3 text-danger"><i class="fas fa-exclamation-circle"></i> Lỗi tải tin nhắn</div>');
+                    }
+                });
+            }
+
+            function markMessageAsRead(fromUserId) {
+                $.ajax({
+                    url: apiBaseUrl + 'api/chat/read-all',
+                    type: 'PUT',
+                    data: { fromUserId: fromUserId, toUserId: currentUserId }
+                });
+            }
+
+            function updateOnlineUsersList(user, isOnline) {
+                var $list = $('#onlineUsersList');
+                var $existing = $list.find('[data-user-id="' + user.userId + '"]');
+                
+                if (isOnline) {
+                    if ($existing.length === 0 && user.userId !== currentUserId) {
+                        var initial = user.userName ? user.userName[0].toUpperCase() : '?';
+                        var html = '<div class="online-user-item" data-user-id="' + user.userId + '">' +
+                            '<div class="online-user-avatar">' + initial + '<span class="online-indicator"></span></div>' +
+                            '<span class="online-user-name">' + escapeHtml(user.userName) + '</span>' +
+                        '</div>';
+                        $list.append(html);
+                    }
+                } else {
+                    $existing.remove();
+                }
+            }
+
+            function updateContactBadge(userId) {
+                var $contact = $('.contact-item[data-user-id="' + userId + '"]');
+                var $badge = $contact.find('.unread-badge');
+                if ($badge.length) {
+                    $badge.text(parseInt($badge.text()) + 1);
+                } else {
+                    $contact.append('<span class="unread-badge">1</span>');
+                }
+            }
+
+            function updateContactLastMessage(userId, message) {
+                var $contact = $('.contact-item[data-user-id="' + userId + '"]');
+                var $lastMsg = $contact.find('.contact-last-message');
+                if ($lastMsg.length) {
+                    $lastMsg.text(message.length > 30 ? message.substring(0, 30) + '...' : message);
+                }
+                $contact.prependTo('#contactList');
+            }
+
+            function showNotification(fromName, content) {
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    new Notification('Tin nhắn từ ' + fromName, {
+                        body: content.substring(0, 50),
+                        icon: '/Content/images/logo.png'
+                    });
+                }
+            }
+
+            function escapeHtml(text) {
+                if (!text) return '';
+                var div = document.createElement('div');
+                div.appendChild(document.createTextNode(text));
+                return div.innerHTML;
+            }
+
+            if ('Notification' in window && Notification.permission !== 'denied') {
+                Notification.requestPermission();
+            }
+
+            // Click online user
+            $(document).on('click', '.online-user-item', function() {
+                var userId = $(this).data('user-id');
+                $('.contact-item[data-user-id="' + userId + '"]').click();
+            });
+
+            if (hubUrl) {
+                connectSignalR();
+            } else {
+                updateConnectionStatus('disconnected');
+            }
+        });
+    </script>
+}

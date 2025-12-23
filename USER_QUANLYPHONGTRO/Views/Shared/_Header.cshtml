@@ -23,7 +23,7 @@
     string roomsUrl = isTenantContext ? Url.Action("DanhSachPhong", "KhachThue") : Url.Action("DanhSachPhong", "Guest");
 }
 
-@if (userRole != "ChuTro")
+@if (userRole != "ChuTro" && userRole != "2")
 {
     <!-- ===== HEADER CHO KHÁCH VÃNG LAI & NGƯỜI THUÊ ===== -->
     <header class="app-header @(isTenantContext ? "is-tenant" : "")">
@@ -85,7 +85,7 @@
                         </div>
 
                         <span class="topbar-divider">|</span>
-                        <a href="@Url.Action("TinNhan", "KhachThue")" class="topbar-link">
+                        <a href="@Url.Action("KhachThue", "Chat")" class="topbar-link">
                             <i class="fa fa-comments"></i> Tin nhắn
                             @if (messageCount > 0)
                             {
@@ -111,6 +111,9 @@
                                 </a>
                                 <a href="@Url.Action("YeuThich", "KhachThue")" class="dropdown-item">
                                     <i class="fa fa-heart"></i> Phòng yêu thích
+                                </a>
+                                <a href="@Url.Action("KhachThue", "Chat")" class="dropdown-item">
+                                    <i class="fa fa-comments"></i> Tin nhắn
                                 </a>
 
                                 <div class="dropdown-divider"></div>
@@ -203,6 +206,7 @@
                         bool isKhachThueIndex = (act == "INDEX" && ctrl == "KHACHTHUE");
                         bool isAllRooms = (act == "DANHSACHPHONG");
                         bool isHome = (act == "INDEX" && (ctrl == "HOME" || ctrl == "GUEST"));
+                        bool isChatPage = (ctrl == "CHAT");
                     }
 
                     <a href="@homeUrl" class="navbar-item @(isHome || isKhachThueIndex ? "active" : "")">
@@ -227,6 +231,14 @@
                             class="navbar-item @(currentAction == "HoaDon" ? "active" : "")">
                             <i class="fa fa-credit-card"></i> Hóa đơn
                         </a>
+                        <a href="@Url.Action("KhachThue", "Chat")"
+                            class="navbar-item @(isChatPage ? "active" : "")">
+                            <i class="fa fa-comments"></i> Tin nhắn
+                            @if (messageCount > 0)
+                            {
+                                <span class="badge badge-danger" style="margin-left: 5px;">@messageCount</span>
+                            }
+                        </a>
                         <a href="@Url.Action("YeuThich", "KhachThue")"
                             class="navbar-item @(currentAction == "YeuThich" ? "active" : "")">
                             <i class="fa fa-heart-o"></i> Yêu thích
@@ -238,14 +250,14 @@
     </header>
 }
 
-@if (isLoggedIn && userRole == "KhachThue")
+@if (isLoggedIn && (userRole == "KhachThue" || userRole == "3"))
 {
     <script>
         $(document).ready(function () {
-            let isNotiLoading = false;
-            let lastNotiDataHash = "";
+            var isNotiLoading = false;
+            var lastNotiDataHash = "";
 
-            function loadNotifications(showLoading = false) {
+            function loadNotifications(showLoading) {
                 if (isNotiLoading) return;
                 isNotiLoading = true;
 
@@ -255,7 +267,7 @@
                     cache: false,
                     success: function (res) {
                         if (res.success) {
-                            const dataHash = JSON.stringify(res.data);
+                            var dataHash = JSON.stringify(res.data);
                             if (showLoading || dataHash !== lastNotiDataHash) {
                                 lastNotiDataHash = dataHash;
                                 renderNotifications(res.data);
@@ -275,43 +287,46 @@
             }
 
             function renderNotifications(data) {
-                const $list = $('#notiList');
-                const $badge = $('#notiBadge');
+                var $list = $('#notiList');
+                var $badge = $('#notiBadge');
                 if (!$list.length) return;
 
                 $list.empty();
 
-                let unreadCount = 0;
+                var unreadCount = 0;
                 if (!data || data.length === 0) {
                     $list.append('<div class="no-notifications" style="padding: 20px; text-align: center; color: #a0aec0;"><i class="fa fa-bell-slash-o" style="font-size: 24px; margin-bottom: 10px; display: block;"></i><p style="font-size: 13px;">Không có thông báo mới</p></div>');
                     $badge.hide();
                     return;
                 }
 
-                const displayData = data.slice(0, 3);
+                var displayData = data.slice(0, 3);
 
-                displayData.forEach(item => {
+                for (var i = 0; i < displayData.length; i++) {
+                    var item = displayData[i];
                     if (!item.isRead) unreadCount++;
-                    const iconClass = item.type === 'success' ? 'success' : 'info';
-                    const icon = item.type === 'success' ? 'fa-check-circle' : 'fa-info-circle';
-                    const unreadClass = item.isRead ? '' : 'unread';
-                    const timeStr = formatTime(item.time);
-                    const html = `
-                                    <a href="${item.url || '#'}" class="notification-item ${unreadClass}" data-id="${item.id}">
-                                        <div class="item-icon ${iconClass}">
-                                            <i class="fa ${icon}"></i>
-                                        </div>
-                                        <div class="item-content">
-                                            <p class="noti-title"><strong>${item.title}</strong></p>
-                                            <p class="noti-text">${item.content}</p>
-                                            <span class="item-time">${timeStr}</span>
-                                        </div>
-                                    </a>`;
+                    var iconClass = item.type === 'success' ? 'success' : 'info';
+                    var icon = item.type === 'success' ? 'fa-check-circle' : 'fa-info-circle';
+                    var unreadClass = item.isRead ? '' : 'unread';
+                    var timeStr = formatTime(item.time);
+                    var html = '<a href="' + (item.url || '#') + '" class="notification-item ' + unreadClass + '" data-id="' + item.id + '">' +
+                        '<div class="item-icon ' + iconClass + '">' +
+                            '<i class="fa ' + icon + '"></i>' +
+                        '</div>' +
+                        '<div class="item-content">' +
+                            '<p class="noti-title"><strong>' + item.title + '</strong></p>' +
+                            '<p class="noti-text">' + item.content + '</p>' +
+                            '<span class="item-time">' + timeStr + '</span>' +
+                        '</div>' +
+                    '</a>';
                     $list.append(html);
-                });
+                }
 
                 // Recalculate unread count from full data
-                let actualUnread = data.filter(x => !x.isRead).length;
+                var actualUnread = 0;
+                for (var j = 0; j < data.length; j++) {
+                    if (!data[j].isRead) actualUnread++;
+                }
 
                 if (actualUnread > 0) {
                     $badge.text(actualUnread > 99 ? '99+' : actualUnread).show();
@@ -322,13 +337,13 @@
 
             function formatTime(dateStr) {
                 if (!dateStr) return '';
-                const date = new Date(dateStr);
-                const now = new Date();
-                const diffMs = now - date;
-                const diffMin = Math.floor(diffMs / 60000);
+                var date = new Date(dateStr);
+                var now = new Date();
+                var diffMs = now - date;
+                var diffMin = Math.floor(diffMs / 60000);
                 if (diffMin < 1) return 'Vừa xong';
                 if (diffMin < 60) return diffMin + ' phút trước';
-                const diffHour = Math.floor(diffMin / 60);
+                var diffHour = Math.floor(diffMin / 60);
                 if (diffHour < 24) return diffHour + ' giờ trước';
                 return date.toLocaleDateString('vi-VN');
             }
@@ -340,12 +355,11 @@
 
             // Mark as read on click
             $(document).on('click', '.notification-item.unread', function (e) {
-                const id = $(this).data('id');
-                const $this = $(this);
+                var id = $(this).data('id');
+                var $this = $(this);
                 $.post('@Url.Action("MarkAsRead", "KhachThue")', { id: id }, function (res) {
                     if (res.success) {
                         $this.removeClass('unread');
-                        // Optional: silent reload to update badge accurately
                         loadNotifications(false);
                     }
                 });
@@ -353,7 +367,7 @@
 
             // Initial and auto reload
             loadNotifications(true);
-            setInterval(loadNotifications, 30000); // 30s for better responsiveness
+            setInterval(function() { loadNotifications(false); }, 30000);
         });
     </script>
 }

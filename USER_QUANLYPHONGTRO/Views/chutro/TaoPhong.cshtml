@@ -1,7 +1,110 @@
-﻿
+﻿@model USER_QUANLYPHONGTRO.Models.ViewModels.ChuTro.TaoPhongViewModel
+
 @{
-    ViewBag.Title = "TaoPhong";
+    ViewBag.Title = "Đăng Phòng Mới";
+    Layout = "~/Views/Shared/_ChutroLayout.cshtml";
 }
 
-<h2>TaoPhong</h2>
+<div class="container-fluid dashboard-content">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">📝 Thông Tin Phòng Mới</h4>
+        </div>
+        <div class="card-body">
+            @using (Html.BeginForm("TaoPhong", "ChuTro", FormMethod.Post, new { enctype = "multipart/form-data" }))
+            {
+                @Html.AntiForgeryToken()
 
+                if (!ViewData.ModelState.IsValid)
+                {
+                    <div class="alert alert-danger">
+                        <strong>Có lỗi xảy ra:</strong>
+                        @Html.ValidationSummary(false, "", new { @class = "text-danger" })
+                    </div>
+                }
+
+                if (ViewBag.Error != null)
+                {
+                    <div class="alert alert-danger">@ViewBag.Error</div>
+                }
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Chọn Nhà Trọ <span class="text-danger">*</span></label>
+                            @Html.DropDownListFor(m => m.NhaTroId, Model.DanhSachNhaTro, "-- Chọn khu trọ --", new { @class = "form-control" })
+                            @Html.ValidationMessageFor(m => m.NhaTroId, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group">
+                            <label>Tiêu Đề Phòng <span class="text-danger">*</span></label>
+                            @Html.TextBoxFor(m => m.TieuDe, new { @class = "form-control", placeholder = "VD: Phòng 101 - Có gác lửng" })
+                            @Html.ValidationMessageFor(m => m.TieuDe, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Giá Thuê (VNĐ) <span class="text-danger">*</span></label>
+                                    @Html.TextBoxFor(m => m.GiaTien, new { @class = "form-control", type = "number" })
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Tiền Cọc (VNĐ)</label>
+                                    @Html.TextBoxFor(m => m.TienCoc, new { @class = "form-control", type = "number" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Diện Tích (m²)</label>
+                                    @Html.TextBoxFor(m => m.DienTich, new { @class = "form-control", type = "number" })
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Số Người Tối Đa</label>
+                                    @Html.TextBoxFor(m => m.SoNguoiToiDa, new { @class = "form-control", type = "number", min = "1" })
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group mt-3">
+                            <label>Hình Ảnh Đại Diện</label>
+                            <div class="custom-file">
+                                <input type="file" name="HinhAnhUpload" class="form-control" accept="image/*" onchange="previewImage(this)">
+                            </div>
+                            <div class="mt-2 text-center border rounded p-2" style="background: #f8f9fa; min-height: 150px;">
+                                <img id="preview" src="/images/default-room.png" style="max-height: 200px; max-width: 100%; display: none;" />
+                                <span id="placeholder-text" class="text-muted">Chưa chọn ảnh</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-right mt-4">
+                    <a href="@Url.Action("QuanLyPhong")" class="btn btn-secondary mr-2">Hủy Bỏ</a>
+                    <button type="submit" class="btn btn-primary px-5"><i class="fa fa-save"></i> Đăng Phòng</button>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<script>
+    function previewImage(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                $('#preview').attr('src', e.target.result).show();
+                $('#placeholder-text').hide();
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+</script>

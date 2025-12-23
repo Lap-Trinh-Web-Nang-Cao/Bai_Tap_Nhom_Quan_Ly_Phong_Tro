@@ -31,7 +31,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
                 }
 
                 // Build query string
-                var url = $"hosts/pending?pageIndex={pageIndex}&pageSize={pageSize}";
+                var url = $"api/hosts/pending?pageIndex={pageIndex}&pageSize={pageSize}";
                 if (!string.IsNullOrEmpty(keyword))
                     url += $"&keyword={Uri.EscapeDataString(keyword)}";
                 if (!string.IsNullOrEmpty(status))
@@ -116,7 +116,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
                 if (string.IsNullOrEmpty(id))
                     return null;
 
-                var result = await GetAsync<HostApprovalItemDto>($"hosts/{id}/detail");
+                var result = await GetAsync<HostApprovalItemDto>($"api/hosts/{id}/detail");
 
                 if (result == null)
                     return null;
@@ -152,7 +152,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
             try
             {
                 // Send an empty JSON object instead of null to avoid sending a literal "null" body.
-                var result = await PutAsync<dynamic>($"hosts/{id}/approve", new { });
+                var result = await PutAsync<dynamic>($"api/hosts/{id}/approve", new { });
 
                 System.Diagnostics.Debug.WriteLine($"🔁 HostApiClient.ApproveHost response: {Newtonsoft.Json.JsonConvert.SerializeObject(result)}");
 
@@ -190,7 +190,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
         {
             try
             {
-                var result = await PutAsync<dynamic>($"hosts/{id}/reject", new { Reason = reason });
+                var result = await PutAsync<dynamic>($"api/hosts/{id}/reject", new { Reason = reason });
                 
                 // Parse response từ Backend
                 if (result != null)
@@ -216,7 +216,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
         {
             try
             {
-                var result = await GetAsync<HostStatsResponse>("hosts/stats");
+                var result = await GetAsync<HostStatsResponse>("api/hosts/stats");
                 return result ?? new HostStatsResponse();
             }
             catch (Exception ex)

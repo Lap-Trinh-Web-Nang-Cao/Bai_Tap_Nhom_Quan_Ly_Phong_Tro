@@ -15,7 +15,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
         {
             try
             {
-                return await GetAsync<List<YeuCauHoTroDto>>("yeucauhotro/all");
+                return await GetAsync<List<YeuCauHoTroDto>>("api/yeucauhotro/all");
             }
             catch
             {
@@ -30,7 +30,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
         {
             try
             {
-                var url = string.Format("yeucauhotro?pageIndex={0}&pageSize={1}", pageIndex, pageSize);
+                var url = string.Format("api/yeucauhotro?pageIndex={0}&pageSize={1}", pageIndex, pageSize);
                 if (!string.IsNullOrEmpty(status))
                 {
                     url += "&status=" + status;
@@ -56,7 +56,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
         {
             try
             {
-                return await GetAsync<YeuCauHoTroDto>("yeucauhotro/" + id);
+                return await GetAsync<YeuCauHoTroDto>("api/yeucauhotro/" + id);
             }
             catch
             {
@@ -72,7 +72,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
             try
             {
                 return await PutAsync<ApiResponse<bool>>(
-                    string.Format("yeucauhotro/admin-status/{0}?status={1}", id, status), 
+                    string.Format("api/yeucauhotro/admin-status/{0}?status={1}", id, status), 
                     null
                 );
             }
@@ -93,7 +93,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
         {
             try
             {
-                return await GetAsync<List<LoaiHoTroDto>>("loaihotro");
+                return await GetAsync<List<LoaiHoTroDto>>("api/loaihotro");
             }
             catch
             {
@@ -108,7 +108,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
         {
             try
             {
-                return await GetAsync<SupportStatistics>("yeucauhotro/statistics");
+                return await GetAsync<SupportStatistics>("api/yeucauhotro/statistics");
             }
             catch
             {

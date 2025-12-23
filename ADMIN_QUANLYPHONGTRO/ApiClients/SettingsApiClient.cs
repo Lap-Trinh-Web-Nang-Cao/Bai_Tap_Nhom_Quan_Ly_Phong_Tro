@@ -18,7 +18,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
         {
             try
             {
-                var token = await GetAsync<JToken>("tienich");
+                var token = await GetAsync<JToken>("api/tienich");
                 return ParseListResponse<TienIchDto>(token);
             }
             catch (Exception ex)
@@ -32,7 +32,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
         {
             try
             {
-                return await GetAsync<TienIchDto>($"tienich/{id}");
+                return await GetAsync<TienIchDto>($"api/tienich/{id}");
             }
             catch (Exception ex)
             {
@@ -46,7 +46,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
             try
             {
                 var request = new { Ten = ten };
-                var result = await PostAsync<TienIchDto>("tienich", request);
+                var result = await PostAsync<TienIchDto>("api/tienich", request);
                 return new ApiResponse<TienIchDto>
                 {
                     Success = result != null,
@@ -66,7 +66,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
             try
             {
                 var request = new { Ten = ten };
-                var result = await PutAsync<TienIchDto>($"tienich/{id}", request);
+                var result = await PutAsync<TienIchDto>($"api/tienich/{id}", request);
                 return new ApiResponse<bool>
                 {
                     Success = result != null,
@@ -84,7 +84,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
         {
             try
             {
-                var success = await DeleteAsync($"tienich/{id}");
+                var success = await DeleteAsync($"api/tienich/{id}");
                 return new ApiResponse<bool>
                 {
                     Success = success,
@@ -106,7 +106,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
         {
             try
             {
-                var token = await GetAsync<JToken>("quanhuyen");
+                var token = await GetAsync<JToken>("api/quanhuyen");
                 return ParseListResponse<QuanHuyenDto>(token);
             }
             catch (Exception ex)
@@ -120,7 +120,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
         {
             try
             {
-                return await GetAsync<QuanHuyenDto>($"quanhuyen/{id}");
+                return await GetAsync<QuanHuyenDto>($"api/quanhuyen/{id}");
             }
             catch (Exception ex)
             {
@@ -134,7 +134,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
             try
             {
                 var request = new { Ten = ten };
-                var result = await PostAsync<QuanHuyenDto>("quanhuyen", request);
+                var result = await PostAsync<QuanHuyenDto>("api/quanhuyen", request);
                 return new ApiResponse<QuanHuyenDto>
                 {
                     Success = result != null,
@@ -154,7 +154,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
             try
             {
                 var request = new { Ten = ten };
-                var result = await PutAsync<QuanHuyenDto>($"quanhuyen/{id}", request);
+                var result = await PutAsync<QuanHuyenDto>($"api/quanhuyen/{id}", request);
                 return new ApiResponse<bool>
                 {
                     Success = result != null,
@@ -172,7 +172,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
         {
             try
             {
-                var success = await DeleteAsync($"quanhuyen/{id}");
+                var success = await DeleteAsync($"api/quanhuyen/{id}");
                 return new ApiResponse<bool>
                 {
                     Success = success,
@@ -194,7 +194,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
         {
             try
             {
-                var token = await GetAsync<JToken>("phuong");
+                var token = await GetAsync<JToken>("api/phuong");
                 return ParseListResponse<PhuongDto>(token);
             }
             catch (Exception ex)
@@ -208,7 +208,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
         {
             try
             {
-                var token = await GetAsync<JToken>($"phuong/by-quan/{quanHuyenId}");
+                var token = await GetAsync<JToken>($"api/phuong/by-quan/{quanHuyenId}");
                 return ParseListResponse<PhuongDto>(token);
             }
             catch (Exception ex)
@@ -222,7 +222,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
         {
             try
             {
-                return await GetAsync<PhuongDto>($"phuong/{id}");
+                return await GetAsync<PhuongDto>($"api/phuong/{id}");
             }
             catch (Exception ex)
             {
@@ -236,7 +236,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
             try
             {
                 var request = new { QuanHuyenId = quanHuyenId, Ten = ten };
-                var result = await PostAsync<PhuongDto>("phuong", request);
+                var result = await PostAsync<PhuongDto>("api/phuong", request);
                 return new ApiResponse<PhuongDto>
                 {
                     Success = result != null,
@@ -256,7 +256,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
             try
             {
                 var request = new { QuanHuyenId = quanHuyenId, Ten = ten };
-                var result = await PutAsync<PhuongDto>($"phuong/{id}", request);
+                var result = await PutAsync<PhuongDto>($"api/phuong/{id}", request);
                 return new ApiResponse<bool>
                 {
                     Success = result != null,
@@ -274,7 +274,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
         {
             try
             {
-                var success = await DeleteAsync($"phuong/{id}");
+                var success = await DeleteAsync($"api/phuong/{id}");
                 return new ApiResponse<bool>
                 {
                     Success = success,
@@ -296,7 +296,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
         {
             try
             {
-                var token = await GetAsync<JToken>("loaihotro");
+                var token = await GetAsync<JToken>("api/loaihotro");
                 return ParseListResponse<LoaiHoTroDto>(token);
             }
             catch (Exception ex)
@@ -310,7 +310,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
         {
             try
             {
-                return await GetAsync<LoaiHoTroDto>($"loaihotro/{id}");
+                return await GetAsync<LoaiHoTroDto>($"api/loaihotro/{id}");
             }
             catch (Exception ex)
             {
@@ -324,7 +324,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
             try
             {
                 var request = new { TenLoai = tenLoai };
-                var result = await PostAsync<LoaiHoTroDto>("loaihotro", request);
+                var result = await PostAsync<LoaiHoTroDto>("api/loaihotro", request);
                 return new ApiResponse<LoaiHoTroDto>
                 {
                     Success = result != null,
@@ -344,7 +344,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
             try
             {
                 var request = new { TenLoai = tenLoai };
-                var result = await PutAsync<LoaiHoTroDto>($"loaihotro/{id}", request);
+                var result = await PutAsync<LoaiHoTroDto>($"api/loaihotro/{id}", request);
                 return new ApiResponse<bool>
                 {
                     Success = result != null,
@@ -362,7 +362,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
         {
             try
             {
-                var success = await DeleteAsync($"loaihotro/{id}");
+                var success = await DeleteAsync($"api/loaihotro/{id}");
                 return new ApiResponse<bool>
                 {
                     Success = success,
@@ -384,7 +384,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
         {
             try
             {
-                var token = await GetAsync<JToken>("vipham");
+                var token = await GetAsync<JToken>("api/vipham");
                 return ParseListResponse<ViPhamDto>(token);
             }
             catch (Exception ex)
@@ -398,7 +398,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
         {
             try
             {
-                return await GetAsync<ViPhamDto>($"vipham/{id}");
+                return await GetAsync<ViPhamDto>($"api/vipham/{id}");
             }
             catch (Exception ex)
             {
@@ -418,7 +418,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
                     HinhPhatTien = hinhPhatTien,
                     SoDiemTru = soDiemTru
                 };
-                var result = await PostAsync<ViPhamDto>("vipham", request);
+                var result = await PostAsync<ViPhamDto>("api/vipham", request);
                 return new ApiResponse<ViPhamDto>
                 {
                     Success = result != null,
@@ -444,7 +444,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
                     HinhPhatTien = hinhPhatTien,
                     SoDiemTru = soDiemTru
                 };
-                var result = await PutAsync<ViPhamDto>($"vipham/{id}", request);
+                var result = await PutAsync<ViPhamDto>($"api/vipham/{id}", request);
                 return new ApiResponse<bool>
                 {
                     Success = result != null,
@@ -462,7 +462,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
         {
             try
             {
-                var success = await DeleteAsync($"vipham/{id}");
+                var success = await DeleteAsync($"api/vipham/{id}");
                 return new ApiResponse<bool>
                 {
                     Success = success,
@@ -485,7 +485,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
             try
             {
                 System.Diagnostics.Debug.WriteLine("🔍 SettingsApiClient.GetAllSystemSettings called");
-                var token = await GetAsync<JToken>("systemsettings");
+                var token = await GetAsync<JToken>("api/systemsettings");
                 
                 // Handle response format from backend
                 if (token != null && token.Type == JTokenType.Object)
@@ -522,7 +522,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
         {
             try
             {
-                return await GetAsync<dynamic>($"systemsettings/{key}");
+                return await GetAsync<dynamic>($"api/systemsettings/{key}");
             }
             catch (Exception ex)
             {
@@ -535,7 +535,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
         {
             try
             {
-                var token = await GetAsync<JToken>($"systemsettings/by-group/{groupName}");
+                var token = await GetAsync<JToken>($"api/systemsettings/by-group/{groupName}");
                 
                 // Handle response format from backend
                 if (token != null && token.Type == JTokenType.Object)
@@ -565,7 +565,7 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
         {
             try
             {
-                var result = await PostAsync<dynamic>("systemsettings/update-by-key", settings);
+                var result = await PostAsync<dynamic>("api/systemsettings/update-by-key", settings);
                 return new ApiResponse<dynamic>
                 {
                     Success = result != null,

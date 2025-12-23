@@ -10,10 +10,41 @@ namespace USER_QUANLYPHONGTRO.Models.ViewModels.ChuTro
     {
         public UserProfileDto Profile { get; set; }
 
-        public string HoTen => Profile?.HoTen;
-        public string Email => Profile?.Email;
-        public string DienThoai => Profile?.DienThoai;
-        public string DiaChi => Profile?.DiaChi;
+        public string HoTen 
+        { 
+            get 
+            { 
+                if (Profile != null) return Profile.HoTen;
+                return null;
+            } 
+        }
+        
+        public string Email 
+        { 
+            get 
+            { 
+                if (Profile != null) return Profile.Email;
+                return null;
+            } 
+        }
+        
+        public string DienThoai 
+        { 
+            get 
+            { 
+                if (Profile != null) return Profile.DienThoai;
+                return null;
+            } 
+        }
+        
+        public string DiaChi 
+        { 
+            get 
+            { 
+                if (Profile != null) return Profile.DiaChi;
+                return null;
+            } 
+        }
 
         public string MaSoThue { get; set; }
         public string SoTaiKhoan { get; set; }
