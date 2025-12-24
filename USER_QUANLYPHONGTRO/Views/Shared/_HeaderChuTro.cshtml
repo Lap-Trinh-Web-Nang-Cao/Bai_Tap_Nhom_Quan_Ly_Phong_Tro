@@ -1,8 +1,9 @@
-@{
-    // Thông tin ch? tr?
-    string username = Session["UserName"]?.ToString();
-    string hoTen = Session["HoTen"]?.ToString() ?? username;
-    string avatarUrl = Session["AvatarUrl"]?.ToString() ?? "~/images/default-avatar.png";
+ï»¿@{
+    // ThÃ´ng tin ch? tr?
+    string username = Session["UserName"] != null ? Session["UserName"].ToString() : null;
+    string hoTen = Session["HoTen"] != null ? Session["HoTen"].ToString() : username;
+    string avatarUrl = Session["AvatarUrl"] != null ? Session["AvatarUrl"].ToString() : "~/images/default-avatar.png";
+    string role = Session["UserRole"] != null ? Session["UserRole"].ToString() : "guest";
     
     int notificationCount = Session["NotificationCount"] != null ? (int)Session["NotificationCount"] : 0;
     int messageCount = Session["MessageCount"] != null ? (int)Session["MessageCount"] : 0;
@@ -25,7 +26,7 @@
             <!-- Right Actions -->
             <div class="seller-actions">
                 <!-- Notifications -->
-                <a href="@Url.Action("ThongBao", "ChuTro")" class="seller-icon-btn" title="Thông báo">
+                <a href="@Url.Action("ThongBao", "ChuTro")" class="seller-icon-btn" title="ThÃ´ng bÃ¡o">
                     <i class="fa fa-bell"></i>
                     @if (notificationCount > 0)
                     {
@@ -43,7 +44,7 @@
                 </a>
 
                 <!-- Help -->
-                <a href="#" class="seller-icon-btn" title="Tr? giúp">
+                <a href="#" class="seller-icon-btn" title="Tr? giÃºp">
                     <i class="fa fa-question-circle"></i>
                 </a>
 
@@ -58,19 +59,19 @@
                     <div class="seller-dropdown">
                         <a href="@Url.Action("ThongTinCaNhan", "ChuTro")" class="dropdown-item">
                             <i class="fa fa-user"></i>
-                            <span>Tài kho?n c?a tôi</span>
+                            <span>TÃ i kho?n c?a tÃ´i</span>
                         </a>
                         
                         <a href="@Url.Action("CaiDat", "ChuTro")" class="dropdown-item">
                             <i class="fa fa-cog"></i>
-                            <span>Cài ??t</span>
+                            <span>CÃ i ??t</span>
                         </a>
 
                         <div class="dropdown-divider"></div>
 
                         <a href="@Url.Action("Index", "Home")" class="dropdown-item">
                             <i class="fa fa-shopping-bag"></i>
-                            <span>Chuy?n sang trang mua hàng</span>
+                            <span>Chuy?n sang trang mua hÃ ng</span>
                         </a>
 
                         <div class="dropdown-divider"></div>
@@ -96,12 +97,17 @@
 
                 <a href="@Url.Action("QuanLyPhong", "ChuTro")" class="nav-link">
                     <i class="fa fa-building"></i>
-                    <span>Qu?n lý phòng</span>
+                    <span>Qu?n lÃ½ phÃ²ng</span>
                 </a>
 
                 <a href="@Url.Action("DonDatPhong", "ChuTro")" class="nav-link">
                     <i class="fa fa-calendar-check"></i>
-                    <span>??n ??t phòng</span>
+                    <span>??n ??t phÃ²ng</span>
+                </a>
+
+                <a href="@Url.Action("TinNhan", "ChuTro")" class="nav-link">
+                    <i class="fa fa-comments"></i>
+                    <span>Tin nháº¯n</span>
                 </a>
 
                 <a href="@Url.Action("HopDong", "ChuTro")" class="nav-link">
@@ -111,17 +117,17 @@
 
                 <a href="@Url.Action("HoaDon", "ChuTro")" class="nav-link">
                     <i class="fa fa-file-invoice-dollar"></i>
-                    <span>Hóa ??n</span>
+                    <span>HÃ³a ??n</span>
                 </a>
 
                 <a href="@Url.Action("ThongKe", "ChuTro")" class="nav-link">
                     <i class="fa fa-chart-line"></i>
-                    <span>Th?ng kê</span>
+                    <span>Th?ng kÃª</span>
                 </a>
 
                 <a href="@Url.Action("YeuCauHoTro", "ChuTro")" class="nav-link">
                     <i class="fa fa-life-ring"></i>
-                    <span>Yêu c?u h? tr?</span>
+                    <span>YÃªu c?u h? tr?</span>
                 </a>
             </div>
         </div>

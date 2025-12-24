@@ -143,11 +143,11 @@
                                 <div class="item-message">@message.Content</div>
                                 <div class="item-time">@message.Time</div>
                             </div>
-                            <button class="btn-action">Trả lời</button>
+                            <a class="btn-action" href="@Url.Action("TinNhan", "ChuTro")">Trả lời</a>
                         </div>
                     }
                 </div>
-                <button class="btn-view-all">Đi đến hộp thư</button>
+                <a class="btn-view-all" href="@Url.Action("TinNhan", "ChuTro")">Đi đến hộp thư</a>
             </div>
 
             <div class="activity-card">

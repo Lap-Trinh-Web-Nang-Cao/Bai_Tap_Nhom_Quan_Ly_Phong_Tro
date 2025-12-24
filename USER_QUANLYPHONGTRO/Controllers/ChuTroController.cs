@@ -169,6 +169,31 @@ namespace USER_QUANLYPHONGTRO.Controllers
 
         #endregion
 
+        #region Tin Nhắn
+
+        public ActionResult TinNhan()
+        {
+            if (!CheckChuTroRole())
+            {
+                return RedirectToAction("Login", "Auth", new { type = "chutro" });
+            }
+
+            // Get API base URL from config
+            var apiBaseUrl = System.Configuration.ConfigurationManager.AppSettings["ApiBaseUrl"] ?? "http://localhost:7039";
+            
+            ViewBag.UserId = Session["UserId"]?.ToString();
+            ViewBag.UserName = Session["HoTen"] as string ?? Session["UserName"] as string ?? "Chủ trọ";
+            ViewBag.UserRole = "ChuTro";
+            ViewBag.ApiBaseUrl = apiBaseUrl;
+            ViewBag.Title = "Tin nhắn";
+
+            System.Diagnostics.Debug.WriteLine($"✅ ChuTro.TinNhan - UserId: {ViewBag.UserId}, UserName: {ViewBag.UserName}");
+
+            return View("~/Views/chat/PhongChat.cshtml");
+        }
+
+        #endregion
+
         #region AJAX
 
         [HttpGet]

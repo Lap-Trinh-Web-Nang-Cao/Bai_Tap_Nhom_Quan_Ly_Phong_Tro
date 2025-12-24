@@ -671,7 +671,18 @@ namespace USER_QUANLYPHONGTRO.Controllers
         [AllowAnonymous]
         public ActionResult TinNhan()
         {
-            return View();
+            // Get API base URL from config
+            var apiBaseUrl = System.Configuration.ConfigurationManager.AppSettings["ApiBaseUrl"] ?? "http://localhost:7039";
+            
+            ViewBag.UserId = Session["UserId"]?.ToString();
+            ViewBag.UserName = Session["HoTen"] as string ?? Session["UserName"] as string ?? "Người thuê";
+            ViewBag.UserRole = "NguoiThue";
+            ViewBag.ApiBaseUrl = apiBaseUrl;
+            ViewBag.Title = "Tin nhắn";
+
+            System.Diagnostics.Debug.WriteLine($"✅ KhachThue.TinNhan - UserId: {ViewBag.UserId}, UserName: {ViewBag.UserName}");
+
+            return View("~/Views/chat/PhongChat.cshtml");
         }
 
         // ✅ Những action này cần xác thực nên giữ require login

@@ -164,55 +164,6 @@
     }
 </style>
 
-<!-- Panel Test (Fixed Position) -->
-<div class="test-panel">
-    <h4><i class="fa fa-vial"></i> Panel Test</h4>
-    
-    @if (isLoggedIn)
-    {
-        <div class="info">
-            <strong>Đã đăng nhập:</strong><br/>
-            Vai trò: <span style="color: #6C63FF;">@(role == "ChuTro" ? "Chủ Trọ" : "Người Thuê")</span><br/>
-            Email: @username
-        </div>
-        
-        <a href="@Url.Action("Logout", "Auth")" class="btn-test btn-logout">
-            <i class="fa fa-sign-out-alt"></i> Đăng Xuất
-        </a>
-    }
-    else
-    {
-        <div class="info">
-            <strong>Khách vãng lai</strong><br/>
-            Chưa đăng nhập
-        </div>
-        
-        <a href="@Url.Action("Login", "Auth")" class="btn-test btn-login">
-            <i class="fa fa-sign-in-alt"></i> Đăng Nhập
-        </a>
-        
-        <a href="@Url.Action("NguoiThue_Register", "Auth")" class="btn-test btn-register">
-            <i class="fa fa-user-plus"></i> Đăng Ký Người Thuê
-        </a>
-
-        <a href="@Url.Action("ChuTro_Register", "Auth")" class="btn-test btn-seller">
-            <i class="fa fa-store"></i> Đăng Ký Chủ Trọ
-        </a>
-    }
-    
-    <hr style="margin: 20px 0; border-color: #E2E8F0;" />
-    
-    <h5 style="font-size: 13px; color: #4A5568; margin-bottom: 10px;">Test Nhanh:</h5>
-    
-    <a href="@Url.Action("TestLoginNguoiThue", "Auth")" class="btn-test btn-test-login">
-        <i class="fa fa-user"></i> Login Người Thuê
-    </a>
-    
-    <a href="@Url.Action("TestLoginChuTro", "Auth")" class="btn-test btn-seller">
-        <i class="fa fa-store"></i> Login Chủ Trọ
-    </a>
-</div>
-
 <!-- Hero Section -->
 <div class="hero-section">
     <h1>Chào Mừng Đến Với TroTot</h1>

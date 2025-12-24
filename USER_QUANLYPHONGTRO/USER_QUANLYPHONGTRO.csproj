@@ -178,7 +178,6 @@
     <Compile Include="Services\PhongApiService.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="COMPREHENSIVE_FIX_SUMMARY.txt" />
     <Content Include="Content\auth.css" />
     <Content Include="Content\chutro.css" />
     <Content Include="Content\footer.css" />
@@ -199,7 +198,6 @@
     <Content Include="Content\bootstrap.min.css" />
     <Content Include="Content\bootstrap.rtl.css" />
     <Content Include="Content\bootstrap.rtl.min.css" />
-    <Content Include="FIX_BACKEND_500_WORKAROUNDS.txt" />
     <Content Include="images\Background_vien.jpg" />
     <Content Include="images\banner-login.png" />
     <Content Include="images\banner-register-host.png" />
@@ -282,9 +280,9 @@
     <Content Include="Views\Guest\PhongNoiBat.cshtml" />
     <Content Include="Views\KhachThue\Thongbao.cshtml" />
     <Content Include="Views\KhachThue\DatPhong.cshtml" />
-    <Content Include="Views\KhachThue\TinNhan.cshtml" />
     <Content Include="Views\KhachThue\YeuThich.cshtml" />
     <Content Include="Views\KhachThue\DanhSachPhong_Fixed.cshtml" />
+    <Content Include="Views\KhachThue\TinNhan.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

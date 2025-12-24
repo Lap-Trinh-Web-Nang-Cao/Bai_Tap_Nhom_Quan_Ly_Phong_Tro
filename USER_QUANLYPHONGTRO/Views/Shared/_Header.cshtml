@@ -85,7 +85,7 @@
                         </div>
 
                         <span class="topbar-divider">|</span>
-                        <a href="@Url.Action("TinNhan", "KhachThue")" class="topbar-link">
+                        <a href="@Url.Action("PhongChat", "Chat")" class="topbar-link">
                             <i class="fa fa-comments"></i> Tin nhắn
                             @if (messageCount > 0)
                             {
@@ -226,6 +226,10 @@
                         <a href="@Url.Action("HoaDon", "KhachThue")"
                             class="navbar-item @(currentAction == "HoaDon" ? "active" : "")">
                             <i class="fa fa-credit-card"></i> Hóa đơn
+                        </a>
+                        <a href="@Url.Action("PhongChat", "Chat")"
+                            class="navbar-item @(currentAction == "PhongChat" ? "active" : "")">
+                            <i class="fa fa-comments"></i> Chat
                         </a>
                         <a href="@Url.Action("YeuThich", "KhachThue")"
                             class="navbar-item @(currentAction == "YeuThich" ? "active" : "")">

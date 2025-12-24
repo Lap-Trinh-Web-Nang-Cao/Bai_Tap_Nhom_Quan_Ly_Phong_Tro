@@ -153,6 +153,43 @@ namespace RestAPI_QUANLYPHONGTRO.Controllers
         }
 
         /// <summary>
+        /// GET: /api/users/search - Tìm kiếm người dùng cho chat (Authenticated users)
+        /// </summary>
+        [HttpGet("/api/users/search")]
+        [Authorize(Policy = "AuthenticatedOnly")]
+        public async Task<IActionResult> SearchUsers([FromQuery] string keyword = "", [FromQuery] int? vaiTroId = null)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(keyword) || keyword.Length < 2)
+                {
+                    return Ok(new List<object>());
+                }
+
+                var result = await _service.GetUsersAsync(1, 20, keyword, vaiTroId, false); // Only active users
+                
+                // Map to simple response for chat search
+                var users = result.Items?.Select(u => new
+                {
+                    nguoiDungId = u.NguoiDungId,
+                    hoTen = u.HoTen ?? "Người dùng",
+                    email = u.Email,
+                    dienThoai = u.DienThoai,
+                    vaiTroId = u.VaiTroId,
+                    vaiTroName = u.VaiTroName,
+                    avatar = "/Content/img/default-avatar.png"
+                }) ?? Enumerable.Empty<object>();
+
+                return Ok(users);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ SearchUsers Error: {ex.Message}");
+                return BadRequest(new { message = "Lỗi khi tìm kiếm người dùng", error = ex.Message });
+            }
+        }
+
+        /// <summary>
         /// GET: /api/nguoidung - Lấy danh sách users (Admin only)
         /// </summary>
         [HttpGet]

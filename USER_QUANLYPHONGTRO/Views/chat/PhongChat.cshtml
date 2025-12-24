@@ -1,7 +1,504 @@
-﻿
-@{
-    ViewBag.Title = "PhongChat";
+﻿@{
+    ViewBag.Title = "Phòng Chat";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>PhongChat</h2>
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <h3>💬 Phòng Chat Realtime</h3>
+            <hr />
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Danh sách Liên Hệ -->
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5>Danh Sách Liên Hệ</h5>
+                </div>
+                <div class="card-body p-2">
+                    <!-- Search Box -->
+                    <div class="mb-3">
+                        <input type="text" id="searchUserInput" class="form-control form-control-sm" placeholder="🔍 Tìm người dùng...">
+                        <div id="searchResults" style="display: none; position: absolute; background: white; border: 1px solid #ddd; max-height: 200px; overflow-y: auto; z-index: 1000; width: calc(100% - 32px); margin-top: 2px; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                        </div>
+                    </div>
+                    
+                    <!-- Contact List -->
+                    <div style="height: 420px; overflow-y: auto;">
+                        <div id="contactList">
+                            <p class="text-muted">Đang tải...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Khung Chat -->
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 id="chatTitle">Chọn người liên hệ để bắt đầu</h5>
+                        <div>
+                            <small id="onlineStatus" class="text-muted"></small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Messages -->
+                <div class="card-body" id="messagesArea" style="height: 400px; overflow-y: auto; overflow-x: hidden; background: #f8f9fa; position: relative;">
+                    <p class="text-muted text-center">Chọn người liên hệ để xem lịch sử tin nhắn</p>
+                </div>
+
+                <!-- Input -->
+                <div class="card-footer">
+                    <div class="input-group">
+                        <input type="text" id="messageInput" class="form-control" placeholder="Nhập tin nhắn..." disabled />
+                        <button id="sendBtn" class="btn btn-success" disabled>Gửi</button>
+                    </div>
+                    <small id="connectionStatus" class="text-danger mt-2 d-block">🔴 Chưa kết nối...</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .contact-item {
+        padding: 12px;
+        border-bottom: 1px solid #ddd;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .contact-item:hover {
+        background: #e9ecef;
+    }
+    .contact-item.active {
+        background: #0d6efd;
+        color: white;
+        border-radius: 4px;
+    }
+    .search-result-item {
+        padding: 10px;
+        cursor: pointer;
+        border-bottom: 1px solid #eee;
+        transition: background 0.2s;
+    }
+    .search-result-item:hover {
+        background: #f8f9fa;
+    }
+    .search-result-item:last-child {
+        border-bottom: none;
+    }
+    .message {
+        margin-bottom: 12px;
+        clear: both;
+        width: 100%;
+    }
+    .message.sent {
+        text-align: right;
+    }
+    .message.received {
+        text-align: left;
+    }
+    .msg-bubble {
+        display: inline-block;
+        padding: 10px 14px;
+        border-radius: 18px;
+        max-width: 70%;
+        word-wrap: break-word;
+        word-break: break-word;
+        white-space: pre-wrap;
+    }
+    .message.sent .msg-bubble {
+        background: #0d6efd;
+        color: white;
+    }
+    .message.received .msg-bubble {
+        background: #e9ecef;
+        color: #212529;
+    }
+    .unread-badge {
+        background: #dc3545;
+        color: white;
+        border-radius: 12px;
+        padding: 2px 8px;
+        font-size: 12px;
+        margin-left: 8px;
+    }
+</style>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+
+<script>
+    // Get values from server
+    var currentUserId = '@ViewBag.UserId';
+    var currentUserName = '@ViewBag.UserName';
+    var currentUserRole = '@ViewBag.UserRole' || 'NguoiThue';
+    var apiBaseUrl = '@ViewBag.ApiBaseUrl' || 'http://localhost:7039';
+
+    let connection = null;
+    let selectedContactId = null;
+    let searchTimeout = null;
+
+    console.log('✅ Chat initialized with:', { 
+        currentUserId, 
+        currentUserName, 
+        currentUserRole, 
+        apiBaseUrl,
+        userIdLength: currentUserId ? currentUserId.length : 0,
+        isGuid: currentUserId && currentUserId.length === 36
+    });
+
+    async function initChat() {
+        if (!currentUserId) {
+            alert('Vui lòng đăng nhập để sử dụng chat');
+            return;
+        }
+
+        await loadContacts();
+        
+        // Check if SignalR loaded
+        if (typeof signalR !== 'undefined') {
+            connectSignalR();
+        } else {
+            console.warn('SignalR not loaded, using REST-only mode');
+            $('#connectionStatus').html('⚠️ Chế độ REST (không realtime)').removeClass('text-danger').addClass('text-warning');
+        }
+
+        // Setup search
+        setupSearch();
+    }
+
+    function setupSearch() {
+        $('#searchUserInput').on('input', function() {
+            const keyword = $(this).val().trim();
+            
+            if (searchTimeout) clearTimeout(searchTimeout);
+            
+            if (keyword.length < 2) {
+                $('#searchResults').hide();
+                return;
+            }
+
+            searchTimeout = setTimeout(() => searchUsers(keyword), 300);
+        });
+
+        // Click outside to close search results
+        $(document).on('click', function(e) {
+            if (!$(e.target).closest('#searchUserInput, #searchResults').length) {
+                $('#searchResults').hide();
+            }
+        });
+    }
+
+    async function searchUsers(keyword) {
+        try {
+            const response = await fetch(apiBaseUrl + '/api/users/search?keyword=' + encodeURIComponent(keyword));
+            if (!response.ok) {
+                console.warn('Search API returned:', response.status);
+                return;
+            }
+
+            const users = await response.json();
+            renderSearchResults(users);
+        } catch (err) {
+            console.error('Search users error:', err);
+        }
+    }
+
+    function renderSearchResults(users) {
+        if (!Array.isArray(users)) users = [];
+        
+        // Filter out current user
+        users = users.filter(u => u.nguoiDungId !== currentUserId);
+
+        if (users.length === 0) {
+            $('#searchResults').html('<div class="search-result-item text-muted">Không tìm thấy người dùng</div>').show();
+            return;
+        }
+
+        const html = users.map(u => 
+            '<div class="search-result-item" data-user-id="' + u.nguoiDungId + '">' +
+            '<div><strong>' + (u.hoTen || u.email || 'Người dùng') + '</strong></div>' +
+            '<div style="font-size: 12px; color: #666;">' + (u.email || '') + '</div>' +
+            '</div>'
+        ).join('');
+
+        $('#searchResults').html(html).show();
+
+        $('.search-result-item').off('click').on('click', function() {
+            const userId = $(this).data('user-id');
+            const userName = $(this).find('strong').text();
+            
+            $('#searchResults').hide();
+            $('#searchUserInput').val('');
+            
+            selectContact(userId, userName);
+        });
+    }
+
+    async function loadContacts() {
+        try {
+            console.log('🔵 loadContacts - Starting');
+            console.log('   apiBaseUrl:', apiBaseUrl);
+            console.log('   currentUserId:', currentUserId);
+            
+            const url = apiBaseUrl + '/api/chat/contacts?userId=' + encodeURIComponent(currentUserId);
+            console.log('📡 Calling:', url);
+            
+            const response = await fetch(url);
+            console.log('📡 Response status:', response.status);
+            
+            if (!response.ok) {
+                console.warn('Contacts API returned:', response.status);
+                const errorText = await response.text();
+                console.error('Error response:', errorText);
+                renderContacts([]);
+                return;
+            }
+
+            const contacts = await response.json();
+            console.log('✅ Contacts data:', contacts);
+            console.log('✅ First contact:', contacts.length > 0 ? contacts[0] : 'none');
+            renderContacts(contacts);
+        } catch (err) {
+            console.error('❌ Load contacts error:', err);
+            renderContacts([]);
+        }
+    }
+
+    function renderContacts(contacts) {
+        if (!Array.isArray(contacts)) contacts = [];
+
+        console.log('🎨 renderContacts - Count:', contacts.length);
+        if (contacts.length > 0) {
+            console.log('🎨 Sample contact:', JSON.stringify(contacts[0]));
+        }
+
+        const html = contacts.map(c => {
+            console.log('🎨 Rendering contact:', c.UserId, 'Name:', c.UserName);
+            return '<div class="contact-item" data-user-id="' + c.UserId + '">' +
+                '<div style="display: flex; justify-content: space-between; align-items: center;">' +
+                '<div>' +
+                '<strong>' + (c.UserName || 'Người dùng') + '</strong>' +
+                '<div style="font-size: 12px; color: #666; margin-top: 4px;">' +
+                (c.LastMessage ? c.LastMessage.substring(0, 40) + '...' : 'Chưa có tin nhắn') +
+                '</div>' +
+                '</div>' +
+                (c.UnreadCount > 0 ? '<span class="unread-badge">' + c.UnreadCount + '</span>' : '') +
+                '</div>' +
+                '</div>';
+        }).join('');
+
+        $('#contactList').html(html || '<p class="text-muted text-center">Chưa có cuộc trò chuyện nào<br><small>Tìm người dùng ở trên để bắt đầu</small></p>');
+
+        $('.contact-item').off('click').on('click', function () {
+            selectContact($(this).data('user-id'), $(this).find('strong').text());
+        });
+    }
+
+    function selectContact(userId, userName) {
+        selectedContactId = userId;
+        $('.contact-item').removeClass('active');
+        $('.contact-item[data-user-id="' + userId + '"]').addClass('active');
+
+        $('#chatTitle').text('💬 ' + userName);
+        $('#messageInput').prop('disabled', false);
+        $('#sendBtn').prop('disabled', false);
+
+        loadChatHistory();
+    }
+
+    async function loadChatHistory() {
+        if (!selectedContactId) return;
+
+        try {
+            const response = await fetch(apiBaseUrl + '/api/chat/history?user1=' + encodeURIComponent(currentUserId) +
+                '&user2=' + encodeURIComponent(selectedContactId) + '&page=1&pageSize=50');
+            if (!response.ok) {
+                console.warn('History API returned:', response.status);
+                renderMessages([]);
+                return;
+            }
+
+            const messages = await response.json();
+            renderMessages(messages);
+
+            await fetch(apiBaseUrl + '/api/chat/read-all?fromUserId=' + encodeURIComponent(selectedContactId) +
+                '&toUserId=' + encodeURIComponent(currentUserId), { method: 'PUT' }).catch(e => console.warn('Mark read error:', e));
+
+            await loadContacts();
+        } catch (err) {
+            console.error('Load history error:', err);
+            renderMessages([]);
+        }
+    }
+
+    function renderMessages(messages) {
+        if (!Array.isArray(messages)) messages = [];
+
+        const html = messages.map(m => {
+            const isMe = m.FromUserId === currentUserId;
+            return '<div class="message ' + (isMe ? 'sent' : 'received') + '">' +
+                '<div class="msg-bubble">' + escapeHtml(m.Content) + '</div>' +
+                '<small style="display: block; margin-top: 4px; color: #999;">' +
+                (m.Timestamp ? new Date(m.Timestamp).toLocaleString('vi-VN') : '') +
+                '</small>' +
+                '</div>';
+        }).join('');
+
+        $('#messagesArea').html(html || '<p class="text-muted text-center">Chưa có tin nhắn<br><small>Hãy gửi tin nhắn đầu tiên!</small></p>');
+        
+        // Force scroll to bottom with a small delay to ensure DOM is updated
+        setTimeout(function() {
+            const messagesArea = document.getElementById('messagesArea');
+            if (messagesArea) {
+                messagesArea.scrollTop = messagesArea.scrollHeight;
+            }
+        }, 50);
+    }
+
+    function connectSignalR() {
+        if (typeof signalR === 'undefined') {
+            console.error('SignalR library not available');
+            $('#connectionStatus').html('🔴 Lỗi: SignalR không tải được').removeClass('text-success').addClass('text-danger');
+            return;
+        }
+
+        const signalRUrl = apiBaseUrl + '/chat-hub';
+        console.log('Connecting to SignalR at:', signalRUrl);
+
+        try {
+            connection = new signalR.HubConnectionBuilder()
+                .withUrl(signalRUrl, {
+                    transport: signalR.HttpTransportType.WebSockets | signalR.HttpTransportType.LongPolling,
+                    skipNegotiation: false
+                })
+                .withAutomaticReconnect([0, 1000, 5000, 10000, 30000])
+                .configureLogging(signalR.LogLevel.Warning)
+                .build();
+
+            connection.on('ReceiveMessage', function (msg) {
+                console.log('Message received:', msg);
+                if (msg.FromUserId === selectedContactId) {
+                    loadChatHistory();
+                } else {
+                    loadContacts();
+                }
+            });
+
+            connection.on('UserOnline', function (user) {
+                console.log('User online:', user.UserName);
+            });
+
+            connection.on('UserOffline', function (userId) {
+                console.log('User offline:', userId);
+            });
+
+            connection.on('MessageSent', function (msg) {
+                console.log('Message sent confirmation:', msg);
+            });
+
+            connection.onreconnecting((error) => {
+                console.log('SignalR reconnecting...', error);
+                $('#connectionStatus').html('🟡 Đang kết nối lại...').removeClass('text-success text-danger').addClass('text-warning');
+            });
+
+            connection.onreconnected((connectionId) => {
+                console.log('SignalR reconnected');
+                $('#connectionStatus').html('🟢 Đã kết nối').removeClass('text-danger text-warning').addClass('text-success');
+                if (currentUserId && currentUserName) {
+                    connection.invoke('RegisterUser', currentUserId, currentUserName, currentUserRole, null).catch(err => console.error(err));
+                }
+            });
+
+            connection.onclose((error) => {
+                console.log('SignalR closed:', error);
+                $('#connectionStatus').html('⚠️ Chế độ REST (không realtime)').removeClass('text-success').addClass('text-warning');
+            });
+
+            connection.start().then(function () {
+                console.log('✅ SignalR connected');
+                $('#connectionStatus').html('🟢 Đã kết nối').removeClass('text-danger').addClass('text-success');
+                connection.invoke('RegisterUser', currentUserId, currentUserName, currentUserRole, null).catch(function (err) {
+                    console.error('RegisterUser error:', err);
+                });
+            }).catch(function (err) {
+                console.error('SignalR connection error:', err);
+                $('#connectionStatus').html('⚠️ Dùng REST API (Backend offline)').removeClass('text-success text-danger').addClass('text-warning');
+            });
+
+        } catch (err) {
+            console.error('Error creating SignalR connection:', err);
+            $('#connectionStatus').html('⚠️ Chế độ REST').removeClass('text-success text-danger').addClass('text-warning');
+        }
+    }
+
+    $('#sendBtn').off('click').on('click', sendMessage);
+    $('#messageInput').off('keypress').on('keypress', function (e) {
+        if (e.which === 13) {
+            sendMessage();
+            return false;
+        }
+    });
+
+    async function sendMessage() {
+        const content = $('#messageInput').val().trim();
+        if (!content || !selectedContactId) return;
+
+        try {
+            const response = await fetch(apiBaseUrl + '/api/chat/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    FromUserId: currentUserId,
+                    ToUserId: selectedContactId,
+                    Content: content,
+                    MessageType: 'text'
+                })
+            });
+
+            if (!response.ok) {
+                console.warn('Send API returned:', response.status);
+                if (connection && connection.state === signalR.HubConnectionState.Connected) {
+                    connection.invoke('SendPrivateMessage', selectedContactId, content, 'text')
+                        .catch(err => console.error('SignalR send error:', err));
+                }
+                return;
+            }
+
+            $('#messageInput').val('');
+            await loadChatHistory();
+            
+            // Ensure scroll after sending
+            setTimeout(function() {
+                const messagesArea = document.getElementById('messagesArea');
+                if (messagesArea) {
+                    messagesArea.scrollTop = messagesArea.scrollHeight;
+                }
+            }, 100);
+        } catch (err) {
+            console.error('Send message error:', err);
+            if (connection && connection.state === signalR.HubConnectionState.Connected) {
+                connection.invoke('SendPrivateMessage', selectedContactId, content, 'text')
+                    .catch(err => console.error('SignalR send error:', err));
+            }
+        }
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    $(document).ready(function () {
+        initChat();
+    });
+</script>
 

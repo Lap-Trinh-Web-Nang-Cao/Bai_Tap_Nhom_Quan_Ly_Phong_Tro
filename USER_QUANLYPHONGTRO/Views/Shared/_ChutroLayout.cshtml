@@ -56,13 +56,13 @@
             </div>
 
             <!-- Messages -->
-            <div class="navbar-icon">
+            <a href="@Url.Action("TinNhan", "ChuTro")" class="navbar-icon">
                 <span class="material-icons-round">chat_bubble</span>
                 @if (messageCount > 0)
                 {
                     <span class="icon-badge">@messageCount</span>
                 }
-            </div>
+            </a>
 
             <!-- User Profile -->
             <div class="user-profile">
@@ -154,7 +154,7 @@
                 <div class="nav-section">
                     <span class="nav-section-title">TƯƠNG TÁC</span>
 
-                    <a href="#" class="nav-item">
+                    <a href="@Url.Action("TinNhan", "ChuTro")" class="nav-item">
                         <span class="nav-icon"><span class="material-icons-round">chat</span></span>
                         <span class="nav-text">Tin nhắn</span>
                         @if (messageCount > 0)

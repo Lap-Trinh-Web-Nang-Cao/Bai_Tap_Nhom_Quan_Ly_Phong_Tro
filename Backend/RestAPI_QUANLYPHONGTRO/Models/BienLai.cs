@@ -21,6 +21,7 @@ namespace RestAPI_QUANLYPHONGTRO.Models
 
         public bool DaXacNhan { get; set; } // bit -> bool, default false
 
-        public int SoBienLai { get; set; }
+        // DB script uses NVARCHAR(100) NULL for SoBienLai in SQL, so use string to avoid SqlNullValueException
+        public string? SoBienLai { get; set; }
     }
 }

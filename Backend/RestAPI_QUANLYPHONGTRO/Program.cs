@@ -5,30 +5,44 @@ using RestAPI_QUANLYPHONGTRO.Data;
 using RestAPI_QUANLYPHONGTRO.Models;
 using RestAPI_QUANLYPHONGTRO.Services.Implements;
 using RestAPI_QUANLYPHONGTRO.Services.Interfaces;
+using RestAPI_QUANLYPHONGTRO.Hubs;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
+// Support controllers + views so we can host test Razor UI inside API project
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Cấu hình JSON Reference Loop
 builder.Services.AddControllers().AddJsonOptions(x =>
-    x.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles);
+{
+    x.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+    x.JsonSerializerOptions.PropertyNamingPolicy = null; // ✅ Use PascalCase (default C# naming)
+});
 
 // ===== BẬT CORS =====
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAdminClient", policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.WithOrigins(
+                "https://localhost:44320",  // USER_QUANLYPHONGTRO
+                "https://localhost:44321",  // ADMIN_QUANLYPHONGTRO (nếu có)
+                "http://localhost:44320",
+                "http://localhost:44321"
+              )
               .AllowAnyMethod()
-              .AllowAnyHeader();
+              .AllowAnyHeader()
+              .AllowCredentials();  // ✅ QUAN TRỌNG cho SignalR!
     });
 });
+
+// Add SignalR
+builder.Services.AddSignalR();
 
 // 1. Đăng ký DbContext
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -138,6 +152,9 @@ else
 
 app.UseStaticFiles();
 app.MapControllers();
+
+// Map SignalR hub for realtime chat
+app.MapHub<ChatHub>("/chat-hub");
 
 System.Diagnostics.Debug.WriteLine("✅ API Server started successfully");
 System.Diagnostics.Debug.WriteLine($"🌐 Environment: {app.Environment.EnvironmentName}");
