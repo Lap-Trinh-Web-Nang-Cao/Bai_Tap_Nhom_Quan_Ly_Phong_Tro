@@ -171,7 +171,7 @@ namespace USER_QUANLYPHONGTRO.Controllers
                 case 1: // Admin → Redirect sang ADMIN project Gateway
                     // ✅ Redirect đến Admin Gateway (auto-login)
                     var adminGatewayUrl = ConfigurationManager.AppSettings["AdminGatewayUrl"]
-                        ?? "https://localhost:44350/Gateway";
+                        ?? "https://18.140.64.80:5000/Gateway";
                     var redirectUrl = $"{adminGatewayUrl}?token="
                         + System.Web.HttpUtility.UrlEncode(userSession.AuthToken);
 

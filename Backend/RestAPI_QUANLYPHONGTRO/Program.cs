@@ -10,6 +10,9 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Bind to http://0.0.0.0:5000 so external curl to server:5000 works
+builder.WebHost.UseUrls("http://0.0.0.0:5000");
+
 // Add services to the container.
 
 // Support controllers + views so we can host test Razor UI inside API project
@@ -33,7 +36,15 @@ builder.Services.AddCors(options =>
                 "https://localhost:44320",  // USER_QUANLYPHONGTRO
                 "https://localhost:44321",  // ADMIN_QUANLYPHONGTRO (nếu có)
                 "http://localhost:44320",
-                "http://localhost:44321"
+                "http://localhost:44321",
+                // Production / server origins (allow specific IPs/ports used by USER/ADMIN)
+                "http://18.140.64.80:7039",
+                "http://18.140.64.80:5000",
+                "http://18.140.64.80",
+                // If frontend uses https on same host/ports
+                "https://18.140.64.80:7039",
+                "https://18.140.64.80:5000",
+                "https://18.140.64.80"
               )
               .AllowAnyMethod()
               .AllowAnyHeader()
@@ -136,12 +147,13 @@ app.UseCors("AllowAdminClient");
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Development only
+// Always enable Swagger UI so curl to /swagger works regardless of environment
+app.UseSwagger();
+app.UseSwaggerUI();
+
+// Development only - additional debug note
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-    // ⚠️ In development, we'll skip HTTPS redirect to avoid SSL issues
     System.Diagnostics.Debug.WriteLine("🔧 Running in Development mode - HTTPS redirect disabled");
 }
 else

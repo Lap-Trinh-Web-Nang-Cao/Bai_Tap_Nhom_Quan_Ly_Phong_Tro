@@ -28,7 +28,7 @@ namespace USER_QUANLYPHONGTRO.Services
             // Fallback to default if not configured
             if (string.IsNullOrWhiteSpace(_baseUrl))
             {
-                _baseUrl = "http://159.65.10.209:7039"; // Backend API URL
+                _baseUrl = "http://18.140.64.80:5000"; // Backend API URL
             }
 
             // ===== SSL/TLS Configuration =====

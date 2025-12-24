@@ -22,7 +22,7 @@ namespace USER_QUANLYPHONGTRO.Services
 
         public AuthService()
         {
-            _apiBaseUrl = (ConfigurationManager.AppSettings["ApiBaseUrl"] ?? "http://159.65.10.209:7039").TrimEnd('/');
+            _apiBaseUrl = (ConfigurationManager.AppSettings["ApiBaseUrl"] ?? "http://18.140.64.80:5000").TrimEnd('/');
             _httpClient = new HttpClient();
         }
 
@@ -43,7 +43,7 @@ namespace USER_QUANLYPHONGTRO.Services
                 var json = JsonConvert.SerializeObject(loginRequest);
                 var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
-                var apiBase = (ConfigurationManager.AppSettings["ApiBaseUrl"] ?? "http://159.65.10.209:7039").TrimEnd('/');
+                var apiBase = (ConfigurationManager.AppSettings["ApiBaseUrl"] ?? "http://18.140.64.80:5000").TrimEnd('/');
                 var url = $"{apiBase}/api/nguoidung/login";
                 Debug.WriteLine($"📡 AuthService: POST {url}");
 
