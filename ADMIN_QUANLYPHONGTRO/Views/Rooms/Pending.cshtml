@@ -236,7 +236,7 @@
     <script src="~/Scripts/pages/rooms.js?v=@DateTime.Now.Ticks"></script>
     
     <script>
-        $(function () {
+        $(document).ready(function () {
             // Khởi tạo RoomsPage với các URLs
             RoomsPage.init({
                 getPendingRooms: '@Url.Action("GetPendingRooms", "Rooms")',

@@ -7,7 +7,6 @@ namespace ADMIN_QUANLYPHONGTRO.Models.DTO
         public Guid PhongId { get; set; }
         public Guid NhaTroId { get; set; }  // FK tới nhà trọ
         public string TieuDe { get; set; }
-        public string MoTa { get; set; }
         public decimal? DienTich { get; set; }
         public long GiaTien { get; set; }
         public long? TienCoc { get; set; }

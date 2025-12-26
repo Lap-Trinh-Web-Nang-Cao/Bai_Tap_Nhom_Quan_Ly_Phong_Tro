@@ -31,14 +31,9 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
             };
             
             System.Diagnostics.Debug.WriteLine($"✅ BaseApiClient: ApiBaseUrl = {AppSettings.ApiBaseUrl}");
-
-            // Thêm Authorization Header nếu có token
-            var token = GetStoredToken();
-            if (!string.IsNullOrEmpty(token))
-            {
-                _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-                System.Diagnostics.Debug.WriteLine($"✅ BaseApiClient: Token added");
-            }
+            
+            // ✅ KHÔNG lấy token trong constructor
+            // Token sẽ được thêm vào từng request cụ thể
         }
 
         private string GetStoredToken()
@@ -80,10 +75,29 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
             return null;
         }
 
+        // ✅ NEW: Helper method để thêm token vào HttpClient
+        private void AddTokenToClient(string token)
+        {
+            if (!string.IsNullOrEmpty(token))
+            {
+                _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                System.Diagnostics.Debug.WriteLine($"✅ Token added to HttpClient");
+            }
+            else
+            {
+                _client.DefaultRequestHeaders.Authorization = null;
+                System.Diagnostics.Debug.WriteLine($"⚠️ No token available");
+            }
+        }
+
         protected async Task<T> GetAsync<T>(string url)
         {
             try
             {
+                // ✅ Thêm token trước mỗi request
+                var token = GetStoredToken();
+                AddTokenToClient(token);
+
                 var fullUrl = _client.BaseAddress + url;
                 System.Diagnostics.Debug.WriteLine($"🔍 Calling GET: {fullUrl}");
                 
@@ -122,6 +136,10 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
         {
             try
             {
+                // ✅ Thêm token trước mỗi request
+                var token = GetStoredToken();
+                AddTokenToClient(token);
+
                 var fullUrl = _client.BaseAddress + url;
                 System.Diagnostics.Debug.WriteLine($"🔍 Calling POST: {fullUrl}");
                 
@@ -191,6 +209,10 @@ namespace ADMIN_QUANLYPHONGTRO.ApiClients
         {
             try
             {
+                // ✅ Thêm token trước mỗi request
+                var token = GetStoredToken();
+                AddTokenToClient(token);
+
                 var fullUrl = _client.BaseAddress + url;
                 System.Diagnostics.Debug.WriteLine($"🔍 Calling PUT: {fullUrl}");
                 

@@ -128,13 +128,11 @@ namespace ADMIN_QUANLYPHONGTRO.Services.Implementations
             try
             {
                 var result = await _apiClient.ApproveRoom(roomId);
-                System.Diagnostics.Debug.WriteLine($"✅ ApproveRoom Result: {(result?.Success ?? false)}");
                 return result?.Success ?? false;
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"❌ RoomService.ApproveRoomAsync Error: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"❌ Stack Trace: {ex.StackTrace}");
                 return false;
             }
         }
@@ -147,13 +145,11 @@ namespace ADMIN_QUANLYPHONGTRO.Services.Implementations
             try
             {
                 var result = await _apiClient.RejectRoom(roomId, reason);
-                System.Diagnostics.Debug.WriteLine($"✅ RejectRoom Result: {(result?.Success ?? false)}");
                 return result?.Success ?? false;
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"❌ RoomService.RejectRoomAsync Error: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"❌ Stack Trace: {ex.StackTrace}");
                 return false;
             }
         }
@@ -166,13 +162,11 @@ namespace ADMIN_QUANLYPHONGTRO.Services.Implementations
             try
             {
                 var result = await _apiClient.ToggleLockRoom(roomId, isLocked);
-                System.Diagnostics.Debug.WriteLine($"✅ ToggleLockRoom Result: {(result?.Success ?? false)}");
                 return result?.Success ?? false;
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"❌ RoomService.ToggleLockRoomAsync Error: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"❌ Stack Trace: {ex.StackTrace}");
                 return false;
             }
         }

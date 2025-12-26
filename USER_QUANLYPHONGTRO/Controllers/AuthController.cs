@@ -168,15 +168,14 @@ namespace USER_QUANLYPHONGTRO.Controllers
             // Điều hướng dựa trên vai trò
             switch (userSession.VaiTroId)
             {
-                case 1: // Admin → Redirect sang ADMIN project Gateway
-                    // ✅ Redirect đến Admin Gateway (auto-login)
-                    var adminGatewayUrl = ConfigurationManager.AppSettings["AdminGatewayUrl"]
-                        ?? "https://localhost:44350/Gateway";
-                    var redirectUrl = $"{adminGatewayUrl}?token="
-                        + System.Web.HttpUtility.UrlEncode(userSession.AuthToken);
-
-                    System.Diagnostics.Debug.WriteLine($"🔵 Admin redirect → {adminGatewayUrl}");
-                    return Redirect(redirectUrl);
+                case 1: // Admin → Redirect sang ADMIN project với token trong URL
+                    // ✅ Pass token trong URL để Admin project tự xác thực
+                    var token = userSession.AuthToken;
+                    var encodedToken = System.Web.HttpUtility.UrlEncode(token);
+                    var adminDashboardUrl = $"https://localhost:44350/Auth/Index?token={encodedToken}";
+                    
+                    System.Diagnostics.Debug.WriteLine($"🔵 Admin redirect → {adminDashboardUrl}");
+                    return Redirect(adminDashboardUrl);
 
                 case 2: // Chủ Trọ
                     return RedirectToAction("Dashboard", "ChuTro");

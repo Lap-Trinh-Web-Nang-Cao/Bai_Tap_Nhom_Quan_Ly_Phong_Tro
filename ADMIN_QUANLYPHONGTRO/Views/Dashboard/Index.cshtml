@@ -261,10 +261,11 @@
                                         <td>@room.Price.ToString("N0") đ</td>
                                         <td>@room.OwnerName</td>
                                         <td>
-                                            <a href="@Url.Action("Detail", "Rooms", new { id = room.RoomId })" 
-                                               class="btn btn-sm btn-primary" title="Xem chi tiết">
+                                            <button type="button" class="btn btn-sm btn-primary" 
+                                                    onclick="DashboardRoomModal.viewDetail('@room.RoomId')"
+                                                    title="Xem chi tiết & duyệt">
                                                 <i class="fa fa-eye"></i>
-                                            </a>
+                                            </button>
                                         </td>
                                     </tr>
                                 }
@@ -362,6 +363,92 @@
     </div>
 </div>
 
+<!-- ✅ Modal Duyệt Phòng từ Dashboard -->
+<div class="modal fade" id="roomApprovalModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fa fa-door-open mr-2"></i>
+                    Duyệt phòng
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Loading State -->
+                <div id="roomApprovalLoading" class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="sr-only">Đang tải...</span>
+                    </div>
+                    <p class="mt-3 text-muted">Đang tải thông tin phòng...</p>
+                </div>
+
+                <!-- Room Detail Content -->
+                <div id="roomApprovalContent" style="display: none;">
+                    <div class="row">
+                        <!-- Cột Trái: Hình ảnh -->
+                        <div class="col-lg-6">
+                            <div class="mb-3">
+                                <h6><i class="fa fa-images"></i> Hình ảnh phòng</h6>
+                                <img id="approvalRoomImage" src="" alt="Room" class="img-fluid rounded" style="max-height: 300px; object-fit: cover;">
+                            </div>
+                        </div>
+
+                        <!-- Cột Phải: Thông tin -->
+                        <div class="col-lg-6">
+                            <h6><i class="fa fa-info-circle"></i> Thông tin phòng</h6>
+                            <div class="list-unstyled">
+                                <div class="mb-2">
+                                    <strong>Tiêu đề:</strong>
+                                    <p id="approvalTieuDe" class="mb-0"></p>
+                                </div>
+                                <div class="mb-2">
+                                    <strong>Diện tích:</strong>
+                                    <p id="approvalDienTich" class="mb-0"></p>
+                                </div>
+                                <div class="mb-2">
+                                    <strong>Giá tiền:</strong>
+                                    <p id="approvalGiaTien" class="mb-0"></p>
+                                </div>
+                                <div class="mb-2">
+                                    <strong>Tiền cọc:</strong>
+                                    <p id="approvalTienCoc" class="mb-0"></p>
+                                </div>
+                                <div class="mb-2">
+                                    <strong>Chủ trọ:</strong>
+                                    <p id="approvalChuTro" class="mb-0"></p>
+                                </div>
+                            </div>
+
+                            <!-- Reject Reason -->
+                            <div class="mt-4">
+                                <label><i class="fa fa-comment"></i> Lý do từ chối (nếu từ chối):</label>
+                                <textarea id="approvalRejectReason" class="form-control form-control-sm" rows="3" 
+                                          placeholder="Ví dụ: Hình ảnh không phù hợp..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                    <i class="fa fa-times mr-1"></i> Đóng
+                </button>
+                <button type="button" class="btn btn-danger" id="approvalBtnReject" 
+                        onclick="DashboardRoomModal.reject()">
+                    <i class="fa fa-ban mr-1"></i> Từ chối
+                </button>
+                <button type="button" class="btn btn-success" id="approvalBtnApprove"
+                        onclick="DashboardRoomModal.approve()">
+                    <i class="fa fa-check mr-1"></i> Duyệt phòng
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @functions {
     string GetTimeAgo(DateTime dateTime)
     {
@@ -381,6 +468,109 @@
     // Data from Model
     var roomsChartData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.RoomsChartData));
     var roomStatusData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.RoomStatusChartData));
+    
+    // ✅ Dashboard Room Modal Handler
+    var DashboardRoomModal = (function () {
+        var currentRoomId = null;
+        
+        return {
+            viewDetail: function(roomId) {
+                currentRoomId = roomId;
+                
+                // Show modal with loading
+                $('#roomApprovalModal').modal('show');
+                $('#roomApprovalLoading').show();
+                $('#roomApprovalContent').hide();
+                
+                // Fetch room detail
+                $.ajax({
+                    url: '@Url.Action("GetRoomDetail", "Rooms")',
+                    type: 'GET',
+                    data: { id: roomId },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response && response.success) {
+                            // Populate modal
+                            $('#approvalRoomImage').attr('src', response.data.imageUrl || '/Content/img/room-placeholder.jpg');
+                            $('#approvalTieuDe').text(response.data.tieuDe || '-');
+                            $('#approvalDienTich').text((response.data.dienTich || '-') + ' m²');
+                            $('#approvalGiaTien').text(new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(response.data.giaTien || 0));
+                            $('#approvalTienCoc').text(new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(response.data.tienCoc || 0));
+                            $('#approvalChuTro').text(response.data.chuTroName || 'N/A');
+                            $('#approvalRejectReason').val('');
+                            
+                            // Show content
+                            $('#roomApprovalLoading').hide();
+                            $('#roomApprovalContent').show();
+                        } else {
+                            alert('Không thể tải thông tin phòng');
+                            $('#roomApprovalModal').modal('hide');
+                        }
+                    },
+                    error: function() {
+                        alert('Lỗi khi tải thông tin phòng');
+                        $('#roomApprovalModal').modal('hide');
+                    }
+                });
+            },
+            
+            approve: function() {
+                if (!currentRoomId) return;
+                
+                if (!confirm('Bạn có chắc muốn duyệt phòng này?')) return;
+                
+                $.ajax({
+                    url: '@Url.Action("ApproveRoom", "Rooms")',
+                    type: 'POST',
+                    data: { id: currentRoomId },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response && response.success) {
+                            alert('✅ Đã duyệt phòng thành công!');
+                            $('#roomApprovalModal').modal('hide');
+                            location.reload(); // Reload dashboard
+                        } else {
+                            alert('❌ Lỗi: ' + (response?.message || 'Không thể duyệt phòng'));
+                        }
+                    },
+                    error: function() {
+                        alert('❌ Lỗi khi gửi yêu cầu');
+                    }
+                });
+            },
+            
+            reject: function() {
+                if (!currentRoomId) return;
+                
+                var reason = $('#approvalRejectReason').val().trim();
+                if (!reason) {
+                    alert('⚠️ Vui lòng nhập lý do từ chối');
+                    return;
+                }
+                
+                if (!confirm('Bạn có chắc muốn từ chối phòng này?')) return;
+                
+                $.ajax({
+                    url: '@Url.Action("RejectRoom", "Rooms")',
+                    type: 'POST',
+                    data: { id: currentRoomId, reason: reason },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response && response.success) {
+                            alert('✅ Đã từ chối phòng!');
+                            $('#roomApprovalModal').modal('hide');
+                            location.reload(); // Reload dashboard
+                        } else {
+                            alert('❌ Lỗi: ' + (response?.message || 'Không thể từ chối phòng'));
+                        }
+                    },
+                    error: function() {
+                        alert('❌ Lỗi khi gửi yêu cầu');
+                    }
+                });
+            }
+        };
+    })();
     
     // Rooms Chart (Line Chart)
     var ctx = document.getElementById('roomsChart').getContext('2d');

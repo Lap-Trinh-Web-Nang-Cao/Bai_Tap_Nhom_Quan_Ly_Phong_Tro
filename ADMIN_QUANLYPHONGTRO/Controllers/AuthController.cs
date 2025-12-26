@@ -21,19 +21,24 @@ namespace ADMIN_QUANLYPHONGTRO.Controllers
         [HttpGet]
         public ActionResult Index(string token = "")
         {
+            System.Diagnostics.Debug.WriteLine($"🔵 AuthController.Index - token received: {(string.IsNullOrEmpty(token) ? "EMPTY" : token.Substring(0, Math.Min(20, token.Length)) + "...")}");
+
             // Nếu có token trong URL
             if (!string.IsNullOrEmpty(token))
             {
+                System.Diagnostics.Debug.WriteLine($"✅ Processing token from URL...");
                 return ProcessToken(token);
             }
 
             // Nếu đã có token trong session, redirect Dashboard
             if (_authService.IsAdminLoggedIn())
             {
+                System.Diagnostics.Debug.WriteLine($"✅ Token already in session, redirecting to Dashboard...");
                 return RedirectToAction("Index", "Dashboard");
             }
 
             // Không có token, redirect về guest area
+            System.Diagnostics.Debug.WriteLine($"❌ No token found, redirecting to home...");
             return Redirect("/");
         }
 

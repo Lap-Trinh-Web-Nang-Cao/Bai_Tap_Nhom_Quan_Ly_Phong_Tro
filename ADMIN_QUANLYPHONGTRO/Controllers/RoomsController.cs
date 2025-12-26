@@ -3,7 +3,6 @@ using ADMIN_QUANLYPHONGTRO.Services.Interfaces;
 using ADMIN_QUANLYPHONGTRO.Models.ViewModels;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 
@@ -112,53 +111,19 @@ namespace ADMIN_QUANLYPHONGTRO.Controllers
         /// API cho DataTables: Lấy danh sách phòng chờ duyệt
         /// </summary>
         [HttpPost]
-        public async Task<JsonResult> GetPendingRooms(int draw, int start, int length, string status = "", string keyword = "")
+        public async Task<JsonResult> GetPendingRooms(int draw, int start, int length, string search = "")
         {
             try
             {
-                if (string.IsNullOrEmpty(keyword) && Request.Form["search[value]"] != null)
-                {
-                    keyword = Request.Form["search[value]"];
-                }
-
-                // Tổng tất cả (không keyword) để recordsTotal đúng
-                var totalResult = await _service.GetPendingRoomsAsync(1, 1, "");
-                var recordsTotal = totalResult?.TotalRecords ?? 0;
-
-                // Lấy dữ liệu theo keyword (nếu có)
-                var all = await _service.GetPendingRoomsAsync(1, 100000, keyword);
-                var items = all?.Items ?? new List<RoomPendingItemViewModel>();
-
-                // filter theo status
-                if (!string.IsNullOrEmpty(status))
-                {
-                    switch (status.ToLower())
-                    {
-                        case "pending":
-                            items = items.Where(r => !r.IsDuyet && !r.IsBiKhoa).ToList();
-                            break;
-                        case "approved":
-                            items = items.Where(r => r.IsDuyet && !r.IsBiKhoa).ToList();
-                            break;
-                        case "locked":
-                            items = items.Where(r => r.IsBiKhoa).ToList();
-                            break;
-                    }
-                }
-
-                var recordsFiltered = items.Count;
-
-                var pageItems = items
-                    .Skip(start)
-                    .Take(length)
-                    .ToList();
+                int pageIndex = (start / length) + 1;
+                var pagedResult = await _service.GetPendingRoomsAsync(pageIndex, length, search);
 
                 return Json(new
                 {
                     draw = draw,
-                    recordsTotal = recordsTotal,
-                    recordsFiltered = recordsFiltered,
-                    data = pageItems
+                    recordsTotal = pagedResult?.TotalRecords ?? 0,
+                    recordsFiltered = pagedResult?.TotalRecords ?? 0,
+                    data = pagedResult?.Items ?? new List<RoomPendingItemViewModel>()
                 });
             }
             catch (Exception ex)
